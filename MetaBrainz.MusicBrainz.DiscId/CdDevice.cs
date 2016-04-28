@@ -29,6 +29,7 @@ namespace MetaBrainz.MusicBrainz {
         if (CdDevice.HasFeature(CdDeviceFeature.ReadTableOfContents   )) yield return "read";
         if (CdDevice.HasFeature(CdDeviceFeature.ReadMediaCatalogNumber)) yield return "mcn";
         if (CdDevice.HasFeature(CdDeviceFeature.ReadTrackIsrc         )) yield return "isrc";
+        if (CdDevice.HasFeature(CdDeviceFeature.ReadCdText            )) yield return "text";
       }
     }
 
@@ -54,6 +55,7 @@ namespace MetaBrainz.MusicBrainz {
         case CdDeviceFeature.ReadTableOfContents:
         case CdDeviceFeature.ReadMediaCatalogNumber:
         case CdDeviceFeature.ReadTrackIsrc:
+        case CdDeviceFeature.ReadCdText:
           return true;
         default:
           return false;
@@ -114,9 +116,10 @@ namespace MetaBrainz.MusicBrainz {
     public void ReadDisc(CdDeviceFeature features = CdDeviceFeature.All) {
       // Forget current info
       this.TableOfContents = null;
-      var getMcn  = (features & CdDeviceFeature.ReadMediaCatalogNumber) != 0 && CdDevice.HasFeature(CdDeviceFeature.ReadMediaCatalogNumber);
-      var getIsrc = (features & CdDeviceFeature.ReadTrackIsrc         ) != 0 && CdDevice.HasFeature(CdDeviceFeature.ReadTrackIsrc         );
-      this.TableOfContents = WinApi.GetTableOfContents(this.Name, getMcn, getIsrc);
+      var includeMcn  = (features & CdDeviceFeature.ReadMediaCatalogNumber) != 0 && CdDevice.HasFeature(CdDeviceFeature.ReadMediaCatalogNumber);
+      var includeIsrc = (features & CdDeviceFeature.ReadTrackIsrc         ) != 0 && CdDevice.HasFeature(CdDeviceFeature.ReadTrackIsrc         );
+      var includeText = (features & CdDeviceFeature.ReadCdText            ) != 0 && CdDevice.HasFeature(CdDeviceFeature.ReadCdText            );
+      this.TableOfContents = WinApi.GetTableOfContents(this.Name, includeMcn, includeIsrc, includeText);
     }
 
     #endregion

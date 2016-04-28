@@ -137,7 +137,7 @@ namespace MetaBrainz.MusicBrainz {
       return isrc.Status.IsValid ? Encoding.ASCII.GetString(isrc.ISRC) : string.Empty;
     }
 
-    public static TableOfContents GetTableOfContents([NotNull] string device, bool includeIsrc, bool includeMcn) {
+    public static TableOfContents GetTableOfContents([NotNull] string device, bool includeIsrc, bool includeMcn, bool includeText) {
       using (var hDevice = WinApi.CreateDeviceHandle(device)) {
         var req = new TOCRequest(MMC3.TOCRequestFormat.TOC);
         var rawtoc = new MMC3.TOCDescriptor();
