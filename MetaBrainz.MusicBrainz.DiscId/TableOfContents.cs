@@ -67,24 +67,33 @@ namespace MetaBrainz.MusicBrainz {
     public sealed class Track {
 
       internal Track(TableOfContents toc, byte number) {
-        var size = ((number == toc.LastTrack) ? toc._tracks[0] : toc._tracks[number + 1]).Descriptor.Address - toc._tracks[number].Descriptor.Address;
-        this.Duration = new TimeSpan(0, 0, 0, 0, size * 1000 / 75);
-        this.Isrc     = toc._tracks[number].Isrc;
-        this.Length   = size;
-        this.Number   = number;
+        var address = toc._tracks[number].Descriptor.Address;
+        var size = ((number == toc.LastTrack) ? toc._tracks[0] : toc._tracks[number + 1]).Descriptor.Address - address;
+        this.Duration  = new TimeSpan(0, 0, 0, 0, size * 1000 / 75);
+        this.Isrc      = toc._tracks[number].Isrc;
+        this.Length    = size;
+        this.Number    = number;
+        this.Offset    = address;
+        this.StartTime = new TimeSpan(0, 0, 0, 0, address * 1000 / 75);
       }
 
       /// <summary>The length of this track expressed as a timespan.</summary>
-      public TimeSpan Duration { get; }
+      public TimeSpan Duration  { get; }
 
       /// <summary>The ISRC for the track. null if not retrieved, empty if not available.</summary>
-      public string   Isrc     { get; }
+      public string   Isrc      { get; }
 
       /// <summary>The length, in sectors, of this track.</summary>
-      public int      Length   { get; }
+      public int      Length    { get; }
 
       /// <summary>The track number.</summary>
-      public byte     Number   { get; }
+      public byte     Number    { get; }
+
+      /// <summary>The start position, in sectors, of this track.</summary>
+      public int      Offset    { get; }
+
+      /// <summary>The start position of this track expressed as a timespan.</summary>
+      public TimeSpan StartTime { get; }
 
     }
 
