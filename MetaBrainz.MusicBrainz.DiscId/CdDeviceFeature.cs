@@ -17,7 +17,7 @@ namespace MetaBrainz.MusicBrainz {
     ReadTrackIsrc          = 1 << 2,
 
     /// <summary>The ability to read CD-TEXT information.</summary>
-    /// <remarks>Even when supported, not all disc will include this information (and even when they do, often not for all fields).</remarks>
+    /// <remarks>Even when supported, relatively few discs will include this information (and even when they do, often not for all fields).</remarks>
     ReadCdText             = 1 << 3,
 
     /// <summary>All available features.</summary>
