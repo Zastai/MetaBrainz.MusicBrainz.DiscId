@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Text;
 
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local
@@ -19,6 +20,23 @@ namespace MetaBrainz.MusicBrainz {
       PlayComplete = 0x13,
       PlayError    = 0x14,
       NoStatus     = 0x15,
+    }
+
+    public enum CDTextContentType : byte {
+      Nothing   = 0x00,
+      AlbumName = 0x80,
+      Performer = 0x81,
+      Lyricist  = 0x82,
+      Composer  = 0x83,
+      Arranger  = 0x84,
+      Messages  = 0x85,
+      DiscID    = 0x86,
+      Genre     = 0x87,
+      TOCInfo   = 0x88,
+      TOCInfo2  = 0x89,
+      UPC       = 0x8e,
+      EAN       = 0x8e,
+      SizeInfo  = 0x8f,
     }
 
     /// <summary>Possible values for the ADR field (typically 4 bits) in some structures.</summary>
@@ -83,6 +101,54 @@ namespace MetaBrainz.MusicBrainz {
 
     #region Structures
 
+    [StructLayout(LayoutKind.Sequential, Pack = 0)]
+    public struct CDTextItem {
+
+      public CDTextContentType Type;
+      public byte              RawInfo1;
+      public byte              SequenceNumber;
+      public byte              RawInfo2;
+      [MarshalAs(UnmanagedType.ByValArray, SizeConst = 12)]
+      public byte[]            Data;
+      public ushort            CRC;
+
+      public byte TrackNumber => (byte) (this.RawInfo1 & 0x7f);
+
+      public bool IsExtension => (this.RawInfo1 & 0x80) == 0x80;
+
+      public byte CharacterPosition => (byte) (this.RawInfo2 & 0x0f);
+
+      public byte BlockNumber => (byte) ((this.RawInfo2 & 0x70) >> 4);
+
+      public bool IsUnicode => (this.RawInfo2 & 0x80) == 0x80;
+
+      public string Text => (this.IsUnicode ? Encoding.BigEndianUnicode : Encoding.ASCII).GetString(this.Data);
+
+      public bool? IsValid => null; // TODO: Add CRC check.
+
+      public void FixUp() { this.CRC = (ushort) IPAddress.NetworkToHostOrder((short) this.CRC); }
+
+    }
+
+    /// <summary>The structure returned for a READ TOC/PMA/ATIP with request code <see cref="TOCRequestFormat.CDText"/>.</summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 0)]
+    public struct CDTextDescriptor {
+
+      public ushort       DataLength;
+      public byte         Reserved1;
+      public byte         Reserved2;
+      [MarshalAs(UnmanagedType.ByValArray, SizeConst = 150)]
+      public CDTextItem[] Items;
+
+      public void FixUp() {
+        this.DataLength = (ushort) IPAddress.NetworkToHostOrder((short) this.DataLength);
+        var items = (this.DataLength - 2) / Marshal.SizeOf(this.Items[0]);
+        for (var i = 0; i < items; ++i)
+          this.Items[i].FixUp();
+      }
+
+    }
+
     /// <summary>Structure mapping the control and ADR values found in sub-channel data (each taking half a byte).</summary>
     [StructLayout(LayoutKind.Sequential, Pack = 0)]
     public struct SubChannelControlAndADR {
@@ -110,9 +176,9 @@ namespace MetaBrainz.MusicBrainz {
 
       public byte        Reserved;
       public AudioStatus AudioStatus;
-      public short       DataLength;
+      public ushort      DataLength;
 
-      public void FixUp() { this.DataLength = IPAddress.NetworkToHostOrder(this.DataLength); }
+      public void FixUp() { this.DataLength = (ushort) IPAddress.NetworkToHostOrder((short) this.DataLength); }
 
     }
 
@@ -159,17 +225,16 @@ namespace MetaBrainz.MusicBrainz {
     [StructLayout(LayoutKind.Sequential, Pack = 0)]
     public struct TOCDescriptor {
 
-      public short             DataLength;
+      public ushort            DataLength;
       public byte              FirstTrack;
       public byte              LastTrack;
       [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
-      public TrackDescriptor[] Track;
+      public TrackDescriptor[] Tracks;
 
       public void FixUp() {
-        this.DataLength = IPAddress.NetworkToHostOrder(this.DataLength);
-        for (var i = 0; i <= this.LastTrack; ++i) {
-          this.Track[i].FixUp();
-        }
+        this.DataLength = (ushort) IPAddress.NetworkToHostOrder((short) this.DataLength);
+        for (var i = 0; i <= this.LastTrack; ++i)
+          this.Tracks[i].FixUp();
       }
 
     }
@@ -194,7 +259,7 @@ namespace MetaBrainz.MusicBrainz {
 
     #region Utility Methods
 
-    public static void FixUpAddress(ref int address) {
+    private static void FixUpAddress(ref int address) {
       // Endianness
       address = IPAddress.NetworkToHostOrder(address);
 #if GET_TOC_AS_MSF // MSF -> Sectors
