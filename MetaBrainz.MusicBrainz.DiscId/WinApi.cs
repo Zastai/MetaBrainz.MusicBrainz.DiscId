@@ -98,6 +98,9 @@ namespace MetaBrainz.MusicBrainz {
     }
 
     [DllImport("Kernel32.dll", SetLastError = true)]
+    private static extern bool DeviceIoControl(SafeFileHandle hDevice, int ioControlCode, ref TOCRequest request, int nInBufferSize, out MMC3.CDTextDescriptor cdtext, int textSize, out int pBytesReturned, IntPtr overlapped);
+
+    [DllImport("Kernel32.dll", SetLastError = true)]
     private static extern bool DeviceIoControl(SafeFileHandle hDevice, int ioControlCode, ref TOCRequest request, int nInBufferSize, out MMC3.TOCDescriptor toc, int tocSize, out int pBytesReturned, IntPtr overlapped);
 
     #endregion
@@ -139,29 +142,33 @@ namespace MetaBrainz.MusicBrainz {
 
     public static TableOfContents GetTableOfContents([NotNull] string device, bool includeIsrc, bool includeMcn, bool includeText) {
       using (var hDevice = WinApi.CreateDeviceHandle(device)) {
-        var req = new TOCRequest(MMC3.TOCRequestFormat.TOC);
-        var rawtoc = new MMC3.TOCDescriptor();
-        var returned = 0;
-        // LIB-44: Apparently for some multi-session discs, the first TOC read can be wrong. So issue two reads.
-        var ok = WinApi.DeviceIoControl(hDevice, WinApi.IOCTL_CDROM_READ_TOC_EX, ref req, Marshal.SizeOf(req), out rawtoc, Marshal.SizeOf(rawtoc), out returned, IntPtr.Zero);
-        if (ok)
-          ok = WinApi.DeviceIoControl(hDevice, WinApi.IOCTL_CDROM_READ_TOC_EX, ref req, Marshal.SizeOf(req), out rawtoc, Marshal.SizeOf(rawtoc), out returned, IntPtr.Zero);
-        if (!ok)
-          throw new IOException("Failed to retrieve TOC.", new Win32Exception(Marshal.GetLastWin32Error()));
-        rawtoc.FixUp();
-        var mcn = includeMcn ? WinApi.GetMediaCatalogNumber(hDevice) : null;
-        var toc = new TableOfContents(rawtoc.FirstTrack, rawtoc.LastTrack, mcn);
-        var i = 0;
-        for (var trackno = rawtoc.FirstTrack; trackno <= rawtoc.LastTrack; ++trackno, ++i) { // Add the regular tracks.
-          if (rawtoc.Track[i].TrackNumber != trackno)
-            throw new InvalidDataException($"Internal logic error; first track is {rawtoc.FirstTrack}, but entry at index {i} claims to be track {rawtoc.Track[i].TrackNumber} instead of {trackno}");
-          var isrc = includeIsrc ? WinApi.GetTrackIsrc(hDevice, trackno) : null;
-          toc.SetTrack(rawtoc.Track[i], isrc);
+        TableOfContents toc = null;
+        { // Read the TOC itself
+          var req = new TOCRequest(MMC3.TOCRequestFormat.TOC);
+          var rawtoc = new MMC3.TOCDescriptor();
+          var returned = 0;
+          // LIB-44: Apparently for some multi-session discs, the first TOC read can be wrong. So issue two reads.
+          var ok = WinApi.DeviceIoControl(hDevice, WinApi.IOCTL_CDROM_READ_TOC_EX, ref req, Marshal.SizeOf(req), out rawtoc, Marshal.SizeOf(rawtoc), out returned, IntPtr.Zero);
+          if (ok)
+            ok = WinApi.DeviceIoControl(hDevice, WinApi.IOCTL_CDROM_READ_TOC_EX, ref req, Marshal.SizeOf(req), out rawtoc, Marshal.SizeOf(rawtoc), out returned, IntPtr.Zero);
+          if (!ok)
+            throw new IOException("Failed to retrieve TOC.", new Win32Exception(Marshal.GetLastWin32Error()));
+          rawtoc.FixUp();
+          var mcn = includeMcn ? WinApi.GetMediaCatalogNumber(hDevice) : null;
+          toc = new TableOfContents(rawtoc.FirstTrack, rawtoc.LastTrack, mcn);
+          var i = 0;
+          for (var trackno = rawtoc.FirstTrack; trackno <= rawtoc.LastTrack; ++trackno, ++i) { // Add the regular tracks.
+            if (rawtoc.Tracks[i].TrackNumber != trackno)
+              throw new InvalidDataException($"Internal logic error; first track is {rawtoc.FirstTrack}, but entry at index {i} claims to be track {rawtoc.Tracks[i].TrackNumber} instead of {trackno}");
+            var isrc = includeIsrc ? WinApi.GetTrackIsrc(hDevice, trackno) : null;
+            toc.SetTrack(rawtoc.Tracks[i], isrc);
+          }
+          // Next entry should be the leadout (track number 0xAA)
+          if (rawtoc.Tracks[i].TrackNumber != 0xAA)
+            throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtoc.Tracks[i].TrackNumber} instead of 0xAA (lead-out)");
+          toc.SetTrack(rawtoc.Tracks[i], null);
         }
-        // Next entry should be the leadout (track number 0xAA)
-        if (rawtoc.Track[i].TrackNumber != 0xAA)
-          throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtoc.Track[i].TrackNumber} instead of 0xAA (lead-out)");
-        toc.SetTrack(rawtoc.Track[i], null);
+        // TODO: If requested, try getting CD-TEXT data.
         return toc;
       }
     }
