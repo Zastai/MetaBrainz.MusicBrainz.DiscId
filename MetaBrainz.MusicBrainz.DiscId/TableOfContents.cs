@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using System.Web;
 
-using JetBrains.Annotations;
-
-namespace MetaBrainz.MusicBrainz {
+namespace MetaBrainz.MusicBrainz.DiscId {
 
   /// <summary>Class representing a CD's table of contents.</summary>
   public sealed class TableOfContents {

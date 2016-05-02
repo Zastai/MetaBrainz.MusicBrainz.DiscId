@@ -4,7 +4,7 @@ using System.IO;
 
 using JetBrains.Annotations;
 
-namespace MetaBrainz.MusicBrainz {
+namespace MetaBrainz.MusicBrainz.DiscId {
 
   /// <summary>Class representing a cd-rom device.</summary>
   public sealed class CdDevice {

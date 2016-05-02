@@ -6,7 +6,7 @@ using System.Text;
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local
 
-namespace MetaBrainz.MusicBrainz {
+namespace MetaBrainz.MusicBrainz.DiscId {
 
   /// <summary>Static class containing structures, enumerations and constants as defined by NCITS document T10/1363-D (MMC-3).</summary>
   internal static class MMC3 {

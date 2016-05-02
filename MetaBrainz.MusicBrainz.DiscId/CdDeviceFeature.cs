@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MetaBrainz.MusicBrainz {
+namespace MetaBrainz.MusicBrainz.DiscId {
 
   /// <summary>Enumeration of features the library may support on any given platform.</summary>
   [Flags]

@@ -8,12 +8,10 @@ using JetBrains.Annotations;
 
 using Microsoft.Win32.SafeHandles;
 
-#pragma warning disable 649
-
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local
 
-namespace MetaBrainz.MusicBrainz {
+namespace MetaBrainz.MusicBrainz.DiscId {
 
   internal static class WinApi {
 
