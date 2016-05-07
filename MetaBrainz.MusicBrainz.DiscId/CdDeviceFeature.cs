@@ -6,6 +6,9 @@ namespace MetaBrainz.MusicBrainz.DiscId {
   [Flags]
   public enum CdDeviceFeature : uint {
 
+    /// <summary>No functionality.</summary>
+    None = 0,
+
     /// <summary>The core functionality of reading the TOC, enabling DiscId (and freedb id) computation.</summary>
     ReadTableOfContents    = 1 << 0,
 
