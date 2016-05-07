@@ -11,56 +11,59 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     #region Static Properties / Methods
 
+    private static IPlatform _platform;
+
+    static CdDevice() {
+      switch (Environment.OSVersion.Platform) {
+        case PlatformID.Win32NT:
+        case PlatformID.Win32S:
+        case PlatformID.Win32Windows:
+        case PlatformID.WinCE:
+        case PlatformID.Xbox:
+          CdDevice._platform = new WindowsPlatform();
+          break;
+        case PlatformID.MacOSX:
+          // FIXME: Is this really ever reported? Mono seems to always say Unix.
+          break;
+        case PlatformID.Unix:
+          // TODO: May need to detect Linux vs BDS vs ...
+          break;
+      }
+      if (CdDevice._platform == null)
+        throw new PlatformNotSupportedException($"CD device access has not been implemented for this platform ({Environment.OSVersion}).");
+      // Mono's C# compiler does not like initializers on auto-properties, so set them up here instead.
+      CdDevice.DefaultPort      = -1;
+      CdDevice.DefaultUrlScheme = "https";
+      CdDevice.DefaultWebSite   = "musicbrainz.org";
+    }
+
     /// <summary>The default cd-rom device used.</summary>
-    public static string DefaultName => CdDevice.GetCdDrive(0) ?? "D:";
+    public static string DefaultName => CdDevice._platform.GetDeviceByIndex(0) ?? CdDevice._platform.DefaultDevice;
+
+    /// <summary>The default port number to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property); -1 means no explicit port is used.</summary>
+    public static int DefaultPort { get; set; }
 
     /// <summary>The default URL scheme to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property).</summary>
-    public static string DefaultUrlScheme { get; set; } = "https";
+    public static string DefaultUrlScheme { get; set; }
 
     /// <summary>
     ///   The default web site to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property).
     ///   Must not include any URL scheme; that can be configured via <see cref="DefaultUrlScheme"/>.
     /// </summary>
-    public static string DefaultWebSite { get; set; } = "musicbrainz.org";
+    public static string DefaultWebSite { get; set; }
 
     /// <summary>The list of supported features.</summary>
-    public static IEnumerable<string> Features {
-      get {
-        if (CdDevice.HasFeature(CdDeviceFeature.ReadTableOfContents   )) yield return "read";
-        if (CdDevice.HasFeature(CdDeviceFeature.ReadMediaCatalogNumber)) yield return "mcn";
-        if (CdDevice.HasFeature(CdDeviceFeature.ReadTrackIsrc         )) yield return "isrc";
-        if (CdDevice.HasFeature(CdDeviceFeature.ReadCdText            )) yield return "text";
-      }
-    }
+    public static IEnumerable<string> Features => CdDevice._platform.Features;
 
-    /// <summary>Returns the name of the <paramref name="n"/>th cd-rom drive in the system.</summary>
-    /// <param name="n">The (0-based) sequence number of the cd-rom drive.</param>
-    /// <returns>The request drive name, or null if there are not enough cd-drives in the system.</returns>
-    public static string GetCdDrive(byte n) {
-      foreach (var drive in DriveInfo.GetDrives()) {
-        if (drive.DriveType == DriveType.CDRom) {
-          if (n == 0)
-            return drive.Name;
-          --n;
-        }
-      }
-      return null;
-    }
+    /// <summary>Returns the name of the <paramref name="n"/>th cd-rom device in the system.</summary>
+    /// <param name="n">The (0-based) sequence number of the cd-rom device.</param>
+    /// <returns>The requested drive name, or null if there are not enough cd-drives in the system.</returns>
+    public static string GetName(byte n) => CdDevice._platform.GetDeviceByIndex(n);
 
     /// <summary>Determines whether or not the specified feature is supported.</summary>
     /// <param name="feature">The (single) feature to test.</param>
     /// <returns>true if the feature is supported; false otherwise.</returns>
-    public static bool HasFeature(CdDeviceFeature feature) {
-      switch (feature) {
-        case CdDeviceFeature.ReadTableOfContents:
-        case CdDeviceFeature.ReadMediaCatalogNumber:
-        case CdDeviceFeature.ReadTrackIsrc:
-        case CdDeviceFeature.ReadCdText:
-          return true;
-        default:
-          return false;
-      }
-    }
+    public static bool HasFeature(CdDeviceFeature feature) => CdDevice._platform.HasFeature(feature);
 
     #endregion
 
@@ -73,16 +76,16 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <summary>Constructs a new <see cref="CdDevice" /> object using the specified device.</summary>
     /// <param name="device">The cd-rom device's sequence number (0 being the first cd-rom device in the system).</param>
     /// <exception cref="ArgumentOutOfRangeException">When <paramref name="device" /> equals or exceeds the number of cd-rom devices in the system.</exception>
-    public CdDevice(byte device) {
-      var deviceName = CdDevice.GetCdDrive(device);
-      if (deviceName == null)
+    public CdDevice(int device) {
+      this.Name = CdDevice._platform.GetDeviceByIndex(device);
+      if (this.Name == null)
         throw new ArgumentOutOfRangeException(nameof(device), device, "No such cd-rom device was found.");
-      this.Name = deviceName;
     }
 
     /// <summary>Constructs a new <see cref="CdDevice" /> object using the specified device.</summary>
-    /// <param name="device">The name of the device to open (typically of the form &quot;X:&quot;).</param>
+    /// <param name="device">The name of the device to open.</param>
     /// <exception cref="ArgumentNullException">When <paramref name="device" /> is null.</exception>
+    /// <remarks>The device name is not validated by this constructor; if it is not valid, <see cref="ReadDisc"/> will fail.</remarks>
     public CdDevice([CanBeNull] string device) {
       if (device == null)
         throw new ArgumentNullException(nameof(device));
@@ -114,12 +117,18 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <summary>Reads the current disc in the device, getting the requested information.</summary>
     /// <param name="features">The features to use (if supported). Note that the table of contents will always be read.</param>
     public void ReadDisc(CdDeviceFeature features = CdDeviceFeature.All) {
-      // Forget current info
-      this.TableOfContents = null;
-      var includeMcn  = (features & CdDeviceFeature.ReadMediaCatalogNumber) != 0 && CdDevice.HasFeature(CdDeviceFeature.ReadMediaCatalogNumber);
-      var includeIsrc = (features & CdDeviceFeature.ReadTrackIsrc         ) != 0 && CdDevice.HasFeature(CdDeviceFeature.ReadTrackIsrc         );
-      var includeText = (features & CdDeviceFeature.ReadCdText            ) != 0 && CdDevice.HasFeature(CdDeviceFeature.ReadCdText            );
-      this.TableOfContents = WinApi.GetTableOfContents(this.Name, includeMcn, includeIsrc, includeText);
+      this.TableOfContents = CdDevice._platform.ReadTableOfContents(this.Name, features);
+    }
+
+    /// <summary>Simulates the reading of a disc, setting up a table of contents based on the specified information.</summary>
+    /// <param name="first">The first audio track for the disc.</param>
+    /// <param name="last">The last audio track for the disc.</param>
+    /// <param name="offsets">Array of track offsets; the offset at index 0 should be the offset of the end of the last (audio) track.</param>
+    /// <exception cref="ArgumentNullException">When <paramref name="offsets"/> is null.</exception>
+    public void SimulateDisc(byte first, byte last, [CanBeNull] int[] offsets) {
+      if (offsets == null)
+        throw new ArgumentNullException(nameof(offsets));
+      this.TableOfContents = new TableOfContents(first, last, offsets);
     }
 
     #endregion

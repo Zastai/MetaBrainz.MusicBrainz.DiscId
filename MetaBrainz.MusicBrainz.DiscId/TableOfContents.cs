@@ -6,6 +6,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 
+using JetBrains.Annotations;
+
 namespace MetaBrainz.MusicBrainz.DiscId {
 
   /// <summary>Class representing a CD's table of contents.</summary>
@@ -261,14 +263,21 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     private Uri _url;
 
-    internal TableOfContents(byte first, byte last, string mcn) {
+    private TableOfContents(byte first, byte last) {
       if (first == 0 || first > 99) throw new ArgumentOutOfRangeException(nameof(first), first, "The first track number must be between 1 and 99.");
       if (last  == 0 || last  > 99) throw new ArgumentOutOfRangeException(nameof(last),  last,  "The last track number must be between 1 and 99.");
       if (last < first)             throw new ArgumentOutOfRangeException(nameof(last),  last,  "The last track number cannot be smaller than the first.");
-      this.FirstTrack         = first;
-      this.LastTrack          = last;
+      this.FirstTrack = first;
+      this.LastTrack  = last;
+      this._tracks    = new RawTrack[100];
+    }
+
+    internal TableOfContents(byte first, byte last, [NotNull] int[] offsets) : this(first, last) {
+      // TODO: Validate & Fill in the offsets
+    }
+
+    internal TableOfContents(byte first, byte last, string mcn) : this(first, last) {
       this.MediaCatalogNumber = mcn;
-      this._tracks            = new RawTrack[100];
     }
 
     private void AppendTocString(StringBuilder sb, char delimiter) {
@@ -303,7 +312,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     private Uri ConstructSubmissionUrl() {
-      var uri = new UriBuilder(CdDevice.DefaultUrlScheme, CdDevice.DefaultWebSite, -1, "cdtoc/attach", null);
+      var uri = new UriBuilder(CdDevice.DefaultUrlScheme, CdDevice.DefaultWebSite, CdDevice.DefaultPort, "cdtoc/attach", null);
       var query = new StringBuilder();
       query.Append("id=").Append(Uri.EscapeDataString(this.DiscId));
       var culture = Thread.CurrentThread.CurrentCulture;
