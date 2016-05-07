@@ -26,11 +26,11 @@ namespace MetaBrainz.MusicBrainz.DiscId {
           // FIXME: Is this really ever reported? Mono seems to always say Unix.
           break;
         case PlatformID.Unix:
-          // TODO: May need to detect Linux vs BDS vs ...
+          CdDevice._platform = UnixPlatform.Create();
           break;
       }
       if (CdDevice._platform == null)
-        throw new PlatformNotSupportedException($"CD device access has not been implemented for this platform ({Environment.OSVersion}).");
+        CdDevice._platform = new GenericPlatform();
       // Mono's C# compiler does not like initializers on auto-properties, so set them up here instead.
       CdDevice.DefaultPort      = -1;
       CdDevice.DefaultUrlScheme = "https";

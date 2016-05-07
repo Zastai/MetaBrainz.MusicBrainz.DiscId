@@ -48,13 +48,17 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="CdDevice.cs" />
     <Compile Include="CdDeviceFeature.cs" />
-    <Compile Include="Platform.cs" />
+    <Compile Include="GenericPlatform.cs" />
     <Compile Include="IPlatform.cs" />
     <Compile Include="MMC3.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Platform.cs" />
     <Compile Include="TableOfContents.cs" />
+    <Compile Include="UnixPlatform.cs" />
     <Compile Include="WindowsPlatform.cs" />
   </ItemGroup>
   <ItemGroup>
