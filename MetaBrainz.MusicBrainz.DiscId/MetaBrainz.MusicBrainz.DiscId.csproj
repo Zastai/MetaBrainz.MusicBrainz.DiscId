@@ -48,18 +48,21 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Platforms\Darwin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
+    <Compile Include="Platforms\FreeBsd.cs" />
+    <Compile Include="Platforms\Linux.cs" />
+    <Compile Include="Platforms\NetBsd.cs" />
+    <Compile Include="Platforms\Solaris.cs" />
+    <Compile Include="Platforms\Unix.cs" />
+    <Compile Include="Platforms\Unsupported.cs" />
+    <Compile Include="Platforms\Windows.cs" />
     <Compile Include="CdDevice.cs" />
     <Compile Include="CdDeviceFeature.cs" />
-    <Compile Include="GenericPlatform.cs" />
     <Compile Include="IPlatform.cs" />
     <Compile Include="MMC3.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="TableOfContents.cs" />
-    <Compile Include="UnixPlatform.cs" />
-    <Compile Include="WindowsPlatform.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

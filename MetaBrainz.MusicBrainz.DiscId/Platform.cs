@@ -1,10 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MetaBrainz.MusicBrainz.DiscId {
 
   internal abstract class Platform : IPlatform {
 
-    private CdDeviceFeature _features;
+    public static IPlatform Create() {
+      switch (Environment.OSVersion.Platform) {
+        case PlatformID.MacOSX:
+          return new Platforms.Darwin();
+        case PlatformID.Win32NT:
+        case PlatformID.Win32S:
+        case PlatformID.Win32Windows:
+        case PlatformID.WinCE:
+        case PlatformID.Xbox:
+          return new Platforms.Windows();
+        case PlatformID.Unix:
+          return Platforms.Unix.Create();
+        default:
+          return new Platforms.Unsupported();
+      }
+    }
+
+    private readonly CdDeviceFeature _features;
 
     protected Platform(CdDeviceFeature features) {
       this._features = features;

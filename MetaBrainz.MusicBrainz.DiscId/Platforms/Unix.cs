@@ -1,14 +1,14 @@
 ﻿using System;
 
-namespace MetaBrainz.MusicBrainz.DiscId {
+namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
-  internal class UnixPlatform : Platform {
+  internal abstract class Unix : Platform {
 
-    protected UnixPlatform(CdDeviceFeature features) : base(features) { }
+    protected Unix(CdDeviceFeature features = CdDeviceFeature.ReadTableOfContents) : base(features) { }
 
-    public static UnixPlatform Create() {
-      // TODO: Detect FreeBSD/NetBSD/Darwin/OSX/Linux/Solaris/... and return the appropriate subclass.
-      return new UnixPlatform(CdDeviceFeature.None);
+    public new static Unix Create() {
+      // TODO: Detect FreeBSD/NetBSD/Solaris and return the appropriate subclass.
+      return new Linux();
     }
 
     public override string DefaultDevice => "/dev/cdrom";

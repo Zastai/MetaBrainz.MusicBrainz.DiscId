@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -9,11 +8,11 @@ using JetBrains.Annotations;
 
 using Microsoft.Win32.SafeHandles;
 
-namespace MetaBrainz.MusicBrainz.DiscId {
+namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
-  internal sealed class WindowsPlatform : Platform {
+  internal sealed class Windows : Platform {
 
-    public WindowsPlatform() : base(CdDeviceFeature.ReadTableOfContents | CdDeviceFeature.ReadMediaCatalogNumber | CdDeviceFeature.ReadTrackIsrc) { }
+    public Windows() : base(CdDeviceFeature.ReadTableOfContents | CdDeviceFeature.ReadMediaCatalogNumber | CdDeviceFeature.ReadTrackIsrc) { }
 
     public override string DefaultDevice => "D:";
 
@@ -31,26 +30,26 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     public override TableOfContents ReadTableOfContents(string device, CdDeviceFeature features) {
-      using (var hDevice = WindowsPlatform.CreateDeviceHandle(device)) {
+      using (var hDevice = Windows.CreateDeviceHandle(device)) {
         TableOfContents toc = null;
         { // Read the TOC itself
           var req = new TOCRequest(MMC3.TOCRequestFormat.TOC);
           var rawtoc = new MMC3.TOCDescriptor();
           var returned = 0;
           // LIB-44: Apparently for some multi-session discs, the first TOC read can be wrong. So issue two reads.
-          var ok = WindowsPlatform.DeviceIoControl(hDevice, WindowsPlatform.IOCTL_CDROM_READ_TOC_EX, ref req, Marshal.SizeOf(req), out rawtoc, Marshal.SizeOf(rawtoc), out returned, IntPtr.Zero);
+          var ok = Windows.DeviceIoControl(hDevice, Windows.IOCTL_CDROM_READ_TOC_EX, ref req, Marshal.SizeOf(req), out rawtoc, Marshal.SizeOf(rawtoc), out returned, IntPtr.Zero);
           if (ok)
-            ok = WindowsPlatform.DeviceIoControl(hDevice, WindowsPlatform.IOCTL_CDROM_READ_TOC_EX, ref req, Marshal.SizeOf(req), out rawtoc, Marshal.SizeOf(rawtoc), out returned, IntPtr.Zero);
+            ok = Windows.DeviceIoControl(hDevice, Windows.IOCTL_CDROM_READ_TOC_EX, ref req, Marshal.SizeOf(req), out rawtoc, Marshal.SizeOf(rawtoc), out returned, IntPtr.Zero);
           if (!ok)
             throw new IOException("Failed to retrieve TOC.", new Win32Exception(Marshal.GetLastWin32Error()));
           rawtoc.FixUp();
-          var mcn = ((features & CdDeviceFeature.ReadMediaCatalogNumber) != 0) ? WindowsPlatform.GetMediaCatalogNumber(hDevice) : null;
+          var mcn = ((features & CdDeviceFeature.ReadMediaCatalogNumber) != 0) ? Windows.GetMediaCatalogNumber(hDevice) : null;
           toc = new TableOfContents(rawtoc.FirstTrack, rawtoc.LastTrack, mcn);
           var i = 0;
           for (var trackno = rawtoc.FirstTrack; trackno <= rawtoc.LastTrack; ++trackno, ++i) { // Add the regular tracks.
             if (rawtoc.Tracks[i].TrackNumber != trackno)
               throw new InvalidDataException($"Internal logic error; first track is {rawtoc.FirstTrack}, but entry at index {i} claims to be track {rawtoc.Tracks[i].TrackNumber} instead of {trackno}");
-            var isrc = ((features & CdDeviceFeature.ReadTrackIsrc) != 0) ? WindowsPlatform.GetTrackIsrc(hDevice, trackno) : null;
+            var isrc = ((features & CdDeviceFeature.ReadTrackIsrc) != 0) ? Windows.GetTrackIsrc(hDevice, trackno) : null;
             toc.SetTrack(rawtoc.Tracks[i], isrc);
           }
           // Next entry should be the leadout (track number 0xAA)
@@ -68,7 +67,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       if (colon >= 0)
         device = device.Substring(0, colon + 1);
       var path = string.Concat("\\\\.\\", device);
-      var handle = WindowsPlatform.CreateFile(path, FileAccess.Read, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, 0, IntPtr.Zero);
+      var handle = Windows.CreateFile(path, FileAccess.Read, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, 0, IntPtr.Zero);
       if (handle.IsInvalid) {
         var error = Marshal.GetLastWin32Error();
         throw new ArgumentException($"Cannot open the CD audio device '{device}' (error {error:X8}).", new Win32Exception(error));
@@ -80,7 +79,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       var req = new SubChannelRequest { Format = MMC3.SubChannelRequestFormat.MediaCatalogNumber, Track = 0 };
       var mcn = new MMC3.SubChannelMediaCatalogNumber();
       var returned = 0;
-      if (!WindowsPlatform.DeviceIoControl(hDevice, WindowsPlatform.IOCTL_CDROM_READ_Q_CHANNEL, ref req, Marshal.SizeOf(req), out mcn, Marshal.SizeOf(mcn), out returned, IntPtr.Zero))
+      if (!Windows.DeviceIoControl(hDevice, Windows.IOCTL_CDROM_READ_Q_CHANNEL, ref req, Marshal.SizeOf(req), out mcn, Marshal.SizeOf(mcn), out returned, IntPtr.Zero))
         throw new IOException("Failed to retrieve media catalog number.", new Win32Exception(Marshal.GetLastWin32Error()));
       mcn.FixUp();
       return mcn.Status.IsValid ? Encoding.ASCII.GetString(mcn.MCN) : string.Empty;
@@ -90,7 +89,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       var req = new SubChannelRequest { Format = MMC3.SubChannelRequestFormat.ISRC, Track = track };
       var isrc = new MMC3.SubChannelISRC();
       var returned = 0;
-      if (!WindowsPlatform.DeviceIoControl(hDevice, WindowsPlatform.IOCTL_CDROM_READ_Q_CHANNEL, ref req, Marshal.SizeOf(req), out isrc, Marshal.SizeOf(isrc), out returned, IntPtr.Zero))
+      if (!Windows.DeviceIoControl(hDevice, Windows.IOCTL_CDROM_READ_Q_CHANNEL, ref req, Marshal.SizeOf(req), out isrc, Marshal.SizeOf(isrc), out returned, IntPtr.Zero))
         throw new IOException($"Failed to retrieve ISRC for track {track}.", new Win32Exception(Marshal.GetLastWin32Error()));
       isrc.FixUp();
       return isrc.Status.IsValid ? Encoding.ASCII.GetString(isrc.ISRC) : string.Empty;
@@ -122,23 +121,23 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     private const int METHOD_NEITHER    = 3;
 
 
-    private const int IOCTL_CDROM_CHECK_VERIFY       = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x0200 << 2) | WindowsPlatform.METHOD_BUFFERED);
-    private const int IOCTL_CDROM_FIND_NEW_DEVICES   = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x0206 << 2) | WindowsPlatform.METHOD_BUFFERED);
-    private const int IOCTL_CDROM_GET_CONTROL        = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x000D << 2) | WindowsPlatform.METHOD_BUFFERED);
-    private const int IOCTL_CDROM_GET_DRIVE_GEOMETRY = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x0013 << 2) | WindowsPlatform.METHOD_BUFFERED);
-    private const int IOCTL_CDROM_GET_LAST_SESSION   = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x000E << 2) | WindowsPlatform.METHOD_BUFFERED);
-    private const int IOCTL_CDROM_GET_VOLUME         = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x0005 << 2) | WindowsPlatform.METHOD_BUFFERED);
-    private const int IOCTL_CDROM_PAUSE_AUDIO        = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x0003 << 2) | WindowsPlatform.METHOD_BUFFERED);
-    private const int IOCTL_CDROM_PLAY_AUDIO_MSF     = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x0006 << 2) | WindowsPlatform.METHOD_BUFFERED);
-    private const int IOCTL_CDROM_RAW_READ           = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x000F << 2) | WindowsPlatform.METHOD_OUT_DIRECT);
-    private const int IOCTL_CDROM_READ_Q_CHANNEL     = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x000B << 2) | WindowsPlatform.METHOD_BUFFERED);
-    private const int IOCTL_CDROM_READ_TOC           = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x0000 << 2) | WindowsPlatform.METHOD_BUFFERED);
-    private const int IOCTL_CDROM_READ_TOC_EX        = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x0015 << 2) | WindowsPlatform.METHOD_BUFFERED);
-    private const int IOCTL_CDROM_RESUME_AUDIO       = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x0004 << 2) | WindowsPlatform.METHOD_BUFFERED);
-    private const int IOCTL_CDROM_SEEK_AUDIO_MSF     = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x0001 << 2) | WindowsPlatform.METHOD_BUFFERED);
-    private const int IOCTL_CDROM_SET_VOLUME         = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x000A << 2) | WindowsPlatform.METHOD_BUFFERED);
-    private const int IOCTL_CDROM_SIMBAD             = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x1003 << 2) | WindowsPlatform.METHOD_BUFFERED);
-    private const int IOCTL_CDROM_STOP_AUDIO         = ((WindowsPlatform.FILE_DEVICE_CD_ROM << 16) | (WindowsPlatform.FILE_READ_ACCESS << 14) | (0x0002 << 2) | WindowsPlatform.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_CHECK_VERIFY       = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x0200 << 2) | Windows.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_FIND_NEW_DEVICES   = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x0206 << 2) | Windows.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_GET_CONTROL        = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x000D << 2) | Windows.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_GET_DRIVE_GEOMETRY = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x0013 << 2) | Windows.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_GET_LAST_SESSION   = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x000E << 2) | Windows.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_GET_VOLUME         = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x0005 << 2) | Windows.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_PAUSE_AUDIO        = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x0003 << 2) | Windows.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_PLAY_AUDIO_MSF     = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x0006 << 2) | Windows.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_RAW_READ           = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x000F << 2) | Windows.METHOD_OUT_DIRECT);
+    private const int IOCTL_CDROM_READ_Q_CHANNEL     = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x000B << 2) | Windows.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_READ_TOC           = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x0000 << 2) | Windows.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_READ_TOC_EX        = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x0015 << 2) | Windows.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_RESUME_AUDIO       = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x0004 << 2) | Windows.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_SEEK_AUDIO_MSF     = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x0001 << 2) | Windows.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_SET_VOLUME         = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x000A << 2) | Windows.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_SIMBAD             = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x1003 << 2) | Windows.METHOD_BUFFERED);
+    private const int IOCTL_CDROM_STOP_AUDIO         = ((Windows.FILE_DEVICE_CD_ROM << 16) | (Windows.FILE_READ_ACCESS << 14) | (0x0002 << 2) | Windows.METHOD_BUFFERED);
 
     #endregion
 

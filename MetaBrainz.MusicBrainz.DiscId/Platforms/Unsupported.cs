@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace MetaBrainz.MusicBrainz.DiscId {
+namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
-  internal sealed class GenericPlatform : Platform {
+  internal sealed class Unsupported : Platform {
 
-    public GenericPlatform() : base(CdDeviceFeature.None) { }
+    public Unsupported() : base(CdDeviceFeature.None) { }
 
     public override string DefaultDevice => "/dev/null";
 

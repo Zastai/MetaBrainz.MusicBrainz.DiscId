@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 
 using JetBrains.Annotations;
 
@@ -14,23 +13,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     private static IPlatform _platform;
 
     static CdDevice() {
-      switch (Environment.OSVersion.Platform) {
-        case PlatformID.Win32NT:
-        case PlatformID.Win32S:
-        case PlatformID.Win32Windows:
-        case PlatformID.WinCE:
-        case PlatformID.Xbox:
-          CdDevice._platform = new WindowsPlatform();
-          break;
-        case PlatformID.MacOSX:
-          // FIXME: Is this really ever reported? Mono seems to always say Unix.
-          break;
-        case PlatformID.Unix:
-          CdDevice._platform = UnixPlatform.Create();
-          break;
-      }
-      if (CdDevice._platform == null)
-        CdDevice._platform = new GenericPlatform();
+      CdDevice._platform        = Platform.Create();
       // Mono's C# compiler does not like initializers on auto-properties, so set them up here instead.
       CdDevice.DefaultPort      = -1;
       CdDevice.DefaultUrlScheme = "https";
