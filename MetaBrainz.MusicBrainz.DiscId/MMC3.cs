@@ -39,6 +39,20 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       SizeInfo  = 0x8f,
     }
 
+    /// <summary>Possible values for the control field (4 bits) in some structures.</summary>
+    public enum SubChannelControl : byte {
+      // The first two bits are "content type".
+      ContentTypeMask      = 0x0c,
+      TwoChannelAudio      = 0x00,
+      Data                 = 0x04,
+      ReservedAudio        = 0x08,
+      // The third bit indicates whether or not a digital copy is permitted.
+      DigitalCopyPermitted = 0x02,
+      // The last bit specifies a modifier for the content type: pre-emphasis for audio, incremental recording for data.
+      PreEmphasis          = 0x01,
+      Incremental          = 0x01,
+    }
+
     /// <summary>Possible values for the ADR field (typically 4 bits) in some structures.</summary>
     public enum SubChannelDataFormat : byte {
       NotSpecified       = 0x00,
@@ -72,20 +86,6 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       // All other values (00, 04-ef) are reserved
     }
 
-    /// <summary>Possible values for the control field (4 bits) in some structures.</summary>
-    public enum SubChannelControl : byte {
-      // The first two bits are "content type".
-      ContentTypeMask      = 0x0c,
-      TwoChannelAudio      = 0x00,
-      Data                 = 0x04,
-      ReservedAudio        = 0x08,
-      // The third bit indicates whether or not a digital copy is permitted.
-      DigitalCopyPermitted = 0x02,
-      // The last bit specifies a modifier for the content type: pre-emphasis for audio, incremental recording for data.
-      PreEmphasis          = 0x01,
-      Incremental          = 0x01,
-    }
-
     /// <summary>Values for the format in a READ TOC/PMA/ATIP command.</summary>
     public enum TOCRequestFormat : byte {
       TOC         = 0x00,
@@ -100,6 +100,25 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     #endregion
 
     #region Structures
+
+    /// <summary>The structure returned for a READ TOC/PMA/ATIP with request code <see cref="TOCRequestFormat.CDText"/>.</summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 0)]
+    public struct CDTextDescriptor {
+
+      public ushort       DataLength;
+      public byte         Reserved1;
+      public byte         Reserved2;
+      [MarshalAs(UnmanagedType.ByValArray, SizeConst = 150)]
+      public CDTextItem[] Items;
+
+      public void FixUp() {
+        this.DataLength = (ushort) IPAddress.NetworkToHostOrder((short) this.DataLength);
+        var items = (this.DataLength - 2) / Marshal.SizeOf(this.Items[0]);
+        for (var i = 0; i < items; ++i)
+          this.Items[i].FixUp();
+      }
+
+    }
 
     [StructLayout(LayoutKind.Sequential, Pack = 0)]
     public struct CDTextItem {
@@ -130,25 +149,6 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     }
 
-    /// <summary>The structure returned for a READ TOC/PMA/ATIP with request code <see cref="TOCRequestFormat.CDText"/>.</summary>
-    [StructLayout(LayoutKind.Sequential, Pack = 0)]
-    public struct CDTextDescriptor {
-
-      public ushort       DataLength;
-      public byte         Reserved1;
-      public byte         Reserved2;
-      [MarshalAs(UnmanagedType.ByValArray, SizeConst = 150)]
-      public CDTextItem[] Items;
-
-      public void FixUp() {
-        this.DataLength = (ushort) IPAddress.NetworkToHostOrder((short) this.DataLength);
-        var items = (this.DataLength - 2) / Marshal.SizeOf(this.Items[0]);
-        for (var i = 0; i < items; ++i)
-          this.Items[i].FixUp();
-      }
-
-    }
-
     /// <summary>Structure mapping the control and ADR values found in sub-channel data (each taking half a byte).</summary>
     [StructLayout(LayoutKind.Sequential, Pack = 0)]
     public struct SubChannelControlAndADR {
@@ -157,16 +157,6 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
       public SubChannelDataFormat ADR     => (SubChannelDataFormat) ((this.Byte >> 4) & 0x0f);
       public SubChannelControl    Control => (SubChannelControl)    ((this.Byte >> 0) & 0x0f);
-
-    }
-
-    /// <summary>Convenience struct to represent the byte containing the MCVAL/TCVAL bit in the READ SUB-CHANNEL result structures.</summary>
-    [StructLayout(LayoutKind.Sequential, Pack = 0)]
-    public struct SubChannelDataStatus {
-
-      public byte Byte;
-
-      public bool IsValid => (this.Byte & 0x80) == 0x80;
 
     }
 
@@ -182,22 +172,13 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     }
 
-    /// <summary>The structure returned for a READ SUB-CHANNEL with request code <see cref="SubChannelRequestFormat.MediaCatalogNumber"/>.</summary>
+    /// <summary>Convenience struct to represent the byte containing the MCVAL/TCVAL bit in the READ SUB-CHANNEL result structures.</summary>
     [StructLayout(LayoutKind.Sequential, Pack = 0)]
-    public struct SubChannelMediaCatalogNumber {
+    public struct SubChannelDataStatus {
 
-      public SubChannelDataHeader Header;
-      public SubChannelDataFormat Format;
-      public byte                 Reserved1;
-      public byte                 Reserved2;
-      public byte                 Reserved3;
-      public SubChannelDataStatus Status;
-      [MarshalAs(UnmanagedType.ByValArray, SizeConst = 13)]
-      public byte[]               MCN;
-      public byte                 Zero;
-      public byte                 AFrame;
+      public byte Byte;
 
-      public void FixUp() { this.Header.FixUp(); }
+      public bool IsValid => (this.Byte & 0x80) == 0x80;
 
     }
 
@@ -216,6 +197,25 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       public byte                    Zero;
       public byte                    AFrame;
       public byte                    Reserved2;
+
+      public void FixUp() { this.Header.FixUp(); }
+
+    }
+
+    /// <summary>The structure returned for a READ SUB-CHANNEL with request code <see cref="SubChannelRequestFormat.MediaCatalogNumber"/>.</summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 0)]
+    public struct SubChannelMediaCatalogNumber {
+
+      public SubChannelDataHeader Header;
+      public SubChannelDataFormat Format;
+      public byte                 Reserved1;
+      public byte                 Reserved2;
+      public byte                 Reserved3;
+      public SubChannelDataStatus Status;
+      [MarshalAs(UnmanagedType.ByValArray, SizeConst = 13)]
+      public byte[]               MCN;
+      public byte                 Zero;
+      public byte                 AFrame;
 
       public void FixUp() { this.Header.FixUp(); }
 
