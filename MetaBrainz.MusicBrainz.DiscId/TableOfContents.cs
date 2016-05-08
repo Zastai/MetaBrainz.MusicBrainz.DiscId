@@ -13,6 +13,11 @@ namespace MetaBrainz.MusicBrainz.DiscId {
   /// <summary>Class representing a CD's table of contents.</summary>
   public sealed class TableOfContents {
 
+    // FIXME: libdiscid (rather arbitrarily) uses 90 minutes. But overburning can go above 100 minutes. For now, use 99:59.74.
+    /// <summary>The largest possible AudioCD (1 sector shy of 100 minutes).</summary>
+    /// <remarks>This is only used for validation of user-supplied offsets (<see cref="CdDevice.SimulateDisc"/>).</remarks>
+    public const int MaxSectors = 100 * 60 * 75 - 1;
+
     /// <summary>The first track on the disc (normally 1).</summary>
     public byte FirstTrack { get; }
 
@@ -51,7 +56,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     internal struct RawTrack {
 
-      internal RawTrack(MMC3.TrackDescriptor descriptor, string isrc) {
+      internal RawTrack(MMC3.TrackDescriptor descriptor, string isrc = null) {
         this.Descriptor = descriptor;
         this.Isrc       = isrc;
       }
@@ -273,7 +278,19 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     internal TableOfContents(byte first, byte last, [NotNull] int[] offsets) : this(first, last) {
-      // TODO: Validate & Fill in the offsets
+      // libdiscid wants last + 1 entries, even if first > 1. So we do the same.
+      if (offsets.Length < last + 1)
+        throw new ArgumentException(nameof(offsets), $"Not enough offsets provided (need at least {last + 1}).");
+      if (offsets[0] > TableOfContents.MaxSectors)
+        throw new ArgumentException(nameof(offsets), $"Disc is too large ({offsets[0]} > {TableOfContents.MaxSectors}).");
+      this._tracks[0] = new RawTrack(new MMC3.TrackDescriptor { TrackNumber = 0xAA, Address = offsets[0] });
+      for (byte i = 1; i <= last; ++i) {
+        if (offsets[i] > offsets[0])
+          throw new ArgumentException(nameof(offsets), $"Track offset #{i} points past the end of the disc.");
+        if (i > 1 && offsets[i] < offsets[i - 1])
+          throw new ArgumentException(nameof(offsets), $"Track offset #{i} points before the preceding track.");
+        this._tracks[i] = new RawTrack(new MMC3.TrackDescriptor { TrackNumber = i, Address = offsets[i] });
+      }
     }
 
     internal TableOfContents(byte first, byte last, string mcn) : this(first, last) {
@@ -298,8 +315,6 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     private string CalculateFreeDbId() {
       var n = 0;
-      // FIXME: Does this handle firsttrack > 1 properly?
-      // FIXME: Should this filter out non-audio tracks?
       for (var i = 0; i < this.LastTrack; ++i) {
         var m = this._tracks[i + 1].Descriptor.Address / 75;
         while (m > 0) {
