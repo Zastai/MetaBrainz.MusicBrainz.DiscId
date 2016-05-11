@@ -42,7 +42,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
             ok = Windows.DeviceIoControl(hDevice, Windows.IOCTL_CDROM_READ_TOC_EX, ref req, Marshal.SizeOf(req), out rawtoc, Marshal.SizeOf(rawtoc), out returned, IntPtr.Zero);
           if (!ok)
             throw new IOException("Failed to retrieve TOC.", new Win32Exception(Marshal.GetLastWin32Error()));
-          rawtoc.FixUp();
+          rawtoc.FixUp(req.AddressAsMSF);
           var mcn = ((features & CdDeviceFeature.ReadMediaCatalogNumber) != 0) ? Windows.GetMediaCatalogNumber(hDevice) : null;
           toc = new TableOfContents(rawtoc.FirstTrack, rawtoc.LastTrack, mcn);
           var i = 0;
@@ -165,14 +165,13 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       public readonly byte Reserved1;
       public readonly byte Reserved2;
 
-      public TOCRequest(MMC3.TOCRequestFormat format = MMC3.TOCRequestFormat.TOC, byte track = 0) {
+      public TOCRequest(MMC3.TOCRequestFormat format = MMC3.TOCRequestFormat.TOC, byte track = 0, bool msf = false) {
         this.FormatInfo   = (byte) format;
-#if GET_TOC_AS_MSF
-        this.FormatInfo  |= 0x80;
-#endif
         this.SessionTrack = track;
         this.Reserved1    = 0;
         this.Reserved2    = 0;
+        if (msf)
+          this.FormatInfo |= 0x80;
       }
 
       public MMC3.TOCRequestFormat Format => (MMC3.TOCRequestFormat) (this.FormatInfo & 0x0f);

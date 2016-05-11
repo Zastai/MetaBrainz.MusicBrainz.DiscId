@@ -231,10 +231,10 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       [MarshalAs(UnmanagedType.ByValArray, SizeConst = 100)]
       public TrackDescriptor[] Tracks;
 
-      public void FixUp() {
+      public void FixUp(bool msf) {
         this.DataLength = (ushort) IPAddress.NetworkToHostOrder((short) this.DataLength);
         for (var i = 0; i <= this.LastTrack; ++i)
-          this.Tracks[i].FixUp();
+          this.Tracks[i].FixUp(msf);
       }
 
     }
@@ -251,7 +251,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
       public TimeSpan                TimeCode => new TimeSpan(0, 0, 0, 0, this.Address * 1000 / 75);
 
-      public void FixUp() { MMC3.FixUpAddress(ref this.Address); }
+      public void FixUp(bool msf) { MMC3.FixUpAddress(ref this.Address, msf); }
 
     }
 
@@ -259,17 +259,17 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     #region Utility Methods
 
-    private static void FixUpAddress(ref int address) {
+    public static void FixUpAddress(ref int address, bool msf) {
       // Endianness
       address = IPAddress.NetworkToHostOrder(address);
-#if GET_TOC_AS_MSF // MSF -> Sectors
-      var m = (byte) (address >> 16 & 0xff);
-      var s = (byte) (address >>  8 & 0xff);
-      var f = (byte) (address >>  0 & 0xff);
-      address = (m * 60 + s) * 75 + f;
-#else // LBA -> Sectors
-      address += 150;
-#endif
+      if (msf) { // MSF -> Sectors
+        var m = (byte) (address >> 16 & 0xff);
+        var s = (byte) (address >>  8 & 0xff);
+        var f = (byte) (address >>  0 & 0xff);
+        address = (m * 60 + s) * 75 + f;
+      }
+      else // LBA -> Sectors
+        address += 150;
     }
 
     #endregion
