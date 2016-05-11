@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Text;
+using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
@@ -42,6 +44,33 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
     public override TableOfContents ReadTableOfContents(string device, CdDeviceFeature features) {
       throw new NotImplementedException($"CD device access has not been implemented for this platform ({Environment.OSVersion}).");
     }
+
+    #region PInvoke Support
+
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+    [DllImport("libc", EntryPoint = "close", SetLastError = true)]
+    internal static extern int Close(IntPtr handle);
+
+    [DllImport("libc", EntryPoint = "open", SetLastError = true)]
+    internal static extern SafeUnixHandle Open(string path, uint flag, int mode);
+
+    [SecurityPermission(SecurityAction.InheritanceDemand, UnmanagedCode = true)]
+    [SecurityPermission(SecurityAction.Demand,            UnmanagedCode = true)]
+    internal sealed class SafeUnixHandle : SafeHandle {
+
+      [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+      private SafeUnixHandle() : base(new IntPtr(-1), true) { }
+
+      public override bool IsInvalid => (this.handle == new IntPtr(-1));
+
+      [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+      protected override bool ReleaseHandle() {
+        return Unix.Close(this.handle) != -1;
+      }
+
+    }
+
+    #endregion
 
   }
 
