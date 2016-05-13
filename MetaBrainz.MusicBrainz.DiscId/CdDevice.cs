@@ -70,19 +70,10 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <summary>The table of contents for the last disc that was read (or simulated); null if not retrieved, empty if not available.</summary>
     public TableOfContents TableOfContents { get; private set; }
 
-    /// <summary>Reads the current disc in the default device, getting the requested information.</summary>
-    /// <param name="features">The features to use (if supported). Note that the table of contents will always be read.</param>
-    public void ReadDisc(CdDeviceFeature features = CdDeviceFeature.All) {
-      this.TableOfContents = CdDevice._platform.ReadTableOfContents(null, features);
-    }
-
     /// <summary>Reads the current disc in the specified device, getting the requested information.</summary>
-    /// <param name="device">The name of the device to read from.</param>
+    /// <param name="device">The name of the device to read from; null to read from the default device.</param>
     /// <param name="features">The features to use (if supported). Note that the table of contents will always be read.</param>
-    /// <exception cref="ArgumentNullException">When <paramref name="device" /> is null.</exception>
     public void ReadDisc([CanBeNull] string device, CdDeviceFeature features = CdDeviceFeature.All) {
-      if (device == null)
-        throw new ArgumentNullException(nameof(device));
       this.TableOfContents = CdDevice._platform.ReadTableOfContents(device, features);
     }
 
