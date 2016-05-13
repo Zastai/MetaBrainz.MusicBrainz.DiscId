@@ -30,6 +30,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
     }
 
     public override TableOfContents ReadTableOfContents(string device, CdDeviceFeature features) {
+      if (device == null)
+        device = this.GetDeviceByIndex(0) ?? this.DefaultDevice;
       using (var hDevice = Windows.CreateDeviceHandle(device)) {
         TableOfContents toc = null;
         { // Read the TOC itself
@@ -44,7 +46,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
             throw new IOException("Failed to retrieve TOC.", new Win32Exception(Marshal.GetLastWin32Error()));
           rawtoc.FixUp(req.AddressAsMSF);
           var mcn = ((features & CdDeviceFeature.ReadMediaCatalogNumber) != 0) ? Windows.GetMediaCatalogNumber(hDevice) : null;
-          toc = new TableOfContents(rawtoc.FirstTrack, rawtoc.LastTrack, mcn);
+          toc = new TableOfContents(device, rawtoc.FirstTrack, rawtoc.LastTrack, mcn);
           var i = 0;
           for (var trackno = rawtoc.FirstTrack; trackno <= rawtoc.LastTrack; ++trackno, ++i) { // Add the regular tracks.
             if (rawtoc.Tracks[i].TrackNumber != trackno)

@@ -50,57 +50,40 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     #endregion
 
-    #region Constructors / Destructors
-
-    /// <summary>Constructs a new <see cref="CdDevice" /> object using the default device name (<see cref="DefaultName" />).</summary>
-    /// <exception cref="ArgumentException">When the specified device cannot be opened.</exception>
-    public CdDevice() : this(CdDevice.DefaultName) { }
-
-    /// <summary>Constructs a new <see cref="CdDevice" /> object using the specified device.</summary>
-    /// <param name="device">The cd-rom device's sequence number (0 being the first cd-rom device in the system).</param>
-    /// <exception cref="ArgumentOutOfRangeException">When <paramref name="device" /> equals or exceeds the number of cd-rom devices in the system.</exception>
-    public CdDevice(int device) {
-      this.Name = CdDevice._platform.GetDeviceByIndex(device);
-      if (this.Name == null)
-        throw new ArgumentOutOfRangeException(nameof(device), device, "No such cd-rom device was found.");
-    }
-
-    /// <summary>Constructs a new <see cref="CdDevice" /> object using the specified device.</summary>
-    /// <param name="device">The name of the device to open.</param>
-    /// <exception cref="ArgumentNullException">When <paramref name="device" /> is null.</exception>
-    /// <remarks>The device name is not validated by this constructor; if it is not valid, <see cref="ReadDisc"/> will fail.</remarks>
-    public CdDevice([CanBeNull] string device) {
-      if (device == null)
-        throw new ArgumentNullException(nameof(device));
-      this.Name = device;
-    }
-
-    #endregion
-
     #region Instance Properties / Methods
 
-    /// <summary>The name of this cd-rom device.</summary>
-    public string Name { get; }
+    /// <summary>The device from which the last disc that was read; null if no disc was read.</summary>
+    public string DeviceName => this.TableOfContents?.DeviceName;
 
-    /// <summary>The MusicBrainz Disc ID for the last disc read by <see cref="ReadDisc"/>.</summary>
+    /// <summary>The MusicBrainz Disc ID for the last disc that was read (or simulated).</summary>
     public string DiscId => this.TableOfContents?.DiscId;
 
-    /// <summary>The FreeDB ID for the last disc read by <see cref="ReadDisc"/>.</summary>
+    /// <summary>The FreeDB ID for the last disc that was read (or simulated).</summary>
     public string FreeDbId => this.TableOfContents?.FreeDbId;
 
-    /// <summary>The media catalog number (typically the UPC/EAN) for the last disc read by <see cref="ReadDisc"/>; null if not retrieved, empty if not available.</summary>
+    /// <summary>The media catalog number (typically the UPC/EAN) for the last disc that was read (or simulated); null if not retrieved, empty if not available.</summary>
     public string MediaCatalogNumber => this.TableOfContents?.MediaCatalogNumber;
 
-    /// <summary>The URL to open to submit information about the last disc read by <see cref="ReadDisc"/> to MusicBrainz; null if not retrieved, empty if not available.</summary>
+    /// <summary>The URL to open to submit information about the last disc that was read (or simulated); null if not retrieved, empty if not available.</summary>
     public Uri SubmissionUrl => this.TableOfContents?.SubmissionUrl;
 
-    /// <summary>The table of contents for the last disc read by <see cref="ReadDisc"/>; null if not retrieved, empty if not available.</summary>
+    /// <summary>The table of contents for the last disc that was read (or simulated); null if not retrieved, empty if not available.</summary>
     public TableOfContents TableOfContents { get; private set; }
 
-    /// <summary>Reads the current disc in the device, getting the requested information.</summary>
+    /// <summary>Reads the current disc in the default device, getting the requested information.</summary>
     /// <param name="features">The features to use (if supported). Note that the table of contents will always be read.</param>
     public void ReadDisc(CdDeviceFeature features = CdDeviceFeature.All) {
-      this.TableOfContents = CdDevice._platform.ReadTableOfContents(this.Name, features);
+      this.TableOfContents = CdDevice._platform.ReadTableOfContents(null, features);
+    }
+
+    /// <summary>Reads the current disc in the specified device, getting the requested information.</summary>
+    /// <param name="device">The name of the device to read from.</param>
+    /// <param name="features">The features to use (if supported). Note that the table of contents will always be read.</param>
+    /// <exception cref="ArgumentNullException">When <paramref name="device" /> is null.</exception>
+    public void ReadDisc([CanBeNull] string device, CdDeviceFeature features = CdDeviceFeature.All) {
+      if (device == null)
+        throw new ArgumentNullException(nameof(device));
+      this.TableOfContents = CdDevice._platform.ReadTableOfContents(device, features);
     }
 
     /// <summary>Simulates the reading of a disc, setting up a table of contents based on the specified information.</summary>

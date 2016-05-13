@@ -18,6 +18,9 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <remarks>This is only used for validation of user-supplied offsets (<see cref="CdDevice.SimulateDisc"/>).</remarks>
     public const int MaxSectors = 100 * 60 * 75 - 1;
 
+    /// <summary>The name of the device from which this table of contents was read.</summary>
+    public string DeviceName { get; }
+
     /// <summary>The first track on the disc (normally 1).</summary>
     public byte FirstTrack { get; }
 
@@ -268,16 +271,17 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     private Uri _url;
 
-    private TableOfContents(byte first, byte last) {
+    private TableOfContents(string device, byte first, byte last) {
       if (first == 0 || first > 99) throw new ArgumentOutOfRangeException(nameof(first), first, "The first track number must be between 1 and 99.");
       if (last  == 0 || last  > 99) throw new ArgumentOutOfRangeException(nameof(last),  last,  "The last track number must be between 1 and 99.");
       if (last < first)             throw new ArgumentOutOfRangeException(nameof(last),  last,  "The last track number cannot be smaller than the first.");
+      this.DeviceName = device;
       this.FirstTrack = first;
       this.LastTrack  = last;
       this._tracks    = new RawTrack[100];
     }
 
-    internal TableOfContents(byte first, byte last, [NotNull] int[] offsets) : this(first, last) {
+    internal TableOfContents(byte first, byte last, [NotNull] int[] offsets) : this(null, first, last) {
       // libdiscid wants last + 1 entries, even if first > 1. So we do the same.
       if (offsets.Length < last + 1)
         throw new ArgumentException(nameof(offsets), $"Not enough offsets provided (need at least {last + 1}).");
@@ -293,7 +297,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       }
     }
 
-    internal TableOfContents(byte first, byte last, string mcn) : this(first, last) {
+    internal TableOfContents(string device, byte first, byte last, string mcn) : this(device, first, last) {
       this.MediaCatalogNumber = mcn;
     }
 
