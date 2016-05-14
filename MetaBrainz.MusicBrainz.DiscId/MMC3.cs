@@ -154,7 +154,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     [StructLayout(LayoutKind.Sequential, Pack = 0)]
     public struct SubChannelControlAndADR {
 
-      byte Byte;
+      public byte Byte;
 
       public SubChannelDataFormat ADR     => (SubChannelDataFormat) ((this.Byte >> 4) & 0x0f);
       public SubChannelControl    Control => (SubChannelControl)    ((this.Byte >> 0) & 0x0f);
