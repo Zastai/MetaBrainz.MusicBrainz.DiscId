@@ -40,6 +40,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     /// <summary>Possible values for the control field (4 bits) in some structures.</summary>
+    [Flags]
     public enum SubChannelControl : byte {
       // The first two bits are "content type".
       ContentTypeMask      = 0x0c,
@@ -251,25 +252,22 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
       public TimeSpan                TimeCode => new TimeSpan(0, 0, 0, 0, this.Address * 1000 / 75);
 
-      public void FixUp(bool msf) { MMC3.FixUpAddress(ref this.Address, msf); }
-
-    }
-
-    #endregion
-
-    #region Utility Methods
-
-    public static void FixUpAddress(ref int address, bool msf) {
-      // Endianness
-      address = IPAddress.NetworkToHostOrder(address);
-      if (msf) { // MSF -> Sectors
-        var m = (byte) (address >> 16 & 0xff);
-        var s = (byte) (address >>  8 & 0xff);
-        var f = (byte) (address >>  0 & 0xff);
-        address = (m * 60 + s) * 75 + f;
+      public void FixUp(bool msf) {
+        // Endianness
+        this.Address = IPAddress.NetworkToHostOrder(this.Address);
+        if (!msf) {
+          if (this.Address < 0) // this seems to happen on "copy-protected" discs
+            this.Address = 0;
+          this.Address += 150;
+          return;
+        }
+        // MSF -> Sectors
+        var m = (byte) (this.Address >> 16 & 0xff);
+        var s = (byte) (this.Address >>  8 & 0xff);
+        var f = (byte) (this.Address >>  0 & 0xff);
+        this.Address = (m * 60 + s) * 75 + f;
       }
-      else // LBA -> Sectors
-        address += 150;
+
     }
 
     #endregion
