@@ -51,6 +51,7 @@
     <Compile Include="Platforms\NetBsd.cs" />
     <Compile Include="Platforms\Solaris.cs" />
     <Compile Include="Platforms\Unix.cs" />
+    <Compile Include="Platforms\UnixException.cs" />
     <Compile Include="Platforms\Unsupported.cs" />
     <Compile Include="Platforms\Windows.cs" />
     <Compile Include="CdDevice.cs" />
