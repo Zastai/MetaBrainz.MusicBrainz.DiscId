@@ -31,7 +31,9 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       if (device == null)
         device = this.GetDeviceByIndex(0) ?? this.DefaultDevice;
       using (var hDevice = Windows.CreateDeviceHandle(device)) {
-        TableOfContents toc = null;
+        byte first = 0;
+        byte last  = 0;
+        TableOfContents.RawTrack[] tracks = null;
         { // Read the TOC itself
           var req = new TOCRequest(MMC3.TOCRequestFormat.TOC);
           var rawtoc = new MMC3.TOCDescriptor();
@@ -43,22 +45,24 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           if (!ok)
             throw new IOException("Failed to retrieve TOC.", new Win32Exception(Marshal.GetLastWin32Error()));
           rawtoc.FixUp(req.AddressAsMSF);
-          var mcn = ((features & CdDeviceFeature.ReadMediaCatalogNumber) != 0) ? Windows.GetMediaCatalogNumber(hDevice) : null;
-          toc = new TableOfContents(device, rawtoc.FirstTrack, rawtoc.LastTrack, mcn);
+          first = rawtoc.FirstTrack;
+          last = rawtoc.LastTrack;
+          tracks = new TableOfContents.RawTrack[last + 1];
           var i = 0;
           for (var trackno = rawtoc.FirstTrack; trackno <= rawtoc.LastTrack; ++trackno, ++i) { // Add the regular tracks.
             if (rawtoc.Tracks[i].TrackNumber != trackno)
               throw new InvalidDataException($"Internal logic error; first track is {rawtoc.FirstTrack}, but entry at index {i} claims to be track {rawtoc.Tracks[i].TrackNumber} instead of {trackno}");
             var isrc = ((features & CdDeviceFeature.ReadTrackIsrc) != 0) ? Windows.GetTrackIsrc(hDevice, trackno) : null;
-            toc.SetTrack(rawtoc.Tracks[i], isrc);
+            tracks[trackno] = new TableOfContents.RawTrack(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, isrc);
           }
           // Next entry should be the leadout (track number 0xAA)
           if (rawtoc.Tracks[i].TrackNumber != 0xAA)
             throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtoc.Tracks[i].TrackNumber} instead of 0xAA (lead-out)");
-          toc.SetTrack(rawtoc.Tracks[i], null);
+          tracks[0] = new TableOfContents.RawTrack(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, null);
         }
         // TODO: If requested, try getting CD-TEXT data.
-        return toc;
+        var mcn = ((features & CdDeviceFeature.ReadMediaCatalogNumber) != 0) ? Windows.GetMediaCatalogNumber(hDevice) : null;
+        return new TableOfContents(device, first, last, tracks, mcn);
       }
     }
 

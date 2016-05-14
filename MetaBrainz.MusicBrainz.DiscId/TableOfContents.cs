@@ -16,6 +16,9 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <remarks>This is only used for validation of user-supplied offsets (<see cref="CdDevice.SimulateDisc"/>).</remarks>
     public const int MaxSectors = 100 * 60 * 75 - 1;
 
+    /// <summary>The distance between the last audio track and the first data track.</summary>
+    public const int XAInterval = ((60 + 90 + 2) * 75);
+
     /// <summary>The name of the device from which this table of contents was read.</summary>
     public string DeviceName { get; }
 
@@ -34,8 +37,8 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <summary>Returns the FreeDB Disc ID associated with this table of contents.</summary>
     public string FreeDbId => this._freedbid ?? (this._freedbid = this.CalculateFreeDbId());
 
-    /// <summary>The length, in sectors, of the disc (i.e. the starting sector of its lead-out).</summary>
-    public int Sectors => this._tracks[0].Descriptor.Address;
+    /// <summary>The length, in sectors, of the disc (i.e. the starting sector of either the first data track or the lead-out).</summary>
+    public int Sectors => this._tracks[0].Address;
 
     /// <summary>The URL to open to submit information about this table of contents to MusicBrainz.</summary>
     public Uri SubmissionUrl => this._url ?? (this._url = this.ConstructSubmissionUrl());
@@ -57,22 +60,29 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     internal struct RawTrack {
 
-      internal RawTrack(MMC3.TrackDescriptor descriptor, string isrc = null) {
-        this.Descriptor = descriptor;
-        this.Isrc       = isrc;
+      public RawTrack(int address) {
+        this.Address = address;
+        this.Control = MMC3.SubChannelControl.TwoChannelAudio;
+        this.Isrc    = null;
       }
 
-      public readonly MMC3.TrackDescriptor Descriptor;
-      public readonly string               Isrc;
+      public RawTrack(int address, MMC3.SubChannelControl control, string isrc) {
+        this.Address = address;
+        this.Control = control;
+        this.Isrc    = isrc;
+      }
 
+      public readonly int                    Address;
+      public readonly MMC3.SubChannelControl Control;
+      public readonly string                 Isrc;
     }
 
     /// <summary>Class providing information about a single track on a cd-rom.</summary>
     public sealed class Track {
 
       internal Track(TableOfContents toc, byte number) {
-        var address = toc._tracks[number].Descriptor.Address;
-        var size = ((number == toc.LastTrack) ? toc._tracks[0] : toc._tracks[number + 1]).Descriptor.Address - address;
+        var address = toc._tracks[number].Address;
+        var size = ((number == toc.LastTrack) ? toc._tracks[0] : toc._tracks[number + 1]).Address - address;
         this.Duration  = new TimeSpan(0, 0, 0, 0, size * 1000 / 75);
         this.Isrc      = toc._tracks[number].Isrc;
         this.Length    = size;
@@ -101,7 +111,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     }
 
-    /// <summary>A collection of information about tracks on a cd-rom.</summary>
+    /// <summary>A collection of information about tracks on an audio cd.</summary>
     public sealed class TrackCollection : IList<Track> {
 
       internal TrackCollection(TableOfContents toc) {
@@ -110,8 +120,8 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
       private readonly TableOfContents _toc;
 
-      /// <summary>Gets the number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1" />.</summary>
-      /// <returns>The number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1" />.</returns>
+      /// <summary>Gets the number of tracks in the <see cref="TrackCollection"/>.</summary>
+      /// <returns>The number of number of tracks in the <see cref="TrackCollection"/>.</returns>
       public int Count => 1 + this._toc.LastTrack - this._toc.FirstTrack;
 
       /// <summary>The first valid track number for the collection.</summary>
@@ -257,7 +267,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     #endregion
 
-    #region Internals
+    #region Constructors
 
     private readonly RawTrack[] _tracks;
 
@@ -276,7 +286,6 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       this.DeviceName = device;
       this.FirstTrack = first;
       this.LastTrack  = last;
-      this._tracks    = new RawTrack[100];
     }
 
     internal TableOfContents(byte first, byte last, int[] offsets) : this(null, first, last) {
@@ -285,32 +294,62 @@ namespace MetaBrainz.MusicBrainz.DiscId {
         throw new ArgumentException(nameof(offsets), $"Not enough offsets provided (need at least {last + 1}).");
       if (offsets[0] > TableOfContents.MaxSectors)
         throw new ArgumentException(nameof(offsets), $"Disc is too large ({offsets[0]} > {TableOfContents.MaxSectors}).");
-      this._tracks[0] = new RawTrack(new MMC3.TrackDescriptor { TrackNumber = 0xAA, Address = offsets[0] });
+      this._tracks    = new RawTrack[last + 1];
+      this._tracks[0] = new RawTrack(offsets[0]);
       for (byte i = 1; i <= last; ++i) {
         if (offsets[i] > offsets[0])
           throw new ArgumentException(nameof(offsets), $"Track offset #{i} points past the end of the disc.");
         if (i > 1 && offsets[i] < offsets[i - 1])
           throw new ArgumentException(nameof(offsets), $"Track offset #{i} points before the preceding track.");
-        this._tracks[i] = new RawTrack(new MMC3.TrackDescriptor { TrackNumber = i, Address = offsets[i] });
+        this._tracks[i] = new RawTrack(offsets[i]);
       }
     }
 
-    internal TableOfContents(string device, byte first, byte last, string mcn) : this(device, first, last) {
+    internal TableOfContents(string device, byte first, byte last, RawTrack[] tracks, string mcn) : this(device, first, last) {
+      if (tracks == null)
+        throw new ArgumentNullException(nameof(tracks));
+      if (tracks.Length < last + 1)
+        throw new ArgumentException("Not enough track data given.", nameof(tracks));
+      this._tracks = tracks;
       this.MediaCatalogNumber = mcn;
+      this.LastTrack = 0;
+      for (var i = first; i <= last; ++i) {
+        if ((this._tracks[i].Control & MMC3.SubChannelControl.ContentTypeMask) != MMC3.SubChannelControl.Data)
+          this.LastTrack = i;
+      }
+      if (this.LastTrack == 0)
+        throw new NotSupportedException("No audio tracks found: CDROM, DVD or BD?");
+      // If the last audio track is not the last track on the CD, use the offset of the next data track as the "lead-out" offset
+      if (this.LastTrack < last)
+        tracks[0] = new RawTrack(tracks[this.LastTrack + 1].Address - TableOfContents.XAInterval);
+      // As long as the lead-out isn't actually bigger than the position of the last track, the last track is invalid.
+      // This happens on "copy-protected"/invalid discs. The track is then neither a valid audio track, nor data track.
+      for (; this.LastTrack > 0 && tracks[0].Address < tracks[this.LastTrack].Address; --this.LastTrack)
+        tracks[0] = new RawTrack(tracks[this.LastTrack].Address - TableOfContents.XAInterval);
+      if (this.LastTrack < this.FirstTrack)
+        throw new NotSupportedException("Invalid TOC (no tracks remain): \"copy-protected\" disc?");
     }
 
+    #endregion
+
+    #region Internal Methods
+
     private void AppendTocString(StringBuilder sb, char delimiter) {
-      sb.Append(this.FirstTrack).Append(delimiter).Append(this.LastTrack).Append(delimiter).Append(this._tracks[0].Descriptor.Address);
+      sb.Append(this.FirstTrack).Append(delimiter).Append(this.LastTrack).Append(delimiter).Append(this._tracks[0].Address);
       for (var i = this.FirstTrack; i <= this.LastTrack; ++i)
-        sb.Append(delimiter).Append(this._tracks[i].Descriptor.Address);
+        sb.Append(delimiter).Append(this._tracks[i].Address);
     }
 
     private string CalculateDiscId() {
       var sb = new StringBuilder(804);
       sb.Append(this.FirstTrack.ToString("X2"));
       sb.Append(this.LastTrack .ToString("X2"));
-      for (var i = 0; i < 100; ++i)
-        sb.Append(this._tracks[i].Descriptor.Address.ToString("X8"));
+      for (var i = 0; i < 100; ++i) {
+        if (i <= this.LastTrack)
+          sb.Append(this._tracks[i].Address.ToString("X8"));
+        else
+          sb.Append("00000000");
+      }
       using (var sha1 = SHA1.Create())
         return Convert.ToBase64String(sha1.ComputeHash(Encoding.ASCII.GetBytes(sb.ToString()))).Replace('/', '_').Replace('+', '.').Replace('=', '-');
     }
@@ -318,13 +357,13 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     private string CalculateFreeDbId() {
       var n = 0;
       for (var i = 0; i < this.LastTrack; ++i) {
-        var m = this._tracks[i + 1].Descriptor.Address / 75;
+        var m = this._tracks[i + 1].Address / 75;
         while (m > 0) {
           n += m % 10;
           m /= 10;
         }
       }
-      var t = this._tracks[0].Descriptor.Address / 75 - this._tracks[1].Descriptor.Address / 75;
+      var t = this._tracks[0].Address / 75 - this._tracks[1].Address / 75;
       return ((n % 0xff) << 24 | t << 8 | this.LastTrack).ToString("x8");
     }
 
@@ -343,10 +382,6 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       }
       uri.Query = query.ToString();
       return uri.Uri;
-    }
-
-    internal void SetTrack(MMC3.TrackDescriptor descriptor, string isrc) {
-      this._tracks[descriptor.TrackNumber == 0xAA ? 0 : descriptor.TrackNumber] = new RawTrack(descriptor, isrc);
     }
 
     #endregion
