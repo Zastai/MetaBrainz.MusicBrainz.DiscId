@@ -6,8 +6,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 
-using JetBrains.Annotations;
-
 namespace MetaBrainz.MusicBrainz.DiscId {
 
   /// <summary>Class representing a CD's table of contents.</summary>
@@ -281,7 +279,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       this._tracks    = new RawTrack[100];
     }
 
-    internal TableOfContents(byte first, byte last, [NotNull] int[] offsets) : this(null, first, last) {
+    internal TableOfContents(byte first, byte last, int[] offsets) : this(null, first, last) {
       // libdiscid wants last + 1 entries, even if first > 1. So we do the same.
       if (offsets.Length < last + 1)
         throw new ArgumentException(nameof(offsets), $"Not enough offsets provided (need at least {last + 1}).");

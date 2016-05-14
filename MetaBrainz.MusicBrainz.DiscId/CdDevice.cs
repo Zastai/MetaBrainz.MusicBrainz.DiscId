@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using JetBrains.Annotations;
-
 namespace MetaBrainz.MusicBrainz.DiscId {
 
   /// <summary>Class representing a cd-rom device.</summary>
@@ -73,7 +71,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <summary>Reads the current disc in the specified device, getting the requested information.</summary>
     /// <param name="device">The name of the device to read from; null to read from the default device.</param>
     /// <param name="features">The features to use (if supported). Note that the table of contents will always be read.</param>
-    public void ReadDisc([CanBeNull] string device, CdDeviceFeature features = CdDeviceFeature.All) {
+    public void ReadDisc(string device, CdDeviceFeature features = CdDeviceFeature.All) {
       this.TableOfContents = CdDevice._platform.ReadTableOfContents(device, features);
     }
 
@@ -82,7 +80,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <param name="last">The last audio track for the disc.</param>
     /// <param name="offsets">Array of track offsets; the offset at index 0 should be the offset of the end of the last (audio) track.</param>
     /// <exception cref="ArgumentNullException">When <paramref name="offsets"/> is null.</exception>
-    public void SimulateDisc(byte first, byte last, [CanBeNull] int[] offsets) {
+    public void SimulateDisc(byte first, byte last, int[] offsets) {
       if (offsets == null)
         throw new ArgumentNullException(nameof(offsets));
       this.TableOfContents = new TableOfContents(first, last, offsets);

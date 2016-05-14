@@ -4,8 +4,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
-using JetBrains.Annotations;
-
 using Microsoft.Win32.SafeHandles;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
@@ -64,7 +62,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       }
     }
 
-    private static SafeFileHandle CreateDeviceHandle([NotNull] string device) {
+    private static SafeFileHandle CreateDeviceHandle(string device) {
       var colon = device.IndexOf(':');
       if (colon >= 0)
         device = device.Substring(0, colon + 1);
