@@ -39,6 +39,50 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       SizeInfo  = 0x8f,
     }
 
+    /// <summary>Possible operation codes for CD/DVD/... SCSI commands.</summary>
+    public enum OperationCode : byte {
+      Blank                      = 0xA1,
+      CloseTrackOrSession        = 0x5B,
+      FormatUnit                 = 0x04,
+      GetConfiguration           = 0x46,
+      GetEventStatusNotification = 0x4A,
+      GetPerformance             = 0xAC,
+      LoadUnloadMedium           = 0xA6,
+      MechanismStatus            = 0xBD,
+      PauseResume                = 0x4B,
+      PlayAudio10                = 0x45,
+      PlayAudio12                = 0xA5,
+      PlayAudioMsf               = 0x47,
+      Read12                     = 0xA8,
+      ReadBufferCapacity         = 0x5C,
+      ReadCapacity               = 0x25,
+      ReadCd                     = 0xBE,
+      ReadCdMsf                  = 0xB9,
+      ReadDiscInformation        = 0x51,
+      ReadDvdStructure           = 0xAD,
+      ReadFormatCapabilities     = 0x23,
+      ReadSubChannel             = 0x42,
+      ReadTocPmaAtip             = 0x43,
+      ReadTrackInformation       = 0x52,
+      RepairTrack                = 0x58,
+      ReportKey                  = 0xA4,
+      ReserveTrack               = 0x53,
+      Scan                       = 0xBA,
+      SendCueSheet               = 0x5D,
+      SendDvdStructure           = 0xBF,
+      SendEvent                  = 0x5D,
+      SendKey                    = 0xA3,
+      SendOpcInformation         = 0x54,
+      SetCdSpeed                 = 0xBB,
+      SetReadAhead               = 0xA7,
+      SetStreaming               = 0xB6,
+      StopPlayScan               = 0x4E,
+      SynchronizeCache           = 0x35,
+      Write10                    = 0x2A,
+      Write12                    = 0xAA,
+      WriteAndVerify10           = 0x2E,
+    }
+
     /// <summary>Possible values for the control field (4 bits) in some structures.</summary>
     [Flags]
     public enum SubChannelControl : byte {
@@ -102,8 +146,93 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     #region Structures
 
+    #region Commands
+
+    /// <summary>Static class containing the command descriptor blocks; their names will match the corresponding <see cref="OperationCode"/> enumeration names.</summary>
+    public static class CDB {
+
+      /// <summary>Command structure for READ SUB-CHANNEL.</summary>
+      [StructLayout(LayoutKind.Sequential, Pack = 1)]
+      public struct ReadSubChannel {
+        public readonly OperationCode           OperationCode;
+        public readonly byte                    TimeFlag;
+        public readonly byte                    SubQFlag;
+        public readonly SubChannelRequestFormat Format;
+        public readonly byte                    Reserved1;
+        public readonly byte                    Reserved2;
+        public readonly byte                    TrackNumber;
+        public readonly ushort                  AllocationLength;
+        public readonly byte                    Control;
+
+        private ReadSubChannel(SubChannelRequestFormat format, bool msf = false, byte track = 0) {
+          Type responsetype;
+          switch (format) {
+            case SubChannelRequestFormat.ISRC:               responsetype = typeof(SubChannelISRC);               break;
+            case SubChannelRequestFormat.MediaCatalogNumber: responsetype = typeof(SubChannelMediaCatalogNumber); break;
+            default:
+              throw new NotSupportedException($"READ SUB-CHANNEL with format '{format}' is not (yet) supported.");
+          }
+          this.OperationCode    = OperationCode.ReadSubChannel;
+          this.TimeFlag         = (byte) (msf ? 0x02 : 0x00);
+          this.SubQFlag         = 0x40;
+          this.Format           = format;
+          this.Reserved1        = 0;
+          this.Reserved2        = 0;
+          this.TrackNumber      = track;
+          this.AllocationLength = (ushort) IPAddress.HostToNetworkOrder((short) Marshal.SizeOf(responsetype));
+          this.Control          = 0;
+        }
+
+        public static ReadSubChannel ISRC              (byte track) => new ReadSubChannel(SubChannelRequestFormat.ISRC, track: track);
+        public static ReadSubChannel MediaCatalogNumber()           => new ReadSubChannel(SubChannelRequestFormat.MediaCatalogNumber);
+
+      }
+
+      /// <summary>Command structure for READ TOC/PMA/ATIP.</summary>
+      [StructLayout(LayoutKind.Sequential, Pack = 1)]
+      public struct ReadTocPmaAtip {
+        public readonly OperationCode    OperationCode;
+        public readonly byte             TimeFlag;
+        public readonly TOCRequestFormat Format;
+        public readonly byte             Reserved1;
+        public readonly byte             Reserved2;
+        public readonly byte             Reserved3;
+        public readonly byte             TrackSessionNumber;
+        public readonly ushort           AllocationLength;
+        public readonly byte             Control;
+
+        private ReadTocPmaAtip(TOCRequestFormat format, bool msf = false, byte trackOrSession = 0) {
+          Type responsetype;
+          switch (format) {
+            case TOCRequestFormat.TOC:    responsetype = typeof(TOCDescriptor);    break;
+            case TOCRequestFormat.CDText: responsetype = typeof(CDTextDescriptor); break;
+            default:
+              throw new NotSupportedException($"READ TOC/PMA/ATIP with format '{format}' is not (yet) supported.");
+          }
+          this.OperationCode      = OperationCode.ReadTocPmaAtip;
+          this.TimeFlag           = (byte) (msf ? 0x02 : 0x00);
+          this.Format             = format;
+          this.Reserved1          = 0;
+          this.Reserved2          = 0;
+          this.Reserved3          = 0;
+          this.TrackSessionNumber = trackOrSession;
+          this.AllocationLength   = (ushort) IPAddress.HostToNetworkOrder((short) Marshal.SizeOf(responsetype));
+          this.Control            = 0;
+        }
+
+        public static ReadTocPmaAtip TOC   (bool msf = false) => new ReadTocPmaAtip(TOCRequestFormat.TOC, msf: msf);
+        public static ReadTocPmaAtip CDText()                 => new ReadTocPmaAtip(TOCRequestFormat.CDText);
+
+      }
+
+    }
+
+    #endregion
+
+    #region Response Data
+
     /// <summary>The structure returned for a READ TOC/PMA/ATIP with request code <see cref="TOCRequestFormat.CDText"/>.</summary>
-    [StructLayout(LayoutKind.Sequential, Pack = 0)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct CDTextDescriptor {
 
       public ushort       DataLength;
@@ -121,7 +250,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     }
 
-    [StructLayout(LayoutKind.Sequential, Pack = 0)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct CDTextItem {
 
       public CDTextContentType Type;
@@ -151,7 +280,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     /// <summary>Structure mapping the control and ADR values found in sub-channel data (each taking half a byte).</summary>
-    [StructLayout(LayoutKind.Sequential, Pack = 0)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct SubChannelControlAndADR {
 
       public byte Byte;
@@ -162,7 +291,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     /// <summary>The header for the result of 'READ SUB-CHANNEL'.</summary>
-    [StructLayout(LayoutKind.Sequential, Pack = 0)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct SubChannelDataHeader {
 
       public byte        Reserved;
@@ -174,7 +303,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     /// <summary>Convenience struct to represent the byte containing the MCVAL/TCVAL bit in the READ SUB-CHANNEL result structures.</summary>
-    [StructLayout(LayoutKind.Sequential, Pack = 0)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct SubChannelDataStatus {
 
       public byte Byte;
@@ -184,7 +313,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     /// <summary>The structure returned for a READ SUB-CHANNEL with request code <see cref="SubChannelRequestFormat.ISRC"/>.</summary>
-    [StructLayout(LayoutKind.Sequential, Pack = 0)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct SubChannelISRC {
 
       public SubChannelDataHeader    Header;
@@ -204,7 +333,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     /// <summary>The structure returned for a READ SUB-CHANNEL with request code <see cref="SubChannelRequestFormat.MediaCatalogNumber"/>.</summary>
-    [StructLayout(LayoutKind.Sequential, Pack = 0)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct SubChannelMediaCatalogNumber {
 
       public SubChannelDataHeader Header;
@@ -223,7 +352,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     /// <summary>The structure returned for a READ TOC/PMA/ATIP with request code <see cref="TOCRequestFormat.TOC"/>.</summary>
-    [StructLayout(LayoutKind.Sequential, Pack = 0)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct TOCDescriptor {
 
       public ushort            DataLength;
@@ -241,7 +370,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     /// <summary>The structure returned, as part of <see cref="TOCDescriptor"/>, for a READ TOC/PMA/ATIP with request code <see cref="TOCRequestFormat.TOC"/>.</summary>
-    [StructLayout(LayoutKind.Sequential, Pack = 0)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct TrackDescriptor {
 
       public byte                    Reserved1;
@@ -269,6 +398,8 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       }
 
     }
+
+    #endregion
 
     #endregion
 
