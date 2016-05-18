@@ -44,24 +44,24 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           throw new IOException($"Failed to open '{device}'.", new UnixException());
         byte first = 0;
         byte last  = 0;
-        TableOfContents.RawTrack[] tracks = null;
+        Track[] tracks = null;
         { // Read the TOC itself
           MMC.TOCDescriptor rawtoc;
           NativeApi.GetTableOfContents(fd, out rawtoc);
           first = rawtoc.FirstTrack;
           last = rawtoc.LastTrack;
-          tracks = new TableOfContents.RawTrack[last + 1];
+          tracks = new Track[last + 1];
           var i = 0;
           for (var trackno = rawtoc.FirstTrack; trackno <= rawtoc.LastTrack; ++trackno, ++i) { // Add the regular tracks.
             if (rawtoc.Tracks[i].TrackNumber != trackno)
               throw new InvalidDataException($"Internal logic error; first track is {rawtoc.FirstTrack}, but entry at index {i} claims to be track {rawtoc.Tracks[i].TrackNumber} instead of {trackno}");
             var isrc = ((features & CdDeviceFeature.ReadTrackIsrc) != 0) ? NativeApi.GetTrackIsrc(fd, trackno) : null;
-            tracks[trackno] = new TableOfContents.RawTrack(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, isrc);
+            tracks[trackno] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, isrc);
           }
           // Next entry should be the leadout (track number 0xAA)
           if (rawtoc.Tracks[i].TrackNumber != 0xAA)
             throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtoc.Tracks[i].TrackNumber} instead of 0xAA (lead-out)");
-          tracks[0] = new TableOfContents.RawTrack(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, null);
+          tracks[0] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, null);
         }
         // TODO: If requested, try getting CD-TEXT data.
         var mcn = ((features & CdDeviceFeature.ReadMediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(fd) : null;

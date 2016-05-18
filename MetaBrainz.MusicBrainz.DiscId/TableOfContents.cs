@@ -58,29 +58,10 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     #region Tracks
 
-    internal struct RawTrack {
+    /// <summary>Class providing information about a single audio track on a cd-rom.</summary>
+    public sealed class AudioTrack {
 
-      public RawTrack(int address) {
-        this.Address = address;
-        this.Control = MMC.SubChannelControl.TwoChannelAudio;
-        this.Isrc    = null;
-      }
-
-      public RawTrack(int address, MMC.SubChannelControl control, string isrc) {
-        this.Address = address;
-        this.Control = control;
-        this.Isrc    = isrc;
-      }
-
-      public readonly int                    Address;
-      public readonly MMC.SubChannelControl Control;
-      public readonly string                 Isrc;
-    }
-
-    /// <summary>Class providing information about a single track on a cd-rom.</summary>
-    public sealed class Track {
-
-      internal Track(TableOfContents toc, byte number) {
+      internal AudioTrack(TableOfContents toc, byte number) {
         var address = toc._tracks[number].Address;
         var size = ((number == toc.LastTrack) ? toc._tracks[0] : toc._tracks[number + 1]).Address - address;
         this.Duration  = new TimeSpan(0, 0, 0, 0, size * 1000 / 75);
@@ -112,16 +93,16 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     /// <summary>A collection of information about tracks on an audio cd.</summary>
-    public sealed class TrackCollection : IList<Track> {
+    public sealed class AudioTrackCollection : IList<AudioTrack> {
 
-      internal TrackCollection(TableOfContents toc) {
+      internal AudioTrackCollection(TableOfContents toc) {
         this._toc = toc;
       }
 
       private readonly TableOfContents _toc;
 
-      /// <summary>Gets the number of tracks in the <see cref="TrackCollection"/>.</summary>
-      /// <returns>The number of number of tracks in the <see cref="TrackCollection"/>.</returns>
+      /// <summary>Gets the number of tracks in the <see cref="AudioTrackCollection"/>.</summary>
+      /// <returns>The number of number of tracks in the <see cref="AudioTrackCollection"/>.</returns>
       public int Count => 1 + this._toc.LastTrack - this._toc.FirstTrack;
 
       /// <summary>The first valid track number for the collection.</summary>
@@ -134,25 +115,25 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       /// <param name="number">The track number to get; must be between <see cref="FirstTrack"/> and <see cref="LastTrack"/>, inclusive.</param>
       /// <returns>The track with the specified number.</returns>
       /// <exception cref="ArgumentOutOfRangeException">When <paramref name="number"/> is not between <see cref="FirstTrack"/> and <see cref="LastTrack"/>, inclusive.</exception>
-      /// <exception cref="NotSupportedException">When an attempt is made to set an element, because a <see cref="TrackCollection"/> is read-only.</exception>
-      public Track this[int number] {
+      /// <exception cref="NotSupportedException">When an attempt is made to set an element, because a <see cref="AudioTrackCollection"/> is read-only.</exception>
+      public AudioTrack this[int number] {
         get {
           if (number < this.FirstTrack || number > this.LastTrack)
             throw new ArgumentOutOfRangeException(nameof(number), number, $"Invalid track number (valid track numbers range from {this.FirstTrack} to {this.LastTrack}).");
-          return new Track(this._toc, (byte) number);
+          return new AudioTrack(this._toc, (byte) number);
         }
         set { throw new NotSupportedException(); }
       }
 
       #region Enumerator
 
-      private sealed class Enumerator : IEnumerator<Track> {
+      private sealed class Enumerator : IEnumerator<AudioTrack> {
 
-        public Enumerator(TrackCollection collection) {
+        public Enumerator(AudioTrackCollection collection) {
           this._collection = collection;
         }
 
-        private readonly TrackCollection _collection;
+        private readonly AudioTrackCollection _collection;
         private byte                     _index;
 
         /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
@@ -178,7 +159,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
         /// <summary>Gets the element in the collection at the current position of the enumerator.</summary>
         /// <returns>The element in the collection at the current position of the enumerator.</returns>
-        public Track Current => this._collection[this._index];
+        public AudioTrack Current => this._collection[this._index];
 
         /// <summary>Gets the element in the collection at the current position of the enumerator.</summary>
         /// <returns>The element in the collection at the current position of the enumerator.</returns>
@@ -188,7 +169,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
       /// <summary>Returns an enumerator that iterates through the collection.</summary>
       /// <returns>A <see cref="T:System.Collections.Generic.IEnumerator`1" /> that can be used to iterate through the collection.</returns>
-      public IEnumerator<Track> GetEnumerator() { return new Enumerator(this); }
+      public IEnumerator<AudioTrack> GetEnumerator() { return new Enumerator(this); }
 
       /// <summary>Returns an enumerator that iterates through the collection.</summary>
       /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
@@ -201,7 +182,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       /// <summary>Determines whether the <see cref="T:System.Collections.Generic.ICollection`1" /> contains a specific value.</summary>
       /// <returns>true if <paramref name="item" /> is found in the <see cref="T:System.Collections.Generic.ICollection`1" />; otherwise, false.</returns>
       /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.ICollection`1" />.</param>
-      public bool Contains(Track item) {
+      public bool Contains(AudioTrack item) {
         throw new NotImplementedException();
       }
 
@@ -213,14 +194,14 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       /// <exception cref="T:System.ArgumentOutOfRangeException">
       /// <paramref name="arrayIndex" /> is less than 0.</exception>
       /// <exception cref="T:System.ArgumentException">The number of elements in the source <see cref="T:System.Collections.Generic.ICollection`1" /> is greater than the available space from <paramref name="arrayIndex" /> to the end of the destination <paramref name="array" />.</exception>
-      public void CopyTo(Track[] array, int arrayIndex) {
+      public void CopyTo(AudioTrack[] array, int arrayIndex) {
         throw new NotImplementedException();
       }
 
       /// <summary>Determines the index of a specific item in the <see cref="T:System.Collections.Generic.IList`1" />.</summary>
       /// <returns>The index of <paramref name="item" /> if found in the list; otherwise, -1.</returns>
       /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.IList`1" />.</param>
-      public int IndexOf(Track item) {
+      public int IndexOf(AudioTrack item) {
         throw new NotImplementedException();
       }
 
@@ -228,32 +209,32 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
       #region Read-Only Collection
 
-      /// <summary>Throws a <see cref="NotSupportedException" />, because a <see cref="TrackCollection"/> is read-only.</summary>
+      /// <summary>Throws a <see cref="NotSupportedException" />, because a <see cref="AudioTrackCollection"/> is read-only.</summary>
       /// <param name="item">Ignored. No tracks can be added.</param>
       /// <exception cref="NotSupportedException">Always.</exception>
-      public void Add(Track item) { throw new NotSupportedException(); }
+      public void Add(AudioTrack item) { throw new NotSupportedException(); }
 
-      /// <summary>Throws a <see cref="NotSupportedException" />, because a <see cref="TrackCollection"/> is read-only.</summary>
+      /// <summary>Throws a <see cref="NotSupportedException" />, because a <see cref="AudioTrackCollection"/> is read-only.</summary>
       /// <exception cref="NotSupportedException">Always.</exception>
       public void Clear() { throw new NotSupportedException(); }
 
-      /// <summary>Throws a <see cref="NotSupportedException" />, because a <see cref="TrackCollection"/> is read-only.</summary>
+      /// <summary>Throws a <see cref="NotSupportedException" />, because a <see cref="AudioTrackCollection"/> is read-only.</summary>
       /// <param name="index">Ignored. No tracks can be inserted.</param>
       /// <param name="item">Ignored. No tracks can be inserted.</param>
       /// <exception cref="NotSupportedException">Always.</exception>
-      public void Insert(int index, Track item) { throw new NotSupportedException(); }
+      public void Insert(int index, AudioTrack item) { throw new NotSupportedException(); }
 
-      /// <summary>Returns true, because a <see cref="TrackCollection"/> is read-only.</summary>
+      /// <summary>Returns true, because a <see cref="AudioTrackCollection"/> is read-only.</summary>
       /// <returns>true.</returns>
       public bool IsReadOnly => true;
 
-      /// <summary>Throws a <see cref="NotSupportedException" />, because a <see cref="TrackCollection"/> is read-only.</summary>
+      /// <summary>Throws a <see cref="NotSupportedException" />, because a <see cref="AudioTrackCollection"/> is read-only.</summary>
       /// <param name="item">Ignored. No tracks can be removed.</param>
       /// <returns>Nothing; always throws a <see cref="NotSupportedException"/>.</returns>
       /// <exception cref="NotSupportedException">Always.</exception>
-      public bool Remove(Track item) { throw new NotSupportedException(); }
+      public bool Remove(AudioTrack item) { throw new NotSupportedException(); }
 
-      /// <summary>Throws a <see cref="NotSupportedException" />, because a <see cref="TrackCollection"/> is read-only.</summary>
+      /// <summary>Throws a <see cref="NotSupportedException" />, because a <see cref="AudioTrackCollection"/> is read-only.</summary>
       /// <param name="index">Ignored. No tracks can be removed.</param>
       /// <exception cref="NotSupportedException">Always.</exception>
       public void RemoveAt(int index) { throw new NotSupportedException(); }
@@ -263,13 +244,13 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     /// <summary>The tracks in this table of contents. Only indices between <see cref="FirstTrack"/> and <see cref="LastTrack"/> are valid.</summary>
-    public TrackCollection Tracks => new TrackCollection(this);
+    public AudioTrackCollection Tracks => new AudioTrackCollection(this);
 
     #endregion
 
     #region Constructors
 
-    private readonly RawTrack[] _tracks;
+    private readonly Track[] _tracks;
 
     private string _discid;
 
@@ -294,18 +275,18 @@ namespace MetaBrainz.MusicBrainz.DiscId {
         throw new ArgumentException(nameof(offsets), $"Not enough offsets provided (need at least {last + 1}).");
       if (offsets[0] > TableOfContents.MaxSectors)
         throw new ArgumentException(nameof(offsets), $"Disc is too large ({offsets[0]} > {TableOfContents.MaxSectors}).");
-      this._tracks    = new RawTrack[last + 1];
-      this._tracks[0] = new RawTrack(offsets[0]);
+      this._tracks    = new Track[last + 1];
+      this._tracks[0] = new Track(offsets[0]);
       for (byte i = 1; i <= last; ++i) {
         if (offsets[i] > offsets[0])
           throw new ArgumentException(nameof(offsets), $"Track offset #{i} points past the end of the disc.");
         if (i > 1 && offsets[i] < offsets[i - 1])
           throw new ArgumentException(nameof(offsets), $"Track offset #{i} points before the preceding track.");
-        this._tracks[i] = new RawTrack(offsets[i]);
+        this._tracks[i] = new Track(offsets[i]);
       }
     }
 
-    internal TableOfContents(string device, byte first, byte last, RawTrack[] tracks, string mcn) : this(device, first, last) {
+    internal TableOfContents(string device, byte first, byte last, Track[] tracks, string mcn) : this(device, first, last) {
       if (tracks == null)
         throw new ArgumentNullException(nameof(tracks));
       if (tracks.Length < last + 1)
@@ -321,11 +302,11 @@ namespace MetaBrainz.MusicBrainz.DiscId {
         throw new NotSupportedException("No audio tracks found: CDROM, DVD or BD?");
       // If the last audio track is not the last track on the CD, use the offset of the next data track as the "lead-out" offset
       if (this.LastTrack < last)
-        tracks[0] = new RawTrack(tracks[this.LastTrack + 1].Address - TableOfContents.XAInterval);
+        tracks[0] = new Track(tracks[this.LastTrack + 1].Address - TableOfContents.XAInterval);
       // As long as the lead-out isn't actually bigger than the position of the last track, the last track is invalid.
       // This happens on "copy-protected"/invalid discs. The track is then neither a valid audio track, nor data track.
       for (; this.LastTrack > 0 && tracks[0].Address < tracks[this.LastTrack].Address; --this.LastTrack)
-        tracks[0] = new RawTrack(tracks[this.LastTrack].Address - TableOfContents.XAInterval);
+        tracks[0] = new Track(tracks[this.LastTrack].Address - TableOfContents.XAInterval);
       if (this.LastTrack < this.FirstTrack)
         throw new NotSupportedException("Invalid TOC (no tracks remain): \"copy-protected\" disc?");
     }
