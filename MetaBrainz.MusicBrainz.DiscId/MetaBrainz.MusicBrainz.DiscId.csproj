@@ -49,6 +49,7 @@
     <Compile Include="Platforms\FreeBsd.cs" />
     <Compile Include="Platforms\Linux.cs" />
     <Compile Include="Platforms\NetBsd.cs" />
+    <Compile Include="Platforms\SafeUnixHandle.cs" />
     <Compile Include="Platforms\Solaris.cs" />
     <Compile Include="Platforms\Unix.cs" />
     <Compile Include="Platforms\UnixException.cs" />

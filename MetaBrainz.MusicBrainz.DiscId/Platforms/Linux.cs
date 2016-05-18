@@ -176,10 +176,10 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         return isrc.Status.IsValid ? Encoding.ASCII.GetString(isrc.ISRC) : string.Empty;
       }
 
-      public static Unix.SafeUnixHandle OpenDevice(string name) {
+      public static SafeUnixHandle OpenDevice(string name) {
         const uint O_RDONLY   = 0x0000;
         const uint O_NONBLOCK = 0x0800;
-        return Unix.Open(name, O_RDONLY | O_NONBLOCK, 0);
+        return SafeUnixHandle.OpenPath(name, O_RDONLY | O_NONBLOCK, 0);
       }
 
       #endregion
