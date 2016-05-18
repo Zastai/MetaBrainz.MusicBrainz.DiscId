@@ -58,7 +58,7 @@
     <Compile Include="CdDevice.cs" />
     <Compile Include="CdDeviceFeature.cs" />
     <Compile Include="IPlatform.cs" />
-    <Compile Include="MMC3.cs" />
+    <Compile Include="MMC.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="TableOfContents.cs" />
   </ItemGroup>

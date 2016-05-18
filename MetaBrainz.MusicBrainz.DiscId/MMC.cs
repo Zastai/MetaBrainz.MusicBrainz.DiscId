@@ -8,8 +8,17 @@ using System.Text;
 
 namespace MetaBrainz.MusicBrainz.DiscId {
 
-  /// <summary>Static class containing structures, enumerations and constants as defined by NCITS document T10/1363-D (MMC-3).</summary>
-  internal static class MMC3 {
+  /// <summary>Static class containing structures, enumerations and constants for SCSI MultiMedia Commands.</summary>
+  /// <remarks>
+  /// Based on the following (draft) standard documents:
+  /// <list type="bullet">
+  ///   <item><term>[MMC-3]</term><description>NCITS T10/1363-D revision 10g</description></item>
+  ///   <item><term>[MMC-4]</term><description>INCITS T10/1545-D revision 5a (note: this is the last version to include CD-specific commands like <c>READ SUB-CHANNEL</c>)</description></item>
+  ///   <item><term>[MMC-5]</term><description>INCITS T10/1675D revision 4</description></item>
+  ///   <item><term>[MMC-6]</term><description>INCITS T10/1836D revision 2g</description></item>
+  /// </list>
+  /// </remarks>
+  internal static class MMC {
 
     #region Enumerations
 
@@ -42,42 +51,50 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <summary>Possible operation codes for CD/DVD/... SCSI commands.</summary>
     public enum OperationCode : byte {
       Blank                      = 0xA1,
-      CloseTrackOrSession        = 0x5B,
+      CloseTrackSession          = 0x5B,
+      Erase10                    = 0x2C, // [MMC-4] Added, [MMC-6] Dropped
       FormatUnit                 = 0x04,
       GetConfiguration           = 0x46,
       GetEventStatusNotification = 0x4A,
       GetPerformance             = 0xAC,
       LoadUnloadMedium           = 0xA6,
       MechanismStatus            = 0xBD,
-      PauseResume                = 0x4B,
-      PlayAudio10                = 0x45,
-      PlayAudio12                = 0xA5,
-      PlayAudioMsf               = 0x47,
+      PauseResume                = 0x4B, // [MMC-5] Dropped
+      PlayAudio10                = 0x45, // [MMC-5] Dropped
+      PlayAudio12                = 0xA5, // [MMC-5] Dropped
+      PlayAudioMsf               = 0x47, // [MMC-5] Dropped
+      PreventAllowMediumRemoval  = 0x1E, // [MMC-4] Added
+      Read10                     = 0x28, // [MMC-4] Added
       Read12                     = 0xA8,
       ReadBufferCapacity         = 0x5C,
       ReadCapacity               = 0x25,
       ReadCd                     = 0xBE,
       ReadCdMsf                  = 0xB9,
       ReadDiscInformation        = 0x51,
-      ReadDvdStructure           = 0xAD,
+      ReadDiscStructure          = 0xAD, // [MMC-5] Added
+      ReadDvdStructure           = 0xAD, // [MMC-5] Dropped
       ReadFormatCapabilities     = 0x23,
-      ReadSubChannel             = 0x42,
+      ReadSubChannel             = 0x42, // [MMC-5] Dropped
       ReadTocPmaAtip             = 0x43,
       ReadTrackInformation       = 0x52,
       RepairTrack                = 0x58,
       ReportKey                  = 0xA4,
       ReserveTrack               = 0x53,
-      Scan                       = 0xBA,
+      Scan                       = 0xBA, // [MMC-5] Dropped
+      Seek10                     = 0x2B, // [MMC-4] Added
       SendCueSheet               = 0x5D,
-      SendDvdStructure           = 0xBF,
-      SendEvent                  = 0x5D,
+      SendDiscStructure          = 0xBF, // [MMC-5] Added
+      SendDvdStructure           = 0xBF, // [MMC-5] Dropped
+      SendEvent                  = 0x5D, // [MMC-4] Dropped
       SendKey                    = 0xA3,
       SendOpcInformation         = 0x54,
       SetCdSpeed                 = 0xBB,
       SetReadAhead               = 0xA7,
       SetStreaming               = 0xB6,
-      StopPlayScan               = 0x4E,
+      StartStopUnit              = 0x1B, // [MMC-4] Added
+      StopPlayScan               = 0x4E, // [MMC-5] Dropped
       SynchronizeCache           = 0x35,
+      Verify10                   = 0x2F, // [MMC-4] Added
       Write10                    = 0x2A,
       Write12                    = 0xAA,
       WriteAndVerify10           = 0x2E,

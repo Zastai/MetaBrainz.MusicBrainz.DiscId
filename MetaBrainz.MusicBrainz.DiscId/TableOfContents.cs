@@ -62,18 +62,18 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
       public RawTrack(int address) {
         this.Address = address;
-        this.Control = MMC3.SubChannelControl.TwoChannelAudio;
+        this.Control = MMC.SubChannelControl.TwoChannelAudio;
         this.Isrc    = null;
       }
 
-      public RawTrack(int address, MMC3.SubChannelControl control, string isrc) {
+      public RawTrack(int address, MMC.SubChannelControl control, string isrc) {
         this.Address = address;
         this.Control = control;
         this.Isrc    = isrc;
       }
 
       public readonly int                    Address;
-      public readonly MMC3.SubChannelControl Control;
+      public readonly MMC.SubChannelControl Control;
       public readonly string                 Isrc;
     }
 
@@ -314,7 +314,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       this.MediaCatalogNumber = mcn;
       this.LastTrack = 0;
       for (var i = first; i <= last; ++i) {
-        if ((this._tracks[i].Control & MMC3.SubChannelControl.ContentTypeMask) != MMC3.SubChannelControl.Data)
+        if ((this._tracks[i].Control & MMC.SubChannelControl.ContentTypeMask) != MMC.SubChannelControl.Data)
           this.LastTrack = i;
       }
       if (this.LastTrack == 0)

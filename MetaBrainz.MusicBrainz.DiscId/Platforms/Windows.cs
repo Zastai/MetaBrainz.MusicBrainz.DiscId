@@ -35,7 +35,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         byte last  = 0;
         TableOfContents.RawTrack[] tracks = null;
         { // Read the TOC itself
-          MMC3.TOCDescriptor rawtoc;
+          MMC.TOCDescriptor rawtoc;
           NativeApi.GetTableOfContents(hDevice, out rawtoc);
           first = rawtoc.FirstTrack;
           last = rawtoc.LastTrack;
@@ -77,7 +77,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
       [StructLayout(LayoutKind.Sequential, Pack = 1)]
       private struct SubChannelRequest { // aka CDROM_SUB_Q_DATA_FORMAT
-        public MMC3.SubChannelRequestFormat Format;
+        public MMC.SubChannelRequestFormat Format;
         public byte                         Track;
       }
 
@@ -88,7 +88,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         public readonly byte Reserved1;
         public readonly byte Reserved2;
 
-        public TOCRequest(MMC3.TOCRequestFormat format = MMC3.TOCRequestFormat.TOC, byte track = 0, bool msf = false) {
+        public TOCRequest(MMC.TOCRequestFormat format = MMC.TOCRequestFormat.TOC, byte track = 0, bool msf = false) {
           this.FormatInfo   = (byte) format;
           this.SessionTrack = track;
           this.Reserved1    = 0;
@@ -97,7 +97,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
             this.FormatInfo |= 0x80;
         }
 
-        public MMC3.TOCRequestFormat Format => (MMC3.TOCRequestFormat) (this.FormatInfo & 0x0f);
+        public MMC.TOCRequestFormat Format => (MMC.TOCRequestFormat) (this.FormatInfo & 0x0f);
 
         public bool AddressAsMSF => (this.FormatInfo & 0x80) == 0x80;
 
@@ -108,8 +108,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       #region Public Methods
 
       public static string GetMediaCatalogNumber(SafeFileHandle hDevice) {
-        var req = new SubChannelRequest { Format = MMC3.SubChannelRequestFormat.MediaCatalogNumber, Track = 0 };
-        var mcn = new MMC3.SubChannelMediaCatalogNumber();
+        var req = new SubChannelRequest { Format = MMC.SubChannelRequestFormat.MediaCatalogNumber, Track = 0 };
+        var mcn = new MMC.SubChannelMediaCatalogNumber();
         var returned = 0;
         if (!NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_Q_CHANNEL, ref req, Marshal.SizeOf(req), out mcn, Marshal.SizeOf(mcn), out returned, IntPtr.Zero))
           throw new IOException("Failed to retrieve media catalog number.", new Win32Exception(Marshal.GetLastWin32Error()));
@@ -117,10 +117,10 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         return mcn.Status.IsValid ? Encoding.ASCII.GetString(mcn.MCN) : string.Empty;
       }
 
-      public static void GetTableOfContents(SafeFileHandle hDevice, out MMC3.TOCDescriptor rawtoc) {
-        var req = new NativeApi.TOCRequest(MMC3.TOCRequestFormat.TOC);
+      public static void GetTableOfContents(SafeFileHandle hDevice, out MMC.TOCDescriptor rawtoc) {
+        var req = new NativeApi.TOCRequest(MMC.TOCRequestFormat.TOC);
         var returned = 0;
-        var rawtoclen = Marshal.SizeOf(typeof(MMC3.TOCDescriptor));
+        var rawtoclen = Marshal.SizeOf(typeof(MMC.TOCDescriptor));
         // LIB-44: Apparently for some multi-session discs, the first TOC read can be wrong. So issue two reads.
         var ok = NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_TOC_EX, ref req, Marshal.SizeOf(req), out rawtoc, rawtoclen, out returned, IntPtr.Zero);
         if (ok)
@@ -131,8 +131,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       }
 
       public static string GetTrackIsrc(SafeFileHandle hDevice, byte track) {
-        var req = new SubChannelRequest { Format = MMC3.SubChannelRequestFormat.ISRC, Track = track };
-        var isrc = new MMC3.SubChannelISRC();
+        var req = new SubChannelRequest { Format = MMC.SubChannelRequestFormat.ISRC, Track = track };
+        var isrc = new MMC.SubChannelISRC();
         var returned = 0;
         if (!NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_Q_CHANNEL, ref req, Marshal.SizeOf(req), out isrc, Marshal.SizeOf(isrc), out returned, IntPtr.Zero))
           throw new IOException($"Failed to retrieve ISRC for track {track}.", new Win32Exception(Marshal.GetLastWin32Error()));
@@ -160,13 +160,13 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       private static extern SafeFileHandle CreateFile(string filename, [MarshalAs(UnmanagedType.U4)] FileAccess access, [MarshalAs(UnmanagedType.U4)] FileShare share, IntPtr securityAttributes, [MarshalAs(UnmanagedType.U4)] FileMode mode, uint flags, IntPtr templateFile);
 
       [DllImport("Kernel32.dll", SetLastError = true)]
-      private static extern bool DeviceIoControl(SafeFileHandle hDevice, IOCTL command, ref SubChannelRequest request, int requestSize, out MMC3.SubChannelMediaCatalogNumber data, int dataSize, out int pBytesReturned, IntPtr overlapped);
+      private static extern bool DeviceIoControl(SafeFileHandle hDevice, IOCTL command, ref SubChannelRequest request, int requestSize, out MMC.SubChannelMediaCatalogNumber data, int dataSize, out int pBytesReturned, IntPtr overlapped);
 
       [DllImport("Kernel32.dll", SetLastError = true)]
-      private static extern bool DeviceIoControl(SafeFileHandle hDevice, IOCTL command, ref SubChannelRequest request, int requestSize, out MMC3.SubChannelISRC data, int dataSize, out int pBytesReturned, IntPtr overlapped);
+      private static extern bool DeviceIoControl(SafeFileHandle hDevice, IOCTL command, ref SubChannelRequest request, int requestSize, out MMC.SubChannelISRC data, int dataSize, out int pBytesReturned, IntPtr overlapped);
 
       [DllImport("Kernel32.dll", SetLastError = true)]
-      private static extern bool DeviceIoControl(SafeFileHandle hDevice, IOCTL command, ref TOCRequest request, int nInBufferSize, out MMC3.TOCDescriptor toc, int tocSize, out int pBytesReturned, IntPtr overlapped);
+      private static extern bool DeviceIoControl(SafeFileHandle hDevice, IOCTL command, ref TOCRequest request, int nInBufferSize, out MMC.TOCDescriptor toc, int tocSize, out int pBytesReturned, IntPtr overlapped);
 
       #endregion
 

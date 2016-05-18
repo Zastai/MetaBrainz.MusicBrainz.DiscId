@@ -46,7 +46,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         byte last  = 0;
         TableOfContents.RawTrack[] tracks = null;
         { // Read the TOC itself
-          MMC3.TOCDescriptor rawtoc;
+          MMC.TOCDescriptor rawtoc;
           NativeApi.GetTableOfContents(fd, out rawtoc);
           first = rawtoc.FirstTrack;
           last = rawtoc.LastTrack;
@@ -151,25 +151,25 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       #region Public Methods
 
       public static string GetMediaCatalogNumber(SafeUnixHandle fd) {
-        MMC3.SubChannelMediaCatalogNumber mcn;
-        var cmd = MMC3.CDB.ReadSubChannel.MediaCatalogNumber();
+        MMC.SubChannelMediaCatalogNumber mcn;
+        var cmd = MMC.CDB.ReadSubChannel.MediaCatalogNumber();
         if (NativeApi.SendSCSIRequest(fd, ref cmd, out mcn) == -1)
           throw new IOException("Failed to retrieve media catalog number.", new UnixException());
         mcn.FixUp();
         return mcn.Status.IsValid ? Encoding.ASCII.GetString(mcn.MCN) : string.Empty;
       }
 
-      public static void GetTableOfContents(SafeUnixHandle fd, out MMC3.TOCDescriptor rawtoc) {
+      public static void GetTableOfContents(SafeUnixHandle fd, out MMC.TOCDescriptor rawtoc) {
         var msf = false;
-        var cmd = MMC3.CDB.ReadTocPmaAtip.TOC(msf);
+        var cmd = MMC.CDB.ReadTocPmaAtip.TOC(msf);
         if (NativeApi.SendSCSIRequest(fd, ref cmd, out rawtoc) == -1)
           throw new IOException("Failed to retrieve table of contents.", new UnixException());
         rawtoc.FixUp(msf);
       }
 
       public static string GetTrackIsrc(SafeUnixHandle fd, byte track) {
-        MMC3.SubChannelISRC isrc;
-        var cmd = MMC3.CDB.ReadSubChannel.ISRC(track);
+        MMC.SubChannelISRC isrc;
+        var cmd = MMC.CDB.ReadSubChannel.ISRC(track);
         if (NativeApi.SendSCSIRequest(fd, ref cmd, out isrc) == -1)
           throw new IOException($"Failed to retrieve ISRC for track {track}.", new UnixException());
         isrc.FixUp();
