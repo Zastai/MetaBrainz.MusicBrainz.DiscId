@@ -81,24 +81,6 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       // in milliseconds; timeout better shouldn't happen for scsi commands -> device is reset
       private const uint DefaultSCSIRequestTimeOut = 30000;
 
-      [Flags]
-      private enum FileOpenFlags : uint {
-        // Access Modes
-        ReadOnly              = 0x0000, // O_RDONLY
-        WriteOnly             = 0x0001, // O_WRONLY
-        ReadWrite             = 0x0002, // O_RDWR
-        AccessMode            = 0x0003, // O_ACCMODE
-        // Open-Time Flags
-        Create                = 0x0040, // O_CREAT
-        Exclusive             = 0x0080, // O_EXCL
-        CreateNew             = Create | Exclusive,
-        NonBlocking           = 0x0800, // O_NONBLOCK
-        NoControllingTerminal = 0x0100, // O_NOCTTY
-        Truncate              = 0x0200, // O_TRUNC
-        // Operation Modes
-        Append                = 0x0400, // O_APPEND
-      }
-
       private enum IOCTL : int {
         // Generic SCSI command (uses standard SCSI MMC structures)
         SG_IO              = 0x2285,
@@ -160,8 +142,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         public uint                  duration;
         public uint                  info;
 
-        public SCSIInfoStatus Status => (SCSIInfoStatus) (info & 0x1);
-        public SCSIInfoIOMode IOMode => (SCSIInfoIOMode) (info & 0x6);
+        public SCSIInfoStatus Status => (SCSIInfoStatus) (this.info & 0x1);
+        public SCSIInfoIOMode IOMode => (SCSIInfoIOMode) (this.info & 0x6);
       }
 
       #endregion
@@ -194,27 +176,28 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         return isrc.Status.IsValid ? Encoding.ASCII.GetString(isrc.ISRC) : string.Empty;
       }
 
-      public static Unix.SafeUnixHandle OpenDevice(string name) => Unix.Open(name, (uint) (FileOpenFlags.ReadOnly | FileOpenFlags.NonBlocking), 0);
+      public static Unix.SafeUnixHandle OpenDevice(string name) {
+        const uint O_RDONLY   = 0x0000;
+        const uint O_NONBLOCK = 0x0800;
+        return Unix.Open(name, O_RDONLY | O_NONBLOCK, 0);
+      }
 
       #endregion
 
       #region Private Methods
 
       private static int SendSCSIRequest<TCommand, TData>(SafeUnixHandle fd, ref TCommand cmd, out TData data) where TCommand : struct where TData : struct {
-        SCSIRequest req = new SCSIRequest {
+        var cmdlen = Marshal.SizeOf(typeof(TCommand));
+        if (cmdlen > 16)
+          throw new InvalidOperationException("A SCSI command must not exceed 16 bytes in size.");
+        var req = new SCSIRequest {
           interface_id    = 'S',
           dxfer_direction = SCSITransferDirection.SG_DXFER_FROM_DEV,
           timeout         = NativeApi.DefaultSCSIRequestTimeOut,
+          cmd_len         = (byte) cmdlen,
+          mx_sb_len       = 16,
+          dxfer_len       = (uint) Marshal.SizeOf(typeof(TData)),
         };
-        {
-          var cmdlen = Marshal.SizeOf(typeof(TCommand));
-          if (cmdlen > 16)
-            throw new InvalidOperationException("A SCSI command must not exceed 16 bytes in size.");
-          req.cmd_len = (byte) cmdlen;
-        }
-        req.mx_sb_len = 16;
-        req.dxfer_len = (uint) Marshal.SizeOf(typeof(TData));
-        data = default(TData);
         var bytes = Marshal.AllocHGlobal(new IntPtr(req.cmd_len + req.mx_sb_len + req.dxfer_len));
         try {
           req.cmdp   = bytes;
