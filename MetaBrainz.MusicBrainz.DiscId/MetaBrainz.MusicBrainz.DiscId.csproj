@@ -55,7 +55,6 @@
     <Compile Include="Platforms\UnixException.cs" />
     <Compile Include="Platforms\Unsupported.cs" />
     <Compile Include="Platforms\Windows.cs" />
-    <Compile Include="CdDevice.cs" />
     <Compile Include="CdDeviceFeature.cs" />
     <Compile Include="IPlatform.cs" />
     <Compile Include="MMC.cs" />

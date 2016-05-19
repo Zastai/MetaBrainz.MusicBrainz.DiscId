@@ -11,37 +11,112 @@ namespace MetaBrainz.MusicBrainz.DiscId {
   /// <summary>Class representing a CD's table of contents.</summary>
   public sealed class TableOfContents {
 
+    #region Constants
+
     // FIXME: libdiscid (rather arbitrarily) uses 90 minutes. But overburning can go above 100 minutes. For now, use 99:59.74.
     /// <summary>The largest possible AudioCD (1 sector shy of 100 minutes).</summary>
-    /// <remarks>This is only used for validation of user-supplied offsets (<see cref="CdDevice.SimulateDisc"/>).</remarks>
+    /// <remarks>This is only used for validation of user-supplied offsets (<see cref="SimulateDisc"/>).</remarks>
     public const int MaxSectors = 100 * 60 * 75 - 1;
 
     /// <summary>The distance between the last audio track and the first data track.</summary>
     public const int XAInterval = ((60 + 90 + 2) * 75);
 
-    /// <summary>The name of the device from which this table of contents was read.</summary>
+    #endregion
+
+    #region Static Properties
+
+    /// <summary>Enumerates the names of all cd-rom devices in the system.</summary>
+    /// <returns>The names of all cd-rom devices in the system.</returns>
+    public static IEnumerable<string> AvailableDevices => TableOfContents._platform.AvailableDevices;
+
+    /// <summary>The default cd-rom device (used when passing null to <see cref="ReadDisc"/>.</summary>
+    public static string DefaultDevice => TableOfContents._platform.DefaultDevice;
+
+    /// <summary>The default port number to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property); -1 means no explicit port is used.</summary>
+    public static int DefaultPort { get; set; }
+
+    /// <summary>The default URL scheme to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property).</summary>
+    public static string DefaultUrlScheme { get; set; }
+
+    /// <summary>
+    ///   The default web site to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property).
+    ///   Must not include any URL scheme; that can be configured via <see cref="DefaultUrlScheme"/>.
+    /// </summary>
+    public static string DefaultWebSite { get; set; }
+
+    /// <summary>Determines whether or not the specified feature is supported for use with <see cref="ReadDisc"/>.</summary>
+    /// <param name="feature">The (single) feature to test.</param>
+    /// <returns>true if the feature is supported; false otherwise.</returns>
+    public static bool HasReadFeature(CdDeviceFeature feature) => TableOfContents._platform.HasFeature(feature);
+
+    /// <summary>The list of features supported for use with <see cref="ReadDisc"/>.</summary>
+    public static IEnumerable<string> ReadFeatures => TableOfContents._platform.Features;
+
+    #endregion
+
+    #region Static Methods
+
+    /// <summary>Reads the table of contents for the current disc in the specified device, getting the requested information.</summary>
+    /// <param name="device">The name of the device to read from; null to read from <see cref="DefaultDevice"/>.</param>
+    /// <param name="features">The features to use (if supported). Note that the table of contents will always be read.</param>
+    public static TableOfContents ReadDisc(string device, CdDeviceFeature features = CdDeviceFeature.All) {
+      return TableOfContents._platform.ReadTableOfContents(device, features);
+    }
+
+    /// <summary>Simulates the reading of a disc, setting up a table of contents based on the specified information.</summary>
+    /// <param name="first">The first audio track for the disc.</param>
+    /// <param name="last">The last audio track for the disc.</param>
+    /// <param name="offsets">Array of track offsets; the offset at index 0 should be the offset of the end of the last (audio) track.</param>
+    /// <exception cref="ArgumentNullException">When <paramref name="offsets"/> is null.</exception>
+    public static TableOfContents SimulateDisc(byte first, byte last, int[] offsets) {
+      if (offsets == null)
+        throw new ArgumentNullException(nameof(offsets));
+      return new TableOfContents(first, last, offsets);
+    }
+
+    #endregion
+
+    #region Instance Properties
+
+    /// <summary>The name of the device from which this table of contents was read (null if it was simulated).</summary>
     public string DeviceName { get; }
-
-    /// <summary>The first track on the disc (normally 1).</summary>
-    public byte FirstTrack { get; }
-
-    /// <summary>The last track on the disc.</summary>
-    public byte LastTrack { get; }
-
-    /// <summary>The media catalog number (typically the UPC/EAN) for the disc; null if not retrieved, empty if not available.</summary>
-    public string MediaCatalogNumber { get; }
 
     /// <summary>Returns the MusicBrainz Disc ID associated with this table of contents.</summary>
     public string DiscId => this._discid ?? (this._discid = this.CalculateDiscId());
 
+    /// <summary>The first (audio) track on the disc.</summary>
+    public byte FirstTrack { get; }
+
     /// <summary>Returns the FreeDB Disc ID associated with this table of contents.</summary>
     public string FreeDbId => this._freedbid ?? (this._freedbid = this.CalculateFreeDbId());
 
+    /// <summary>The last (audio) track on the disc.</summary>
+    public byte LastTrack { get; }
+
     /// <summary>The length, in sectors, of the disc (i.e. the starting sector of either the first data track or the lead-out).</summary>
-    public int Sectors => this._tracks[0].Address;
+    public int Length => this._tracks[0].Address;
+
+    /// <summary>The media catalog number (typically the UPC/EAN) for the disc; null if not retrieved, empty if not available.</summary>
+    public string MediaCatalogNumber { get; }
+
+    /// <summary>The port number to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property); -1 to not specify any explicit port.</summary>
+    public int Port { get; set; }
+
+    /// <summary>The tracks in this table of contents. Only subscripts between <see cref="FirstTrack"/> and <see cref="LastTrack"/> (inclusive) are valid.</summary>
+    public AudioTrackCollection Tracks => new AudioTrackCollection(this);
 
     /// <summary>The URL to open to submit information about this table of contents to MusicBrainz.</summary>
     public Uri SubmissionUrl => this._url ?? (this._url = this.ConstructSubmissionUrl());
+
+    /// <summary>The URL scheme to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property).</summary>
+    public string UrlScheme { get; set; }
+
+    /// <summary>The web site to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property).</summary>
+    public string WebSite { get; set; }
+
+    #endregion
+
+    #region Instance Methods
 
     /// <summary>Returns a string representing the TOC.</summary>
     /// <returns>
@@ -56,7 +131,9 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       return this._stringform = sb.ToString();
     }
 
-    #region Tracks
+    #endregion
+
+    #region Track-Related Helper Types
 
     /// <summary>Class providing information about a single audio track on a cd-rom.</summary>
     public sealed class AudioTrack {
@@ -243,22 +320,17 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     }
 
-    /// <summary>The tracks in this table of contents. Only indices between <see cref="FirstTrack"/> and <see cref="LastTrack"/> are valid.</summary>
-    public AudioTrackCollection Tracks => new AudioTrackCollection(this);
-
     #endregion
 
-    #region Constructors
+    #region Internal Constructors
 
-    private readonly Track[] _tracks;
-
-    private string _discid;
-
-    private string _freedbid;
-
-    private string _stringform;
-
-    private Uri _url;
+    static TableOfContents() {
+      TableOfContents._platform        = Platform.Create();
+      // Mono's C# compiler does not like initializers on auto-properties, so set them up here instead.
+      TableOfContents.DefaultPort      = -1;
+      TableOfContents.DefaultUrlScheme = "https";
+      TableOfContents.DefaultWebSite   = "musicbrainz.org";
+    }
 
     private TableOfContents(string device, byte first, byte last) {
       if (first == 0 || first > 99) throw new ArgumentOutOfRangeException(nameof(first), first, "The first track number must be between 1 and 99.");
@@ -267,9 +339,12 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       this.DeviceName = device;
       this.FirstTrack = first;
       this.LastTrack  = last;
+      this.Port       = TableOfContents.DefaultPort;
+      this.UrlScheme  = TableOfContents.DefaultUrlScheme;
+      this.WebSite    = TableOfContents.DefaultWebSite;
     }
 
-    internal TableOfContents(byte first, byte last, int[] offsets) : this(null, first, last) {
+    private TableOfContents(byte first, byte last, int[] offsets) : this(null, first, last) {
       // libdiscid wants last + 1 entries, even if first > 1. So we do the same.
       if (offsets.Length < last + 1)
         throw new ArgumentException(nameof(offsets), $"Not enough offsets provided (need at least {last + 1}).");
@@ -313,6 +388,22 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     #endregion
 
+    #region Internal Fields
+
+    private static IPlatform _platform;
+
+    private string _discid;
+
+    private string _freedbid;
+
+    private string _stringform;
+
+    private readonly Track[] _tracks;
+
+    private Uri _url;
+
+    #endregion
+
     #region Internal Methods
 
     private void AppendTocString(StringBuilder sb, char delimiter) {
@@ -349,7 +440,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     private Uri ConstructSubmissionUrl() {
-      var uri = new UriBuilder(CdDevice.DefaultUrlScheme, CdDevice.DefaultWebSite, CdDevice.DefaultPort, "cdtoc/attach", null);
+      var uri = new UriBuilder(this.UrlScheme, this.WebSite, this.Port, "cdtoc/attach", null);
       var query = new StringBuilder();
       query.Append("id=").Append(Uri.EscapeDataString(this.DiscId));
       var culture = Thread.CurrentThread.CurrentCulture;
