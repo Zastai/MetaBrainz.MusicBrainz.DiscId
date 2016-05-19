@@ -47,7 +47,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <summary>Determines whether or not the specified feature is supported for use with <see cref="ReadDisc"/>.</summary>
     /// <param name="feature">The (single) feature to test.</param>
     /// <returns>true if the feature is supported; false otherwise.</returns>
-    public static bool HasReadFeature(CdDeviceFeature feature) => TableOfContents._platform.HasFeature(feature);
+    public static bool HasReadFeature(DiscReadFeature feature) => TableOfContents._platform.HasFeature(feature);
 
     /// <summary>The list of features supported for use with <see cref="ReadDisc"/>.</summary>
     public static IEnumerable<string> ReadFeatures => TableOfContents._platform.Features;
@@ -59,7 +59,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <summary>Reads the table of contents for the current disc in the specified device, getting the requested information.</summary>
     /// <param name="device">The name of the device to read from; null to read from <see cref="DefaultDevice"/>.</param>
     /// <param name="features">The features to use (if supported). Note that the table of contents will always be read.</param>
-    public static TableOfContents ReadDisc(string device, CdDeviceFeature features = CdDeviceFeature.All) {
+    public static TableOfContents ReadDisc(string device, DiscReadFeature features = DiscReadFeature.All) {
       return TableOfContents._platform.ReadTableOfContents(device, features);
     }
 

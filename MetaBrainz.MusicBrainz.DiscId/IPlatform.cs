@@ -10,9 +10,9 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     IEnumerable<string> Features { get; }
 
-    bool HasFeature(CdDeviceFeature feature);
+    bool HasFeature(DiscReadFeature feature);
 
-    TableOfContents ReadTableOfContents(string device, CdDeviceFeature features);
+    TableOfContents ReadTableOfContents(string device, DiscReadFeature features);
 
   }
 

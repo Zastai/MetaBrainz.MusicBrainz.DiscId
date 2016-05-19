@@ -23,18 +23,18 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       }
     }
 
-    private readonly CdDeviceFeature _features;
+    private readonly DiscReadFeature _features;
 
-    protected Platform(CdDeviceFeature features) {
+    protected Platform(DiscReadFeature features) {
       this._features = features;
     }
 
     public IEnumerable<string> Features {
       get {
-        if (this.HasFeature(CdDeviceFeature.ReadTableOfContents   )) yield return "read";
-        if (this.HasFeature(CdDeviceFeature.ReadMediaCatalogNumber)) yield return "mcn";
-        if (this.HasFeature(CdDeviceFeature.ReadTrackIsrc         )) yield return "isrc";
-        if (this.HasFeature(CdDeviceFeature.ReadCdText            )) yield return "text";
+        if (this.HasFeature(DiscReadFeature.TableOfContents   )) yield return "read";
+        if (this.HasFeature(DiscReadFeature.MediaCatalogNumber)) yield return "mcn";
+        if (this.HasFeature(DiscReadFeature.TrackIsrc         )) yield return "isrc";
+        if (this.HasFeature(DiscReadFeature.CdText            )) yield return "text";
       }
     }
 
@@ -42,11 +42,11 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     public virtual string DefaultDevice => this.AvailableDevices.FirstOrDefault();
 
-    public bool HasFeature(CdDeviceFeature feature) => (feature & this._features) != 0;
+    public bool HasFeature(DiscReadFeature feature) => (feature & this._features) != 0;
 
-    protected abstract TableOfContents ReadTableOfContents(string device, CdDeviceFeature features);
+    protected abstract TableOfContents ReadTableOfContents(string device, DiscReadFeature features);
 
-    TableOfContents IPlatform.ReadTableOfContents(string device, CdDeviceFeature features) {
+    TableOfContents IPlatform.ReadTableOfContents(string device, DiscReadFeature features) {
       if (device == null) // Map null to the default device
         device = this.DefaultDevice;
       if (device == null) // But we do need a device at this point

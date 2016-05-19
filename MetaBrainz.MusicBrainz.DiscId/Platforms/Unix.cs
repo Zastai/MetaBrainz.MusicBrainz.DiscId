@@ -7,7 +7,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
   internal abstract class Unix : Platform {
 
-    protected Unix(CdDeviceFeature features = CdDeviceFeature.ReadTableOfContents) : base(features) { }
+    protected Unix(DiscReadFeature features = DiscReadFeature.TableOfContents) : base(features) { }
 
     public new static IPlatform Create() {
       var os = string.Empty;
@@ -35,7 +35,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
     public override IEnumerable<string> AvailableDevices { get { yield break; } }
 
-    protected override TableOfContents ReadTableOfContents(string device, CdDeviceFeature features) {
+    protected override TableOfContents ReadTableOfContents(string device, DiscReadFeature features) {
       throw new NotImplementedException($"CD device access has not been implemented for this platform ({this.GetType().Name} {Environment.OSVersion}).");
     }
 

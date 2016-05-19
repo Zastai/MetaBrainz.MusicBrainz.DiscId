@@ -8,7 +8,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
   internal sealed class Linux : Unix {
 
-    public Linux() : base(CdDeviceFeature.ReadTableOfContents | CdDeviceFeature.ReadMediaCatalogNumber | CdDeviceFeature.ReadTrackIsrc) { }
+    public Linux() : base(DiscReadFeature.TableOfContents | DiscReadFeature.MediaCatalogNumber | DiscReadFeature.TrackIsrc) { }
 
     private const string GenericDevice = "/dev/cdrom";
 
@@ -42,7 +42,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       }
     }
 
-    protected override TableOfContents ReadTableOfContents(string device, CdDeviceFeature features) {
+    protected override TableOfContents ReadTableOfContents(string device, DiscReadFeature features) {
       using (var fd = NativeApi.OpenDevice(device)) {
         if (fd.IsInvalid)
           throw new IOException($"Failed to open '{device}'.", new UnixException());
@@ -59,7 +59,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           for (var trackno = rawtoc.FirstTrack; trackno <= rawtoc.LastTrack; ++trackno, ++i) { // Add the regular tracks.
             if (rawtoc.Tracks[i].TrackNumber != trackno)
               throw new InvalidDataException($"Internal logic error; first track is {rawtoc.FirstTrack}, but entry at index {i} claims to be track {rawtoc.Tracks[i].TrackNumber} instead of {trackno}");
-            var isrc = ((features & CdDeviceFeature.ReadTrackIsrc) != 0) ? NativeApi.GetTrackIsrc(fd, trackno) : null;
+            var isrc = ((features & DiscReadFeature.TrackIsrc) != 0) ? NativeApi.GetTrackIsrc(fd, trackno) : null;
             tracks[trackno] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, isrc);
           }
           // Next entry should be the leadout (track number 0xAA)
@@ -68,7 +68,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           tracks[0] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, null);
         }
         // TODO: If requested, try getting CD-TEXT data.
-        var mcn = ((features & CdDeviceFeature.ReadMediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(fd) : null;
+        var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(fd) : null;
         return new TableOfContents(device, first, last, tracks, mcn);
       }
     }
