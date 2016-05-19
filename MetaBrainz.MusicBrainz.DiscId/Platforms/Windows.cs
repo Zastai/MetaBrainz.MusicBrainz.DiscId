@@ -60,6 +60,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
     #region Native API
 
+    // FIXME: Ideally, I'd rework this to use SPTI, to align the Linux & Windows implementation; but initial attempts have been unsuccessful.
+
     // ReSharper disable InconsistentNaming
 
     private static class NativeApi {
@@ -78,7 +80,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       [StructLayout(LayoutKind.Sequential, Pack = 1)]
       private struct SubChannelRequest { // aka CDROM_SUB_Q_DATA_FORMAT
         public MMC.SubChannelRequestFormat Format;
-        public byte                         Track;
+        public byte                        Track;
       }
 
       [StructLayout(LayoutKind.Sequential, Pack = 1)]
