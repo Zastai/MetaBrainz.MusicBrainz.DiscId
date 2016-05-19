@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MetaBrainz.MusicBrainz.DiscId {
 
@@ -37,16 +38,21 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       }
     }
 
-    public abstract string DefaultDevice { get; }
+    public abstract IEnumerable<string> AvailableDevices { get; }
 
-    public abstract string GetDeviceByIndex(int n);
+    public virtual string DefaultDevice => this.AvailableDevices.FirstOrDefault();
 
     public bool HasFeature(CdDeviceFeature feature) => (feature & this._features) != 0;
 
-    public abstract TableOfContents ReadTableOfContents(string device, CdDeviceFeature features);
+    protected abstract TableOfContents ReadTableOfContents(string device, CdDeviceFeature features);
 
     TableOfContents IPlatform.ReadTableOfContents(string device, CdDeviceFeature features) {
-      features &= this._features; // Mask off unsupported features
+      if (device == null) // Map null to the default device
+        device = this.DefaultDevice;
+      if (device == null) // But we do need a device at this point
+        throw new NotSupportedException("No cd-rom device found.");
+      // Mask off unsupported features
+      features &= this._features;
       return this.ReadTableOfContents(device, features);
     }
 

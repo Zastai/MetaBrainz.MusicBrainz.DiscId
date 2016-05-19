@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 
@@ -26,19 +27,15 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         case "NetBSD" : return new NetBsd     ();
         case "OpenBSD": return new NetBsd     ();
         case "Linux"  : return new Linux      ();
-        case "Darwin" : // OSX is not currently supported (no access to it)
-        case "SunOS"  : // Solaris is not currently supported (couldn't get Mono to work on it) 
+        case "Darwin" : return new Darwin     ();
+        case "SunOS"  : return new Solaris    ();
         default:        return new Unsupported();
       }
     }
 
-    public override string DefaultDevice => "/dev/cdrom";
+    public override IEnumerable<string> AvailableDevices { get { yield break; } }
 
-    public override string GetDeviceByIndex(int n) {
-      return null;
-    }
-
-    public override TableOfContents ReadTableOfContents(string device, CdDeviceFeature features) {
+    protected override TableOfContents ReadTableOfContents(string device, CdDeviceFeature features) {
       throw new NotImplementedException($"CD device access has not been implemented for this platform ({this.GetType().Name} {Environment.OSVersion}).");
     }
 

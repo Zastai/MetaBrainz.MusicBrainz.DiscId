@@ -1,12 +1,9 @@
 ﻿namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
-  internal sealed class Solaris : Unix {
-
-    private static readonly string[] DeviceCandidates = { "/vol/dev/aliases/cdrom0", "/volumes/dev/aliases/cdrom0" };
-
-    public override string DefaultDevice => Solaris.DeviceCandidates[0];
+  internal sealed class Solaris : Unsupported {
 
     // TODO: Port disc_solaris.c
+    // Couldn't get Mono to work on Solaris (no vendor package, and build from sources failed), so this is not likely to get support 
 
   }
 

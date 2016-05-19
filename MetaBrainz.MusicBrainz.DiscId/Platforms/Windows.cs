@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -12,24 +13,16 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
     public Windows() : base(CdDeviceFeature.ReadTableOfContents | CdDeviceFeature.ReadMediaCatalogNumber | CdDeviceFeature.ReadTrackIsrc) { }
 
-    public override string DefaultDevice => "D:";
-
-    public override string GetDeviceByIndex(int n) {
-      if (n < 0)
-        return null;
-      foreach (var drive in DriveInfo.GetDrives()) {
-        if (drive.DriveType == DriveType.CDRom) {
-          if (n == 0)
-            return drive.Name;
-          --n;
+    public override IEnumerable<string> AvailableDevices {
+      get {
+        foreach (var drive in DriveInfo.GetDrives()) {
+          if (drive.DriveType == DriveType.CDRom)
+            yield return drive.Name;
         }
       }
-      return null;
     }
 
-    public override TableOfContents ReadTableOfContents(string device, CdDeviceFeature features) {
-      if (device == null)
-        device = this.GetDeviceByIndex(0) ?? this.DefaultDevice;
+    protected override TableOfContents ReadTableOfContents(string device, CdDeviceFeature features) {
       using (var hDevice = NativeApi.OpenDevice(device)) {
         byte first = 0;
         byte last  = 0;

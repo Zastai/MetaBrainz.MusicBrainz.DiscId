@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -9,36 +10,39 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
     public Linux() : base(CdDeviceFeature.ReadTableOfContents | CdDeviceFeature.ReadMediaCatalogNumber | CdDeviceFeature.ReadTrackIsrc) { }
 
-    public override string DefaultDevice => "/dev/cdrom";
+    private const string GenericDevice = "/dev/cdrom";
 
-    public override string GetDeviceByIndex(int n) {
-      if (n < 0)
-        return null;
-      using (var info = System.IO.File.OpenText("/proc/sys/dev/cdrom/info")) {
-        string line;
-        while ((line = info.ReadLine()) != null) {
-          if (line.StartsWith("drive name:")) {
-            var devices = line.Substring(11).Split(new[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
-            if (n >= devices.Length)
-              return null;
-            Array.Reverse(devices);
-            return string.Concat("/dev/", devices[n]);
+    public override IEnumerable<string> AvailableDevices {
+      get {
+        string[] devices = null;
+        try {
+          using (var info = File.OpenText("/proc/sys/dev/cdrom/info")) {
+            string line;
+            while ((line = info.ReadLine()) != null) {
+              if (!line.StartsWith("drive name:"))
+                continue;
+              devices = line.Substring(11).Split(new[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
+              break;
+            }
           }
         }
+        catch { }
+        if (devices != null) {
+          Array.Reverse(devices);
+          foreach (var device in devices)
+            yield return string.Concat("/dev/", device);
+        }
       }
-      return null;
     }
 
-    public override TableOfContents ReadTableOfContents(string device, CdDeviceFeature features) {
-      if (device == null) {
-        // Prefer the generic name
-        using (var fd = NativeApi.OpenDevice(device = this.DefaultDevice)) {
-          if (fd.IsInvalid) // But if that does not exist, try the first specific one
-            device = this.GetDeviceByIndex(0);
-        }
-        if (device == null) // But we do need a device at this point
-          throw new NotSupportedException("No cd-rom device found.");
+    public override string DefaultDevice {
+      get { // Prefer the generic device name (typically a symlink to the "preferred" device)
+        using (var fd = NativeApi.OpenDevice(Linux.GenericDevice))
+          return fd.IsInvalid ? base.DefaultDevice : Linux.GenericDevice;
       }
+    }
+
+    protected override TableOfContents ReadTableOfContents(string device, CdDeviceFeature features) {
       using (var fd = NativeApi.OpenDevice(device)) {
         if (fd.IsInvalid)
           throw new IOException($"Failed to open '{device}'.", new UnixException());

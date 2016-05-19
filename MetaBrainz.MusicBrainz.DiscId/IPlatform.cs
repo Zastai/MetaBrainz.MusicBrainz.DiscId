@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 
 namespace MetaBrainz.MusicBrainz.DiscId {
 
   internal interface IPlatform {
 
-    string DefaultDevice { get; }
+    IEnumerable<string> AvailableDevices { get; }
 
-    string GetDeviceByIndex(int n);
+    string DefaultDevice { get; }
 
     IEnumerable<string> Features { get; }
 

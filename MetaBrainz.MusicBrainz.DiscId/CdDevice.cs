@@ -18,8 +18,12 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       CdDevice.DefaultWebSite   = "musicbrainz.org";
     }
 
+    /// <summary>Enumerates the names of all cd-rom devices in the system.</summary>
+    /// <returns>The names of all cd-rom devices in the system.</returns>
+    public static IEnumerable<string> AvailableNames => CdDevice._platform.AvailableDevices;
+
     /// <summary>The default cd-rom device used.</summary>
-    public static string DefaultName => CdDevice._platform.GetDeviceByIndex(0) ?? CdDevice._platform.DefaultDevice;
+    public static string DefaultName => CdDevice._platform.DefaultDevice;
 
     /// <summary>The default port number to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property); -1 means no explicit port is used.</summary>
     public static int DefaultPort { get; set; }
@@ -35,11 +39,6 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     /// <summary>The list of supported features.</summary>
     public static IEnumerable<string> Features => CdDevice._platform.Features;
-
-    /// <summary>Returns the name of the <paramref name="n"/>th cd-rom device in the system.</summary>
-    /// <param name="n">The (0-based) sequence number of the cd-rom device.</param>
-    /// <returns>The requested drive name, or null if there are not enough cd-drives in the system.</returns>
-    public static string GetName(byte n) => CdDevice._platform.GetDeviceByIndex(n);
 
     /// <summary>Determines whether or not the specified feature is supported.</summary>
     /// <param name="feature">The (single) feature to test.</param>
