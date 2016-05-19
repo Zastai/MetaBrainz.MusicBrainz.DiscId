@@ -50,7 +50,14 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     public static bool HasReadFeature(DiscReadFeature feature) => TableOfContents._platform.HasFeature(feature);
 
     /// <summary>The list of features supported for use with <see cref="ReadDisc"/>.</summary>
-    public static IEnumerable<string> ReadFeatures => TableOfContents._platform.Features;
+    public static IEnumerable<DiscReadFeature> ReadFeatures {
+      get {
+        if (TableOfContents._platform.HasFeature(DiscReadFeature.TableOfContents   )) yield return DiscReadFeature.TableOfContents;
+        if (TableOfContents._platform.HasFeature(DiscReadFeature.MediaCatalogNumber)) yield return DiscReadFeature.MediaCatalogNumber;
+        if (TableOfContents._platform.HasFeature(DiscReadFeature.TrackIsrc         )) yield return DiscReadFeature.TrackIsrc;
+        if (TableOfContents._platform.HasFeature(DiscReadFeature.CdText            )) yield return DiscReadFeature.CdText;
+      }
+    }
 
     #endregion
 

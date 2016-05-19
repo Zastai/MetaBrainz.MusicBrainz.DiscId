@@ -29,15 +29,6 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       this._features = features;
     }
 
-    public IEnumerable<string> Features {
-      get {
-        if (this.HasFeature(DiscReadFeature.TableOfContents   )) yield return "read";
-        if (this.HasFeature(DiscReadFeature.MediaCatalogNumber)) yield return "mcn";
-        if (this.HasFeature(DiscReadFeature.TrackIsrc         )) yield return "isrc";
-        if (this.HasFeature(DiscReadFeature.CdText            )) yield return "text";
-      }
-    }
-
     public abstract IEnumerable<string> AvailableDevices { get; }
 
     public virtual string DefaultDevice => this.AvailableDevices.FirstOrDefault();
