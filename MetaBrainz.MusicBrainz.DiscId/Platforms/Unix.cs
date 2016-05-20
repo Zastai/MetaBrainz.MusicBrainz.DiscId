@@ -25,7 +25,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       switch (os) {
         case "FreeBSD": return new FreeBsd    ();
         case "NetBSD" : return new NetBsd     ();
-        case "OpenBSD": return new NetBsd     ();
+        case "OpenBSD": return new OpenBsd    ();
         case "Linux"  : return new Linux      ();
         case "Darwin" : return new Darwin     ();
         case "SunOS"  : return new Solaris    ();

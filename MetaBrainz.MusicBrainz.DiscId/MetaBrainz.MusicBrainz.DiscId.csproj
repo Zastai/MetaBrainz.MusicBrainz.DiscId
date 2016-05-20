@@ -45,10 +45,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Platforms\Bsd.cs" />
     <Compile Include="Platforms\Darwin.cs" />
     <Compile Include="Platforms\FreeBsd.cs" />
     <Compile Include="Platforms\Linux.cs" />
     <Compile Include="Platforms\NetBsd.cs" />
+    <Compile Include="Platforms\NetOrOpenBsd.cs" />
+    <Compile Include="Platforms\OpenBsd.cs" />
     <Compile Include="Platforms\SafeUnixHandle.cs" />
     <Compile Include="Platforms\Solaris.cs" />
     <Compile Include="Platforms\Unix.cs" />

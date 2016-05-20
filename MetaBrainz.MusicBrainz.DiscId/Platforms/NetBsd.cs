@@ -2,7 +2,7 @@
 
   internal sealed class NetBsd : Unix {
 
-    // TODO: Port disc_netbsd.c
+    // Currently just a placeholder for any functionality specific to NetBSD
 
   }
 
