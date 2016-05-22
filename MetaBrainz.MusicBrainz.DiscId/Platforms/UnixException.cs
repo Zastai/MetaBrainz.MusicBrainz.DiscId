@@ -22,7 +22,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     private static string GetErrorText(int errno) {
       UnixException._threadlock.EnterWriteLock();
       try {
-        return UnixException.StrError(errno);
+        return Marshal.PtrToStringAnsi(UnixException.StrError(errno));
       }
       catch (DllNotFoundException)        { }
       catch (EntryPointNotFoundException) { }
@@ -35,8 +35,8 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     // strerror() is not threadsafe, and strerror_r() is not portable, so use strerror() plus a lock to help with the threadsafety issue.
     private static ReaderWriterLockSlim _threadlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
-    [DllImport("libc", EntryPoint = "strerror", CharSet = CharSet.Ansi, SetLastError = true)]
-    private static extern string StrError(int error);
+    [DllImport("libc", EntryPoint = "strerror", SetLastError = true)]
+    private static extern IntPtr StrError(int error);
 
   }
 
