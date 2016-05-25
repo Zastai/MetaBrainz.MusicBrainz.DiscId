@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using System.Security;
 using System.Security.Permissions;
 using System.Text;
+using System.Threading;
 
 namespace MetaBrainz.MusicBrainz.DiscId {
 
@@ -19,21 +20,23 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     private static string GetErrorText(int errno) {
-      var buffer = new StringBuilder(4096);
+      UnixException._threadlock.EnterWriteLock();
       try {
-        var rc = UnixException.GetErrorText(errno, buffer, buffer.Capacity);
-        if (rc == 0)
-          return buffer.ToString();
+        return UnixException.StrError(errno);
       }
-      catch (DllNotFoundException) { }
+      catch (DllNotFoundException)        { }
       catch (EntryPointNotFoundException) { }
+      finally {
+        UnixException._threadlock.ExitWriteLock();
+      }
       return null;
     }
 
-    // strerror() is not threadsafe, and strerror_r() is not portable, so use Mono's helper for it.
-    // Will need changes to work on the CoreCLR.
-    [DllImport("MonoPosixHelper", EntryPoint = "Mono_Posix_Syscall_strerror_r", SetLastError = true)]
-    private static extern int GetErrorText(int error, [Out] StringBuilder buffer, long length);
+    // strerror() is not threadsafe, and strerror_r() is not portable, so use strerror() plus a lock to help with the threadsafety issue.
+    private static ReaderWriterLockSlim _threadlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+
+    [DllImport("libc", EntryPoint = "strerror", CharSet = CharSet.Ansi, SetLastError = true)]
+    private static extern string StrError(int error);
 
   }
 
