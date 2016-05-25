@@ -9,17 +9,19 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
   [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
   internal sealed class SafeUnixHandle : SafeHandle {
 
-    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-    private SafeUnixHandle() : base(new IntPtr(-1), true) { }
+    private static IntPtr InvalidHandle = new IntPtr(-1);
 
-    public override bool IsInvalid => this.handle == new IntPtr(-1);
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+    private SafeUnixHandle(int fd) : base(SafeUnixHandle.InvalidHandle, true) { this.handle = new IntPtr(fd); }
+
+    public override bool IsInvalid => this.handle == SafeUnixHandle.InvalidHandle;
 
     [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
     protected override bool ReleaseHandle() {
       return NativeApi.Close(this.handle) != -1;
     }
 
-    public static SafeUnixHandle OpenPath(string path, uint flags, int mode) => NativeApi.Open(path, flags, mode);
+    public static SafeUnixHandle OpenPath(string path, uint flags, int mode) => new SafeUnixHandle(NativeApi.Open(path, flags, mode));
 
     private static class NativeApi {
 
@@ -28,7 +30,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       public static extern int Close(IntPtr handle);
 
       [DllImport("libc", EntryPoint = "open", SetLastError = true)]
-      public static extern SafeUnixHandle Open(string path, uint flags, int mode);
+      public static extern int Open(string path, uint flags, int mode);
 
     }
 
