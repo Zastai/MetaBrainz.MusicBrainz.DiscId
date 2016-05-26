@@ -27,10 +27,10 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     /// <summary>Enumerates the names of all cd-rom devices in the system.</summary>
     /// <returns>The names of all cd-rom devices in the system.</returns>
-    public static IEnumerable<string> AvailableDevices => TableOfContents._platform.AvailableDevices;
+    public static IEnumerable<string> AvailableDevices => TableOfContents.Platform.AvailableDevices;
 
     /// <summary>The default cd-rom device (used when passing null to <see cref="ReadDisc"/>.</summary>
-    public static string DefaultDevice => TableOfContents._platform.DefaultDevice;
+    public static string DefaultDevice => TableOfContents.Platform.DefaultDevice;
 
     /// <summary>The default port number to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property); -1 means no explicit port is used.</summary>
     public static int DefaultPort { get; set; }
@@ -47,15 +47,15 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <summary>Determines whether or not the specified feature is supported for use with <see cref="ReadDisc"/>.</summary>
     /// <param name="feature">The (single) feature to test.</param>
     /// <returns>true if the feature is supported; false otherwise.</returns>
-    public static bool HasReadFeature(DiscReadFeature feature) => TableOfContents._platform.HasFeature(feature);
+    public static bool HasReadFeature(DiscReadFeature feature) => TableOfContents.Platform.HasFeature(feature);
 
     /// <summary>The list of features supported for use with <see cref="ReadDisc"/>.</summary>
     public static IEnumerable<DiscReadFeature> ReadFeatures {
       get {
-        if (TableOfContents._platform.HasFeature(DiscReadFeature.TableOfContents   )) yield return DiscReadFeature.TableOfContents;
-        if (TableOfContents._platform.HasFeature(DiscReadFeature.MediaCatalogNumber)) yield return DiscReadFeature.MediaCatalogNumber;
-        if (TableOfContents._platform.HasFeature(DiscReadFeature.TrackIsrc         )) yield return DiscReadFeature.TrackIsrc;
-        if (TableOfContents._platform.HasFeature(DiscReadFeature.CdText            )) yield return DiscReadFeature.CdText;
+        if (TableOfContents.Platform.HasFeature(DiscReadFeature.TableOfContents   )) yield return DiscReadFeature.TableOfContents;
+        if (TableOfContents.Platform.HasFeature(DiscReadFeature.MediaCatalogNumber)) yield return DiscReadFeature.MediaCatalogNumber;
+        if (TableOfContents.Platform.HasFeature(DiscReadFeature.TrackIsrc         )) yield return DiscReadFeature.TrackIsrc;
+        if (TableOfContents.Platform.HasFeature(DiscReadFeature.CdText            )) yield return DiscReadFeature.CdText;
       }
     }
 
@@ -67,7 +67,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <param name="device">The name of the device to read from; null to read from <see cref="DefaultDevice"/>.</param>
     /// <param name="features">The features to use (if supported). Note that the table of contents will always be read.</param>
     public static TableOfContents ReadDisc(string device, DiscReadFeature features = DiscReadFeature.All) {
-      return TableOfContents._platform.ReadTableOfContents(device, features);
+      return TableOfContents.Platform.ReadTableOfContents(device, features);
     }
 
     /// <summary>Simulates the reading of a disc, setting up a table of contents based on the specified information.</summary>
@@ -218,7 +218,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
         }
 
         private readonly AudioTrackCollection _collection;
-        private byte                     _index;
+        private byte                          _index;
 
         /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
         public void Dispose() { }
@@ -332,7 +332,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     #region Internal Constructors
 
     static TableOfContents() {
-      TableOfContents._platform        = Platform.Create();
+      TableOfContents.Platform         = MusicBrainz.DiscId.Platform.Create();
       // Mono's C# compiler does not like initializers on auto-properties, so set them up here instead.
       TableOfContents.DefaultPort      = -1;
       TableOfContents.DefaultUrlScheme = "https";
@@ -397,7 +397,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     #region Internal Fields
 
-    private static IPlatform _platform;
+    private static readonly IPlatform Platform;
 
     private string _discid;
 
