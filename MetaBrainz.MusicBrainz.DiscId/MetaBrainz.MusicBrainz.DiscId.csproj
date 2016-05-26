@@ -52,10 +52,10 @@
     <Compile Include="Platforms\NetBsd.cs" />
     <Compile Include="Platforms\NetOrOpenBsd.cs" />
     <Compile Include="Platforms\OpenBsd.cs" />
-    <Compile Include="Platforms\SafeUnixHandle.cs" />
     <Compile Include="Platforms\Solaris.cs" />
     <Compile Include="Platforms\Unix.cs" />
     <Compile Include="Platforms\UnixException.cs" />
+    <Compile Include="Platforms\UnixFileDescriptor.cs" />
     <Compile Include="Platforms\Unsupported.cs" />
     <Compile Include="Platforms\Windows.cs" />
     <Compile Include="DiscReadFeature.cs" />

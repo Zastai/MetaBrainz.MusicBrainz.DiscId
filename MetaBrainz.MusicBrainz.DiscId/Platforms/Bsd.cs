@@ -115,7 +115,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
       #region Public Methods
 
-      public static string GetMediaCatalogNumber(SafeUnixHandle fd) {
+      public static string GetMediaCatalogNumber(UnixFileDescriptor fd) {
         MMC.SubChannelMediaCatalogNumber mcn;
         if (NativeApi.ReadSubChannel(fd, CDDataFormat.CD_MEDIA_CATALOG, 0, out mcn) != 0)
           throw new IOException("Failed to retrieve media catalog number.", new UnixException());
@@ -123,7 +123,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         return mcn.Status.IsValid ? Encoding.ASCII.GetString(mcn.MCN) : string.Empty;
       }
 
-      public static string GetTrackIsrc(SafeUnixHandle fd, byte track) {
+      public static string GetTrackIsrc(UnixFileDescriptor fd, byte track) {
         MMC.SubChannelISRC isrc;
         if (NativeApi.ReadSubChannel(fd, CDDataFormat.CD_TRACK_INFO, track, out isrc) != 0)
           throw new IOException($"Failed to retrieve ISRC for track {track}.", new UnixException());
@@ -131,13 +131,13 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         return isrc.Status.IsValid ? Encoding.ASCII.GetString(isrc.ISRC) : string.Empty;
       }
 
-      public static SafeUnixHandle OpenDevice(string name) {
+      public static UnixFileDescriptor OpenDevice(string name) {
         const uint O_RDONLY   = 0x0000;
         const uint O_NONBLOCK = 0x0004;
-        return SafeUnixHandle.OpenPath(name, O_RDONLY | O_NONBLOCK, 0);
+        return UnixFileDescriptor.OpenPath(name, O_RDONLY | O_NONBLOCK, 0);
       }
 
-      public static void ReadTOC(SafeUnixHandle fd, out byte first, out byte last, out MMC.TrackDescriptor[] tracks) {
+      public static void ReadTOC(UnixFileDescriptor fd, out byte first, out byte last, out MMC.TrackDescriptor[] tracks) {
         { // Read the TOC header
           var req = new TOCHeaderRequest();
           if (NativeApi.SendIORequest(fd, IOCTL.CDIOREADTOCHEADER, ref req) != 0)
@@ -176,15 +176,15 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       #region Private Methods
 
       [DllImport("libc", EntryPoint = "ioctl", SetLastError = true)]
-      private static extern int SendIORequest(SafeUnixHandle fd, IOCTL command, ref TOCHeaderRequest request);
+      private static extern int SendIORequest(UnixFileDescriptor fd, IOCTL command, ref TOCHeaderRequest request);
 
       [DllImport("libc", EntryPoint = "ioctl", SetLastError = true)]
-      private static extern int SendIORequest(SafeUnixHandle fd, IOCTL command, ref TOCEntriesRequest request);
+      private static extern int SendIORequest(UnixFileDescriptor fd, IOCTL command, ref TOCEntriesRequest request);
 
       [DllImport("libc", EntryPoint = "ioctl", SetLastError = true)]
-      private static extern int SendIORequest(SafeUnixHandle fd, IOCTL command, ref ReadSubChannelRequest request);
+      private static extern int SendIORequest(UnixFileDescriptor fd, IOCTL command, ref ReadSubChannelRequest request);
 
-      private static int ReadSubChannel<T>(SafeUnixHandle fd, CDDataFormat format, byte track, out T data) where T : struct {
+      private static int ReadSubChannel<T>(UnixFileDescriptor fd, CDDataFormat format, byte track, out T data) where T : struct {
         var datatype = typeof(T);
         var req = new ReadSubChannelRequest {
           address_format = CDAddressFormat.CD_LBA_FORMAT,

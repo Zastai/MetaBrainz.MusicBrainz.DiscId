@@ -154,7 +154,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
       #region Public Methods
 
-      public static string GetMediaCatalogNumber(SafeUnixHandle fd) {
+      public static string GetMediaCatalogNumber(UnixFileDescriptor fd) {
         MMC.SubChannelMediaCatalogNumber mcn;
         var cmd = MMC.CDB.ReadSubChannel.MediaCatalogNumber();
         if (NativeApi.SendSCSIRequest(fd, ref cmd, out mcn) == -1)
@@ -163,7 +163,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         return mcn.Status.IsValid ? Encoding.ASCII.GetString(mcn.MCN) : string.Empty;
       }
 
-      public static void GetTableOfContents(SafeUnixHandle fd, out MMC.TOCDescriptor rawtoc) {
+      public static void GetTableOfContents(UnixFileDescriptor fd, out MMC.TOCDescriptor rawtoc) {
         var msf = false;
         var cmd = MMC.CDB.ReadTocPmaAtip.TOC(msf);
         if (NativeApi.SendSCSIRequest(fd, ref cmd, out rawtoc) == -1)
@@ -171,7 +171,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         rawtoc.FixUp(msf);
       }
 
-      public static string GetTrackIsrc(SafeUnixHandle fd, byte track) {
+      public static string GetTrackIsrc(UnixFileDescriptor fd, byte track) {
         MMC.SubChannelISRC isrc;
         var cmd = MMC.CDB.ReadSubChannel.ISRC(track);
         if (NativeApi.SendSCSIRequest(fd, ref cmd, out isrc) == -1)
@@ -180,17 +180,17 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         return isrc.Status.IsValid ? Encoding.ASCII.GetString(isrc.ISRC) : string.Empty;
       }
 
-      public static SafeUnixHandle OpenDevice(string name) {
+      public static UnixFileDescriptor OpenDevice(string name) {
         const uint O_RDONLY   = 0x0000;
         const uint O_NONBLOCK = 0x0800;
-        return SafeUnixHandle.OpenPath(name, O_RDONLY | O_NONBLOCK, 0);
+        return UnixFileDescriptor.OpenPath(name, O_RDONLY | O_NONBLOCK, 0);
       }
 
       #endregion
 
       #region Private Methods
 
-      private static int SendSCSIRequest<TCommand, TData>(SafeUnixHandle fd, ref TCommand cmd, out TData data) where TCommand : struct where TData : struct {
+      private static int SendSCSIRequest<TCommand, TData>(UnixFileDescriptor fd, ref TCommand cmd, out TData data) where TCommand : struct where TData : struct {
         var cmdlen = Marshal.SizeOf(typeof(TCommand));
         if (cmdlen > 16)
           throw new InvalidOperationException("A SCSI command must not exceed 16 bytes in size.");
@@ -223,7 +223,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       }
 
       [DllImport("libc", EntryPoint = "ioctl", SetLastError = true)]
-      private static extern int SendSCSIRequest(SafeUnixHandle fd, IOCTL command, ref SCSIRequest request);
+      private static extern int SendSCSIRequest(UnixFileDescriptor fd, IOCTL command, ref SCSIRequest request);
 
     }
 
