@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
-using System.Security;
-using System.Security.Permissions;
-using System.Text;
 using System.Threading;
 
-namespace MetaBrainz.MusicBrainz.DiscId {
+namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
   /// <summary>Exception thrown for a Unix-related error (based on the &quot;errno&quot; value).</summary>
   [Serializable]
@@ -20,20 +16,20 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     }
 
     private static string GetErrorText(int errno) {
-      UnixException._threadlock.EnterWriteLock();
+      UnixException.ThreadLock.EnterWriteLock();
       try {
         return Marshal.PtrToStringAnsi(UnixException.StrError(errno));
       }
       catch (DllNotFoundException)        { }
       catch (EntryPointNotFoundException) { }
       finally {
-        UnixException._threadlock.ExitWriteLock();
+        UnixException.ThreadLock.ExitWriteLock();
       }
-      return null;
+      return $"[errno {errno}]";
     }
 
     // strerror() is not threadsafe, and strerror_r() is not portable, so use strerror() plus a lock to help with the threadsafety issue.
-    private static ReaderWriterLockSlim _threadlock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+    private static readonly ReaderWriterLockSlim ThreadLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
     [DllImport("libc", EntryPoint = "strerror", SetLastError = true)]
     private static extern IntPtr StrError(int error);
