@@ -9,7 +9,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
   internal abstract class Bsd : Unix {
 
-    public Bsd() : base(DiscReadFeature.TableOfContents | DiscReadFeature.MediaCatalogNumber | DiscReadFeature.TrackIsrc) { }
+    protected Bsd() : base(DiscReadFeature.TableOfContents | DiscReadFeature.MediaCatalogNumber | DiscReadFeature.TrackIsrc) { }
 
     protected abstract string GetDevicePath(string device);
 
@@ -61,7 +61,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
     // ReSharper disable InconsistentNaming
     // ReSharper disable UnusedMember.Local
 
-    protected static class NativeApi {
+    private static class NativeApi {
 
       #region Constants
 

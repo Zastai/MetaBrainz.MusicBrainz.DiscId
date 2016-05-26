@@ -10,10 +10,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
     #region Native API
 
-    // ReSharper disable InconsistentNaming
-    // ReSharper disable UnusedMember.Local
-
-    private new static class NativeApi {
+    private static class NativeApi {
 
       public static char RawPartition;
 
