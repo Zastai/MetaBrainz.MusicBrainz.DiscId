@@ -209,7 +209,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           req.dxferp = req.sbp  + req.mx_sb_len;
           Marshal.StructureToPtr(cmd, req.cmdp, false);
           try {
-            var rc = NativeApi.SendSCSIRequest(fd, IOCTL.SG_IO, ref req);
+            var rc = NativeApi.SendSCSIRequest(fd.Value, IOCTL.SG_IO, ref req);
             data = (TData) Marshal.PtrToStructure(req.dxferp, typeof(TData));
             return rc;
           }
@@ -223,7 +223,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       }
 
       [DllImport("libc", EntryPoint = "ioctl", SetLastError = true)]
-      private static extern int SendSCSIRequest(UnixFileDescriptor fd, IOCTL command, ref SCSIRequest request);
+      private static extern int SendSCSIRequest(int fd, IOCTL command, ref SCSIRequest request);
 
     }
 

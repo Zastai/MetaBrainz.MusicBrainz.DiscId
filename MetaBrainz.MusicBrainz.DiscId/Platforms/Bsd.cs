@@ -140,7 +140,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       public static void ReadTOC(UnixFileDescriptor fd, out byte first, out byte last, out MMC.TrackDescriptor[] tracks) {
         { // Read the TOC header
           var req = new TOCHeaderRequest();
-          if (NativeApi.SendIORequest(fd, IOCTL.CDIOREADTOCHEADER, ref req) != 0)
+          if (NativeApi.SendIORequest(fd.Value, IOCTL.CDIOREADTOCHEADER, ref req) != 0)
             throw new IOException("Failed to retrieve table of contents.", new UnixException());
           first = req.starting_track;
           last  = req.ending_track;
@@ -156,7 +156,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           };
           req.data = Marshal.AllocHGlobal(new IntPtr(req.data_len));
           try {
-            if (NativeApi.SendIORequest(fd, IOCTL.CDIOREADTOCENTRIES, ref req) != 0)
+            if (NativeApi.SendIORequest(fd.Value, IOCTL.CDIOREADTOCENTRIES, ref req) != 0)
               throw new IOException("Failed to retrieve TOC entries.", new UnixException());
             tracks = new MMC.TrackDescriptor[trackcount];
             var walker = req.data;
@@ -176,13 +176,13 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       #region Private Methods
 
       [DllImport("libc", EntryPoint = "ioctl", SetLastError = true)]
-      private static extern int SendIORequest(UnixFileDescriptor fd, IOCTL command, ref TOCHeaderRequest request);
+      private static extern int SendIORequest(int fd, IOCTL command, ref TOCHeaderRequest request);
 
       [DllImport("libc", EntryPoint = "ioctl", SetLastError = true)]
-      private static extern int SendIORequest(UnixFileDescriptor fd, IOCTL command, ref TOCEntriesRequest request);
+      private static extern int SendIORequest(int fd, IOCTL command, ref TOCEntriesRequest request);
 
       [DllImport("libc", EntryPoint = "ioctl", SetLastError = true)]
-      private static extern int SendIORequest(UnixFileDescriptor fd, IOCTL command, ref ReadSubChannelRequest request);
+      private static extern int SendIORequest(int fd, IOCTL command, ref ReadSubChannelRequest request);
 
       private static int ReadSubChannel<T>(UnixFileDescriptor fd, CDDataFormat format, byte track, out T data) where T : struct {
         var datatype = typeof(T);
@@ -194,7 +194,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         };
         req.data = Marshal.AllocHGlobal(new IntPtr(req.data_len));
         try {
-          var rc = NativeApi.SendIORequest(fd, IOCTL.CDIOCREADSUBCHANNEL, ref req);
+          var rc = NativeApi.SendIORequest(fd.Value, IOCTL.CDIOCREADSUBCHANNEL, ref req);
           if (rc == 0)
             data = (T) Marshal.PtrToStructure(req.data, datatype);
           else

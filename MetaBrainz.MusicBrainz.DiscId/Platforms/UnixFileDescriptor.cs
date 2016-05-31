@@ -11,6 +11,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
     public bool IsInvalid => this._descriptor == -1;
 
+    public int Value => this._descriptor;
+
     public void Close() {
       if (this._descriptor == -1)
         return;
@@ -19,6 +21,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       if (rc != 0)
         throw new IOException("Failed to close file descriptor.", new UnixException());
     }
+
+    public override string ToString() => $"fd {this._descriptor}";
 
     void IDisposable.Dispose() {
       this.Close();
