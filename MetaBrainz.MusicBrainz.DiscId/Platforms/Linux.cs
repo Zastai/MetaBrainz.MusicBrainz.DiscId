@@ -157,8 +157,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       public static string GetMediaCatalogNumber(UnixFileDescriptor fd) {
         MMC.SubChannelMediaCatalogNumber mcn;
         var cmd = MMC.CDB.ReadSubChannel.MediaCatalogNumber();
-        if (NativeApi.SendSCSIRequest(fd, ref cmd, out mcn) == -1)
-          throw new IOException("Failed to retrieve media catalog number.", new UnixException());
+        try { NativeApi.SendSCSIRequest(fd, ref cmd, out mcn); }
+        catch (Exception e) { throw new IOException("Failed to retrieve media catalog number.", e); }
         mcn.FixUp();
         return mcn.Status.IsValid ? Encoding.ASCII.GetString(mcn.MCN) : string.Empty;
       }
@@ -166,16 +166,16 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       public static void GetTableOfContents(UnixFileDescriptor fd, out MMC.TOCDescriptor rawtoc) {
         var msf = false;
         var cmd = MMC.CDB.ReadTocPmaAtip.TOC(msf);
-        if (NativeApi.SendSCSIRequest(fd, ref cmd, out rawtoc) == -1)
-          throw new IOException("Failed to retrieve table of contents.", new UnixException());
+        try { NativeApi.SendSCSIRequest(fd, ref cmd, out rawtoc); }
+        catch (Exception e) { throw new IOException("Failed to retrieve table of contents.", e); }
         rawtoc.FixUp(msf);
       }
 
       public static string GetTrackIsrc(UnixFileDescriptor fd, byte track) {
         MMC.SubChannelISRC isrc;
         var cmd = MMC.CDB.ReadSubChannel.ISRC(track);
-        if (NativeApi.SendSCSIRequest(fd, ref cmd, out isrc) == -1)
-          throw new IOException($"Failed to retrieve ISRC for track {track}.", new UnixException());
+        try { NativeApi.SendSCSIRequest(fd, ref cmd, out isrc); }
+        catch (Exception e) { throw new IOException($"Failed to retrieve ISRC for track {track}.", e); }
         isrc.FixUp();
         return isrc.Status.IsValid ? Encoding.ASCII.GetString(isrc.ISRC) : string.Empty;
       }
@@ -190,7 +190,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
       #region Private Methods
 
-      private static int SendSCSIRequest<TCommand, TData>(UnixFileDescriptor fd, ref TCommand cmd, out TData data) where TCommand : struct where TData : struct {
+      private static void SendSCSIRequest<TCommand, TData>(UnixFileDescriptor fd, ref TCommand cmd, out TData data) where TCommand : struct where TData : struct {
         var cmdlen = Marshal.SizeOf(typeof(TCommand));
         if (cmdlen > 16)
           throw new InvalidOperationException("A SCSI command must not exceed 16 bytes in size.");
@@ -209,9 +209,10 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           req.dxferp = req.sbp  + req.mx_sb_len;
           Marshal.StructureToPtr(cmd, req.cmdp, false);
           try {
-            var rc = NativeApi.SendSCSIRequest(fd.Value, IOCTL.SG_IO, ref req);
+            if (NativeApi.SendSCSIRequest(fd.Value, IOCTL.SG_IO, ref req) != 0)
+              throw new UnixException();
+            // TODO: Check SCSI sense data
             data = (TData) Marshal.PtrToStructure(req.dxferp, typeof(TData));
-            return rc;
           }
           finally {
             Marshal.DestroyStructure(req.cmdp, typeof(TCommand));
