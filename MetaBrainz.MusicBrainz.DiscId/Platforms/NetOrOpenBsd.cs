@@ -4,9 +4,9 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
   internal abstract class NetOrOpenBsd : Bsd {
 
-    protected override string GetDevicePath(string device) {
-      return string.Concat("/dev/r", device, NativeApi.RawPartition);
-    }
+    protected override bool AddressesAreNative => true;
+
+    protected override string GetDevicePath(string device) => string.Concat("/dev/r", device, NativeApi.RawPartition);
 
     #region Native API
 

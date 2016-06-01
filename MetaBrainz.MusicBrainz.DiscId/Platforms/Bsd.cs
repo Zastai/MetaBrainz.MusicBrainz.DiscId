@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -10,6 +11,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
   internal abstract class Bsd : Unix {
 
     protected Bsd() : base(DiscReadFeature.TableOfContents | DiscReadFeature.MediaCatalogNumber | DiscReadFeature.TrackIsrc) { }
+
+    protected abstract bool AddressesAreNative { get; }
 
     protected abstract string GetDevicePath(string device);
 
@@ -34,7 +37,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         Track[] tracks;
         { // Read the TOC itself
           MMC.TrackDescriptor[] rawtracks;
-          NativeApi.ReadTOC(fd, out first, out last, out rawtracks);
+          NativeApi.ReadTOC(fd, out first, out last, out rawtracks, this.AddressesAreNative);
           tracks = new Track[rawtracks.Length];
           var i = 0;
           if (first > 0) {
@@ -77,7 +80,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         CD_TRACK_INFO       = 3,
       }
 
-      private enum IOCTL : uint {
+      private enum IOCTL : ulong {
         CDIOREADTOCHEADER   = 0x40046304,
         CDIOREADTOCENTRIES  = 0xc0106305,
         CDIOCREADSUBCHANNEL = 0xc0106303,
@@ -137,7 +140,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         return UnixFileDescriptor.OpenPath(name, O_RDONLY | O_NONBLOCK, 0);
       }
 
-      public static void ReadTOC(UnixFileDescriptor fd, out byte first, out byte last, out MMC.TrackDescriptor[] tracks) {
+      public static void ReadTOC(UnixFileDescriptor fd, out byte first, out byte last, out MMC.TrackDescriptor[] tracks, bool nativeAddress) {
         { // Read the TOC header
           var req = new TOCHeaderRequest();
           if (NativeApi.SendIORequest(fd.Value, IOCTL.CDIOREADTOCHEADER, ref req) != 0)
@@ -162,6 +165,9 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
             var walker = req.data;
             for (var i = 0; i < trackcount; ++i, walker += itemsize) {
               tracks[i] = (MMC.TrackDescriptor) Marshal.PtrToStructure(walker, datatype);
+              // The FixUp call assumes the address is in network byte order.
+              if (nativeAddress)
+                tracks[i].Address = IPAddress.HostToNetworkOrder(tracks[i].Address);
               tracks[i].FixUp(req.address_format == CDAddressFormat.CD_MSF_FORMAT);
             }
           }
