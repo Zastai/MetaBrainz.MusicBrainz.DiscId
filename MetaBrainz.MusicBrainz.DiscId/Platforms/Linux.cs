@@ -85,7 +85,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       // in milliseconds; timeout better shouldn't happen for scsi commands -> device is reset
       private const uint DefaultSCSIRequestTimeOut = 30000;
 
-      private enum IOCTL : int {
+      private enum IOCTL : ulong {
         // Generic SCSI command (uses standard SCSI MMC structures)
         SG_IO              = 0x2285,
       }
