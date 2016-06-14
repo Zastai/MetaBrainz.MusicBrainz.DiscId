@@ -19,7 +19,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           using (var info = File.OpenText("/proc/sys/dev/cdrom/info")) {
             string line;
             while ((line = info.ReadLine()) != null) {
-              if (!line.StartsWith("drive name:"))
+              if (!line.StartsWith("drive name:", StringComparison.Ordinal))
                 continue;
               devices = line.Substring(11).Split(new[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
               break;
@@ -90,31 +90,57 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         SG_IO              = 0x2285,
       }
 
-      [Flags]
-      private enum SCSIFlags : uint {
-        SG_FLAG_DIRECT_IO   = 1,       // default is indirect IO
-        SG_FLAG_LUN_INHIBIT = 2,       // default is to put device's lun into the 2nd byte of SCSI command
-        SG_FLAG_NO_DXFER    = 0x10000, // no transfer of kernel buffers to/from user space (debug indirect IO)
+      private enum SCSIDriverStatus : ushort {
+        DRIVER_OK      = 0,
+        DRIVER_BUSY    = 1,
+        DRIVER_SOFT    = 2,
+        DRIVER_MEDIA   = 3,
+        DRIVER_ERROR   = 4,
+        DRIVER_INVALID = 5,
+        DRIVER_TIMEOUT = 6,
+        DRIVER_HARD    = 7,
+        DRIVER_SENSE   = 8,
       }
 
       [Flags]
-      private enum SCSIInfoStatus : uint {
-        SG_INFO_OK    = 0x00, // no sense, host nor driver "noise"
-        SG_INFO_CHECK = 0x01, // something abnormal happened
+      private enum SCSIFlags : uint {
+        DIRECT_IO   = 1,       // default is indirect IO
+        LUN_INHIBIT = 2,       // default is to put device's lun into the 2nd byte of SCSI command
+        NO_DXFER    = 0x10000, // no transfer of kernel buffers to/from user space (debug indirect IO)
       }
 
       [Flags]
       private enum SCSIInfoIOMode : uint {
-        SG_INFO_INDIRECT_IO = 0x00, // data xfer via kernel buffers (or no xfer)
-        SG_INFO_DIRECT_IO   = 0x02, // direct IO requested and performed
-        SG_INFO_MIXED_IO    = 0x04, // part direct, part indirect IO
+        INDIRECT_IO = 0x00, // data xfer via kernel buffers (or no xfer)
+        DIRECT_IO   = 0x02, // direct IO requested and performed
+        MIXED_IO    = 0x04, // part direct, part indirect IO
+      }
+
+      [Flags]
+      private enum SCSIInfoStatus : uint {
+        OK    = 0x00, // no sense, host nor driver "noise"
+        CHECK = 0x01, // something abnormal happened
+      }
+
+      private enum SCSIStatus : byte {
+        GOOD                       = 0x00,
+        CHECK_CONDITION            = 0x02,
+        CONDITION_MET              = 0x04,
+        BUSY                       = 0x08,
+        INTERMEDIATE               = 0x10,
+        INTERMEDIATE_CONDITION_MET = 0x14,
+        RESERVATION_CONFLICT       = 0x18,
+        COMMAND_TERMINATED         = 0x22,
+        TASK_SET_FULL              = 0x28,
+        ACA_ACTIVE                 = 0x30,
+        TASK_ABORTED               = 0x40,
       }
 
       private enum SCSITransferDirection : int {
-        SG_DXFER_NONE        = -1, // e.g. a SCSI Test Unit Ready command
-        SG_DXFER_TO_DEV      = -2, // e.g. a SCSI WRITE command
-        SG_DXFER_FROM_DEV    = -3, // e.g. a SCSI READ command
-        SG_DXFER_TO_FROM_DEV = -4, // like SG_DXFER_FROM_DEV, but during indirect IO the user buffer is copied into the kernel buffers before the transfer
+        NONE        = -1, // e.g. a SCSI Test Unit Ready command
+        TO_DEV      = -2, // e.g. a SCSI WRITE command
+        FROM_DEV    = -3, // e.g. a SCSI READ command
+        TO_FROM_DEV = -4, // like SG_DXFER_FROM_DEV, but during indirect IO the user buffer is copied into the kernel buffers before the transfer
       }
 
       #endregion
@@ -122,6 +148,61 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       #region Structures
 
       [StructLayout(LayoutKind.Sequential, Pack = 1)]
+      private struct SCSISenseDescriptor {
+        public byte DescriptorType;
+        public byte AdditionalLength;
+        public byte Byte3;
+        public byte Byte4;
+        public uint Information;
+
+        public bool InformationIsValid => (this.Byte3 & 0x80) == 0x80;
+      }
+
+      [StructLayout(LayoutKind.Sequential, Pack = 1)]
+      private struct SCSIDescriptorSenseData {
+        public byte                Byte1;
+        public byte                Byte2;
+        public byte                AdditionalSenseCode;
+        public byte                AdditionalSenseCodeQualifier;
+        public byte                Byte5;
+        public byte                Byte6;
+        public byte                Byte7;
+        public byte                AdditionalSenseLength;
+        public SCSISenseDescriptor Descriptor;
+
+        public byte ResponseCode      => (byte) (this.Byte1 & 0x7f);
+        public byte SenseKey          => (byte) (this.Byte2 & 0x0f);
+        public bool SenseDataOverflow =>        (this.Byte5 & 0x10) == 0x10;
+
+      }
+
+      [StructLayout(LayoutKind.Sequential, Pack = 1)]
+      private struct SCSIFixedSenseData {
+        public byte   Byte1;
+        public byte   SegmentNumber;
+        public byte   Byte3;
+        public uint   Information;
+        public byte   AdditionalSenseLength;
+        public uint   CommandSpecificInformation;
+        public byte   AdditionalSenseCode;
+        public byte   AdditionalSenseCodeQualifier;
+        public byte   FieldReplaceableUnitCode;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+        public byte[] SenseKeySpecific;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 14)]
+        public byte[] AdditionalSenseData;
+
+        public bool InformationIsValid     =>        (this.Byte1 & 0x80) == 0x80;
+        public byte ResponseCode           => (byte) (this.Byte1 & 0x7f);
+        public bool FileMark               =>        (this.Byte3 & 0x80) == 0x80;
+        public bool EndOfMedium            =>        (this.Byte3 & 0x40) == 0x40;
+        public bool InvalidLengthIndicator =>        (this.Byte3 & 0x20) == 0x20;
+        public bool SenseDataOverflow      =>        (this.Byte3 & 0x10) == 0x10;
+        public byte SenseKey               => (byte) (this.Byte3 & 0x0f);
+
+      }
+
+      [StructLayout(LayoutKind.Sequential, Pack = 0)]
       private struct SCSIRequest {
         public int                   interface_id;
         public SCSITransferDirection dxfer_direction;
@@ -136,18 +217,19 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         public SCSIFlags             flags;
         public int                   pack_id;
         public IntPtr                usr_ptr;
-        public byte                  status;
+        public SCSIStatus            status;
         public byte                  masked_status;
         public byte                  msg_status;
         public byte                  sb_len_wr;
         public ushort                host_status;
-        public ushort                driver_status;
+        public SCSIDriverStatus      driver_status;
         public int                   resid;
         public uint                  duration;
         public uint                  info;
 
         public SCSIInfoStatus Status => (SCSIInfoStatus) (this.info & 0x1);
         public SCSIInfoIOMode IOMode => (SCSIInfoIOMode) (this.info & 0x6);
+
       }
 
       #endregion
@@ -196,13 +278,14 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           throw new InvalidOperationException("A SCSI command must not exceed 16 bytes in size.");
         var req = new SCSIRequest {
           interface_id    = 'S',
-          dxfer_direction = SCSITransferDirection.SG_DXFER_FROM_DEV,
+          dxfer_direction = SCSITransferDirection.FROM_DEV,
           timeout         = NativeApi.DefaultSCSIRequestTimeOut,
           cmd_len         = (byte) cmdlen,
-          mx_sb_len       = 16,
+          mx_sb_len       = (byte) 64,
           dxfer_len       = (uint) Marshal.SizeOf(typeof(TData)),
         };
-        var bytes = Marshal.AllocHGlobal(new IntPtr(req.cmd_len + req.mx_sb_len + req.dxfer_len));
+        var memlen = (uint) (req.cmd_len + req.mx_sb_len + req.dxfer_len);
+        var bytes = NativeApi.AllocZero(new UIntPtr(1), new UIntPtr(memlen));
         try {
           req.cmdp   = bytes;
           req.sbp    = req.cmdp + req.cmd_len;
@@ -211,7 +294,19 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           try {
             if (NativeApi.SendSCSIRequest(fd.Value, IOCTL.SG_IO, ref req) != 0)
               throw new UnixException();
-            // TODO: Check SCSI sense data
+            if (req.status == SCSIStatus.CHECK_CONDITION || req.driver_status == SCSIDriverStatus.DRIVER_SENSE) {
+              var response = Marshal.ReadByte(req.sbp) & 0x7f;
+              switch (response) {
+                case 0x70: case 0x71: // Fixed Format (Current or Deferred)
+                  var fixedsense = (SCSIFixedSenseData) Marshal.PtrToStructure(req.sbp, typeof(SCSIFixedSenseData));
+                  throw new ScsiException(fixedsense.SenseKey, fixedsense.AdditionalSenseCode, fixedsense.AdditionalSenseCodeQualifier);
+                case 0x72: case 0x73: // Descriptor Format (Current or Deferred)
+                  var descsense = (SCSIDescriptorSenseData) Marshal.PtrToStructure(req.sbp, typeof(SCSIDescriptorSenseData));
+                  throw new ScsiException(descsense.SenseKey, descsense.AdditionalSenseCode, descsense.AdditionalSenseCodeQualifier);
+                default:
+                  throw new IOException($"SCSI CHECK CONDITION: BAD RESPONSE CODE ({response:X2})");
+              }
+            }
             data = (TData) Marshal.PtrToStructure(req.dxferp, typeof(TData));
           }
           finally {
@@ -219,9 +314,15 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           }
         }
         finally {
-          Marshal.FreeHGlobal(bytes);
+          NativeApi.Free(bytes);
         }
       }
+
+      [DllImport("libc", EntryPoint = "calloc", SetLastError = true)]
+      private static extern IntPtr AllocZero(UIntPtr nmemb, UIntPtr size);
+
+      [DllImport("libc", EntryPoint = "free", SetLastError = true)]
+      private static extern void Free(IntPtr ptr);
 
       [DllImport("libc", EntryPoint = "ioctl", SetLastError = true)]
       private static extern int SendSCSIRequest(int fd, IOCTL command, ref SCSIRequest request);
