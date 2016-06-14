@@ -12,8 +12,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
     public UnixException() : this(Marshal.GetLastWin32Error()) { }
 
     /// <summary>Initializes a new instance of the <see cref="UnixException"/> class, for the specified error code.</summary>
-    public UnixException(int errno) : base(UnixException.GetErrorText(errno), errno) {
-    }
+    public UnixException(int errno) : base(UnixException.GetErrorText(errno), errno) { }
 
     private static string GetErrorText(int errno) {
       UnixException.ThreadLock.EnterWriteLock();
