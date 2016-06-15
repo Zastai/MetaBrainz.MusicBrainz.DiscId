@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-
+using MetaBrainz.MusicBrainz.DiscId.Scsi;
 using Microsoft.Win32.SafeHandles;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Platforms {

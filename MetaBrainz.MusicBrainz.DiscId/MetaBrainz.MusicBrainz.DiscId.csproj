@@ -58,11 +58,13 @@
     <Compile Include="Platforms\UnixFileDescriptor.cs" />
     <Compile Include="Platforms\Unsupported.cs" />
     <Compile Include="Platforms\Windows.cs" />
+    <Compile Include="Scsi\MMC.cs" />
+    <Compile Include="Scsi\SAM.cs" />
+    <Compile Include="Scsi\SPC.cs" />
+    <Compile Include="Scsi\ScsiException.cs" />
     <Compile Include="DiscReadFeature.cs" />
     <Compile Include="IPlatform.cs" />
-    <Compile Include="MMC.cs" />
     <Compile Include="Platform.cs" />
-    <Compile Include="ScsiException.cs" />
     <Compile Include="TableOfContents.cs" />
     <Compile Include="Track.cs" />
   </ItemGroup>

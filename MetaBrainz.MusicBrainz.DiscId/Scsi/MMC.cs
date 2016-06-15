@@ -1,27 +1,32 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 
-// ReSharper disable InconsistentNaming
-// ReSharper disable UnusedMember.Local
+namespace MetaBrainz.MusicBrainz.DiscId.Scsi {
 
-namespace MetaBrainz.MusicBrainz.DiscId {
-
-  /// <summary>Static class containing structures, enumerations and constants for SCSI MultiMedia Commands.</summary>
+  /// <summary>Static class containing structures, enumerations and constants for the SCSI MultiMedia Commands.</summary>
   /// <remarks>
   /// Based on the following (draft) standard documents:
   /// <list type="bullet">
+  ///   <item><term>[MMC]  </term><description>X3T10 1048D revision 10a</description></item>
+  ///   <item><term>[MMC-2]</term><description>NCITS 333 T10/1228-D revision 11a</description></item>
   ///   <item><term>[MMC-3]</term><description>NCITS T10/1363-D revision 10g</description></item>
   ///   <item><term>[MMC-4]</term><description>INCITS T10/1545-D revision 5a (note: this is the last version to include CD-specific commands like <c>READ SUB-CHANNEL</c>)</description></item>
   ///   <item><term>[MMC-5]</term><description>INCITS T10/1675D revision 4</description></item>
   ///   <item><term>[MMC-6]</term><description>INCITS T10/1836D revision 2g</description></item>
   /// </list>
   /// </remarks>
+  [SuppressMessage("ReSharper", "InconsistentNaming")]
+  [SuppressMessage("ReSharper", "UnusedMember.Global")]
+  [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+  [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
   internal static class MMC {
 
     #region Enumerations
 
+    /// <summary>The current status of audio playback.</summary>
     public enum AudioStatus : byte {
       NotSupported = 0x00,
       InProgress   = 0x11,
@@ -31,6 +36,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       NoStatus     = 0x15,
     }
 
+    /// <summary>The type of information stored in a CD-TEXT &quot;pack&quot;.</summary>
     public enum CDTextContentType : byte {
       Nothing   = 0x00,
       AlbumName = 0x80,

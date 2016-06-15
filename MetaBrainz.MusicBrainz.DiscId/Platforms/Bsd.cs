@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
+using MetaBrainz.MusicBrainz.DiscId.Scsi;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 

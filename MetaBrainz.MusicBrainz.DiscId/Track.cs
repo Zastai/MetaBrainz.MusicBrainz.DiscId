@@ -1,4 +1,5 @@
-﻿
+﻿using MetaBrainz.MusicBrainz.DiscId.Scsi;
+
 namespace MetaBrainz.MusicBrainz.DiscId {
 
   internal struct Track {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using MetaBrainz.MusicBrainz.DiscId.Scsi;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
@@ -122,20 +123,6 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         CHECK = 0x01, // something abnormal happened
       }
 
-      private enum SCSIStatus : byte {
-        GOOD                       = 0x00,
-        CHECK_CONDITION            = 0x02,
-        CONDITION_MET              = 0x04,
-        BUSY                       = 0x08,
-        INTERMEDIATE               = 0x10,
-        INTERMEDIATE_CONDITION_MET = 0x14,
-        RESERVATION_CONFLICT       = 0x18,
-        COMMAND_TERMINATED         = 0x22,
-        TASK_SET_FULL              = 0x28,
-        ACA_ACTIVE                 = 0x30,
-        TASK_ABORTED               = 0x40,
-      }
-
       private enum SCSITransferDirection : int {
         NONE        = -1, // e.g. a SCSI Test Unit Ready command
         TO_DEV      = -2, // e.g. a SCSI WRITE command
@@ -146,61 +133,6 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       #endregion
 
       #region Structures
-
-      [StructLayout(LayoutKind.Sequential, Pack = 1)]
-      private struct SCSISenseDescriptor {
-        public byte DescriptorType;
-        public byte AdditionalLength;
-        public byte Byte3;
-        public byte Byte4;
-        public uint Information;
-
-        public bool InformationIsValid => (this.Byte3 & 0x80) == 0x80;
-      }
-
-      [StructLayout(LayoutKind.Sequential, Pack = 1)]
-      private struct SCSIDescriptorSenseData {
-        public byte                Byte1;
-        public byte                Byte2;
-        public byte                AdditionalSenseCode;
-        public byte                AdditionalSenseCodeQualifier;
-        public byte                Byte5;
-        public byte                Byte6;
-        public byte                Byte7;
-        public byte                AdditionalSenseLength;
-        public SCSISenseDescriptor Descriptor;
-
-        public byte ResponseCode      => (byte) (this.Byte1 & 0x7f);
-        public byte SenseKey          => (byte) (this.Byte2 & 0x0f);
-        public bool SenseDataOverflow =>        (this.Byte5 & 0x10) == 0x10;
-
-      }
-
-      [StructLayout(LayoutKind.Sequential, Pack = 1)]
-      private struct SCSIFixedSenseData {
-        public byte   Byte1;
-        public byte   SegmentNumber;
-        public byte   Byte3;
-        public uint   Information;
-        public byte   AdditionalSenseLength;
-        public uint   CommandSpecificInformation;
-        public byte   AdditionalSenseCode;
-        public byte   AdditionalSenseCodeQualifier;
-        public byte   FieldReplaceableUnitCode;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-        public byte[] SenseKeySpecific;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 14)]
-        public byte[] AdditionalSenseData;
-
-        public bool InformationIsValid     =>        (this.Byte1 & 0x80) == 0x80;
-        public byte ResponseCode           => (byte) (this.Byte1 & 0x7f);
-        public bool FileMark               =>        (this.Byte3 & 0x80) == 0x80;
-        public bool EndOfMedium            =>        (this.Byte3 & 0x40) == 0x40;
-        public bool InvalidLengthIndicator =>        (this.Byte3 & 0x20) == 0x20;
-        public bool SenseDataOverflow      =>        (this.Byte3 & 0x10) == 0x10;
-        public byte SenseKey               => (byte) (this.Byte3 & 0x0f);
-
-      }
 
       [StructLayout(LayoutKind.Sequential, Pack = 0)]
       private struct SCSIRequest {
@@ -217,7 +149,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         public SCSIFlags             flags;
         public int                   pack_id;
         public IntPtr                usr_ptr;
-        public SCSIStatus            status;
+        public SAM.StatusCode        status;
         public byte                  masked_status;
         public byte                  msg_status;
         public byte                  sb_len_wr;
@@ -294,15 +226,13 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           try {
             if (NativeApi.SendSCSIRequest(fd.Value, IOCTL.SG_IO, ref req) != 0)
               throw new UnixException();
-            if (req.status == SCSIStatus.CHECK_CONDITION || req.driver_status == SCSIDriverStatus.DRIVER_SENSE) {
+            if (req.status == SAM.StatusCode.CHECK_CONDITION || req.driver_status == SCSIDriverStatus.DRIVER_SENSE) {
               var response = Marshal.ReadByte(req.sbp) & 0x7f;
               switch (response) {
                 case 0x70: case 0x71: // Fixed Format (Current or Deferred)
-                  var fixedsense = (SCSIFixedSenseData) Marshal.PtrToStructure(req.sbp, typeof(SCSIFixedSenseData));
-                  throw new ScsiException(fixedsense.SenseKey, fixedsense.AdditionalSenseCode, fixedsense.AdditionalSenseCodeQualifier);
+                  throw new ScsiException((SPC.FixedSenseData) Marshal.PtrToStructure(req.sbp, typeof(SPC.FixedSenseData)));
                 case 0x72: case 0x73: // Descriptor Format (Current or Deferred)
-                  var descsense = (SCSIDescriptorSenseData) Marshal.PtrToStructure(req.sbp, typeof(SCSIDescriptorSenseData));
-                  throw new ScsiException(descsense.SenseKey, descsense.AdditionalSenseCode, descsense.AdditionalSenseCodeQualifier);
+                  throw new ScsiException((SPC.DescriptorSenseData) Marshal.PtrToStructure(req.sbp, typeof(SPC.DescriptorSenseData)));
                 default:
                   throw new IOException($"SCSI CHECK CONDITION: BAD RESPONSE CODE ({response:X2})");
               }

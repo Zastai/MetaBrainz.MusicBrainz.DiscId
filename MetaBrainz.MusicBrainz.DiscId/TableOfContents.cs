@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using MetaBrainz.MusicBrainz.DiscId.Scsi;
 
 namespace MetaBrainz.MusicBrainz.DiscId {
 
