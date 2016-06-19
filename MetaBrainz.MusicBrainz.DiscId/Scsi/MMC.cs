@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Scsi {
 
@@ -28,16 +27,19 @@ namespace MetaBrainz.MusicBrainz.DiscId.Scsi {
 
     /// <summary>The current status of audio playback.</summary>
     public enum AudioStatus : byte {
+
       NotSupported = 0x00,
       InProgress   = 0x11,
       Paused       = 0x12,
       PlayComplete = 0x13,
       PlayError    = 0x14,
       NoStatus     = 0x15,
+
     }
 
     /// <summary>Enumeration of possible encodings for CD-TEXT data (values other than 0 for ID1 0x80-0x85 only).</summary>
     public enum CDTextCharacterCode : byte {
+
       ISO_8859_1      = 0x00, // modified, see CD-EXTRA specification, appendix 1
       ISO_646         = 0x01, // 7-bit ASCII
       // 0x02-0x7f: Reserved
@@ -45,10 +47,12 @@ namespace MetaBrainz.MusicBrainz.DiscId.Scsi {
       Korean          = 0x81, // Encoding to be defined
       MandarinChinese = 0x82, // Encoding to be defined
       // 0x83-0xff: Reserved
+
     }
 
     /// <summary>The type of information stored in a CD-TEXT &quot;pack&quot; (<see cref="CDTextPack"/>).</summary>
     public enum CDTextContentType : byte {
+
       Nothing   = 0x00,
       Title     = 0x80, // Album Title with ID2=0, Track Title otherwise
       Performer = 0x81,
@@ -64,10 +68,38 @@ namespace MetaBrainz.MusicBrainz.DiscId.Scsi {
       Internal  = 0x8d, // Closed Information (for internal use by content provider)
       Code      = 0x8e, // UPC/EAN with ID2=0, ISRC otherwise
       SizeInfo  = 0x8f,
+
+    }
+
+    /// <summary>The flag values for the CD-TEXT size info data.</summary>
+    [Flags]
+    public enum CDTextSizeInfoFlags : byte {
+
+      // From the Red Book standard:
+      // The flags byte encodes the following information:
+      //   1....... Mode 2 Flag (indicates the presence of mode-2 CD-TEXT data packets)
+      //   .1...... Program Area Copy Protection (indicates the presence of information in the program area about the copyright assertion of specific items)
+      //            => Set to 0 if the mode-2 flag is 0. If not set, copyright should be assumed to be asserted for all CD-TEXT data.
+      //   ..111... Reserved (0)
+      //   .....1.. Copyright is asserted for messages (content type 0x85) in this block.
+      //   ......1. Copyright is asserted for artist names (content type 0x81-0x84) in this block.
+      //   .......1 Copyright is asserted for titles (content type 0x80) in this block.
+
+      Mode2DataPresent          = 0x80,
+      ProgramAreaCopyProtection = 0x40,
+      Reserved1                 = 0x20,
+      Reserved2                 = 0x10,
+      Reserved3                 = 0x08,
+      CopyrightedMessages       = 0x04,
+      CopyrightedArtists        = 0x02,
+      CopyrightedTitles         = 0x01,
+      None                      = 0x00,
+
     }
 
     /// <summary>Possible operation codes for CD/DVD/... SCSI commands.</summary>
     public enum OperationCode : byte {
+
       Blank                      = 0xA1,
       CloseTrackSession          = 0x5B,
       Erase10                    = 0x2C, // [MMC-4] Added, [MMC-6] Dropped
@@ -116,34 +148,42 @@ namespace MetaBrainz.MusicBrainz.DiscId.Scsi {
       Write10                    = 0x2A,
       Write12                    = 0xAA,
       WriteAndVerify10           = 0x2E,
+
     }
 
     /// <summary>Possible values for the control field (4 bits) in some structures.</summary>
     [Flags]
     public enum SubChannelControl : byte {
+
       // The first two bits are "content type".
       ContentTypeMask      = 0x0c,
       TwoChannelAudio      = 0x00,
       Data                 = 0x04,
       ReservedAudio        = 0x08,
+
       // The third bit indicates whether or not a digital copy is permitted.
       DigitalCopyPermitted = 0x02,
+
       // The last bit specifies a modifier for the content type: pre-emphasis for audio, incremental recording for data.
       PreEmphasis          = 0x01,
       Incremental          = 0x01,
+
     }
 
     /// <summary>Possible values for the ADR field (typically 4 bits) in some structures.</summary>
     public enum SubChannelDataFormat : byte {
+
       NotSpecified       = 0x00,
       Position           = 0x01,
       MediaCatalogNumber = 0x02,
       ISRC               = 0x03,
       // All other values (4-f) are reserved
+
     }
 
     /// <summary>Values for the "sub-channel parameter list" in a READ SUB-CHANNEL command.</summary>
     public enum SubChannelRequestFormat : byte {
+
       Position           = 0x01,
       MediaCatalogNumber = 0x02,
       ISRC               = 0x03,
@@ -164,10 +204,12 @@ namespace MetaBrainz.MusicBrainz.DiscId.Scsi {
       VendorSpecific15   = 0xfe,
       VendorSpecific16   = 0xff,
       // All other values (00, 04-ef) are reserved
+
     }
 
     /// <summary>Values for the format in a READ TOC/PMA/ATIP command.</summary>
     public enum TOCRequestFormat : byte {
+
       TOC         = 0x00,
       SessionInfo = 0x01,
       FullTOC     = 0x02,
@@ -175,6 +217,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Scsi {
       ATIP        = 0x04,
       CDText      = 0x05,
       // All other values (6-f) reserved
+
     }
 
     #endregion
@@ -303,7 +346,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Scsi {
       // The header consists of 4 indicator (ID) bytes:
       // - ID1 (Pack Type)
       //   => see CDTextContentType for values
-      //   => content appears in ascending order of this byte
+      //   => content appears in ascending order of this byte (within each block)
       // - ID2
       //   => most significant bit indicates the pack is for a to-be-defined extended application
       //   => rest forms the track number for the first character in the pack; 0 indicates disc-level information
@@ -357,41 +400,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Scsi {
       //                  MSF  End;
       //    - 0x8D    : Closed information. Strings for whole disc plus the tracks. Not to be shown nor read by players available to the public.
       //    - 0x8E    : UPC/EAN to be stored (typically as 13 characters) for track 0; ISRC to be stored (typically as 12 characters) for each track.
-      //    - 0x8F    : Size information (mainly for validation purposes); spread across 3 packs).
-      //                  byte CharacterCode; // for this block
-      //                  byte FirstTrack;
-      //                  byte LastTrack;
-      //                  byte Flags;
-      //                  byte PacksWithType80;
-      //                  byte PacksWithType81;
-      //                  byte PacksWithType82;
-      //                  byte PacksWithType83;
-      //                  byte PacksWithType84;
-      //                  byte PacksWithType85;
-      //                  byte PacksWithType86;
-      //                  byte PacksWithType87;
-      //                  byte PacksWithType88;
-      //                  byte PacksWithType89;
-      //                  byte PacksWithType8A;
-      //                  byte PacksWithType8B;
-      //                  byte PacksWithType8C;
-      //                  byte PacksWithType8D;
-      //                  byte PacksWithType8E;
-      //                  byte PacksWithType8F;
-      //                  byte LastSequenceNumbe[8]; // for blocks 0-7; 0 = no such block
-      //                  byte LanguageCode[8];      // for blocks 0-7
-      //                => The character code defines the encoding (see CDTextCharacterCode enum for values).
-      //                   Applies to content types 0x80-0x85 only; any other characters are always in the modified ISO-8859-1
-      //                   Blocks with ISO-8859-1 or ASCII as code should precede
-      //                => The flags byte encodes the following information:
-      //                     1....... Mode 2 Flag (indicates the presence of mode-2 CD-TEXT data packets)
-      //                     .1...... Program Area Copy Protection (indicates the presence of information in the program area about the copyright assertion of specific items)
-      //                              => Set to 0 if the mode-2 flag is 0. If not set, copyright should be assumed to be asserted for all CD-TEXT data.
-      //                     ..111... Reserved (0)
-      //                     .....1.. Copyright is asserted for messages (content type 0x85) in this block.
-      //                     ......1. Copyright is asserted for artist names (content type 0x81-0x84) in this block.
-      //                     .......1 Copyright is asserted for titles (content type 0x80) in this block.
-      //                => Language code is encoded as specified in annex 1 to part 5 of EBU Tech 3258-E.
+      //    - 0x8F    : Size information (mainly for validation purposes); spread across 3 packs. See CDTextSizeInfo for the layout.
 
       [MarshalAs(UnmanagedType.ByValArray, SizeConst = 12)]
       public byte[]            Data;
@@ -435,6 +444,46 @@ namespace MetaBrainz.MusicBrainz.DiscId.Scsi {
       }
 
       public void FixUp() { this.CRC = (ushort) IPAddress.NetworkToHostOrder((short) this.CRC); }
+
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct CDTextSizeInfo {
+
+      // From the Red Book standard:
+      // - The character code defines the encoding for packs in the block this size info belongs to.
+      // - Applies to content types 0x80-0x85 only; any other characters are always in the modified ISO-8859-1 encoding.
+      // - Blocks with ISO-8859-1 or ASCII as code should precede those with higher code values.
+
+      public CDTextCharacterCode CharacterCode;
+
+      public byte FirstTrack;
+      public byte LastTrack;
+
+      public CDTextSizeInfoFlags Flags;
+
+      public byte PacksWithType80;
+      public byte PacksWithType81;
+      public byte PacksWithType82;
+      public byte PacksWithType83;
+      public byte PacksWithType84;
+      public byte PacksWithType85;
+      public byte PacksWithType86;
+      public byte PacksWithType87;
+      public byte PacksWithType88;
+      public byte PacksWithType89;
+      public byte PacksWithType8A;
+      public byte PacksWithType8B;
+      public byte PacksWithType8C;
+      public byte PacksWithType8D;
+      public byte PacksWithType8E;
+      public byte PacksWithType8F;
+
+      [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+      public byte[] LastSequenceNumber; // for blocks 0-7; 0 if there is no such block
+
+      [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+      public byte[] LanguageCode; // for blocks 0-7; language code is encoded as specified in annex 1 to part 5 of EBU Tech 3258-E.
 
     }
 
