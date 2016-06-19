@@ -61,10 +61,10 @@
     <Compile Include="Scsi\MMC.cs" />
     <Compile Include="Scsi\SAM.cs" />
     <Compile Include="Scsi\SPC.cs" />
-    <Compile Include="Scsi\ScsiException.cs" />
     <Compile Include="DiscReadFeature.cs" />
     <Compile Include="IPlatform.cs" />
     <Compile Include="Platform.cs" />
+    <Compile Include="ScsiException.cs" />
     <Compile Include="TableOfContents.cs" />
     <Compile Include="Track.cs" />
     <Compile Include="Util.cs" />

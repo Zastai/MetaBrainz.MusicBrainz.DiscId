@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace MetaBrainz.MusicBrainz.DiscId.Scsi {
+using MetaBrainz.MusicBrainz.DiscId.Scsi;
+
+namespace MetaBrainz.MusicBrainz.DiscId {
 
   /// <summary>Exception thrown for a SCSI-related error (based on the sense key as well as the ASC/ASCQ values).</summary>
   [Serializable]
