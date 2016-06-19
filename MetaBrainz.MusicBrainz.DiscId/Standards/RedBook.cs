@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Standards {
 
-  /// <summary>Static class containing structures, enumerations and constants for the "Red Book" standard.</summary>
+  /// <summary>Static class containing structures, enumerations and constants for the "Red Book" (CD-DA) standard.</summary>
   /// <remarks>Based on the IEC 60908:1999 standard document.</remarks>
   [SuppressMessage("ReSharper", "InconsistentNaming")]
   [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -21,7 +21,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
       ISO_8859_1      = 0x00, // modified, see CD-EXTRA specification, appendix 1
       ISO_646         = 0x01, // 7-bit ASCII
       // 0x02-0x7f: Reserved
-      MusicShiftJis   = 0x80, // Kanji
+      MusicShiftJis   = 0x80, // Kanji (RIAJ RS506 - could not find the document; apparently Shift-Jis plus many emoji)
       Korean          = 0x81, // Encoding to be defined
       MandarinChinese = 0x82, // Encoding to be defined
       // 0x83-0xff: Reserved
@@ -144,8 +144,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
       //   - 0x80-0x85: Text as described above; if ID2 is 0, this indicates the presence of album-level information.
       //   - 0x86     : "Disc ID" information such as catalog number, name of the record company, point of sale code, etc.
       //                Different pieces of information are to be separated by a slash. ID2 should be 0.
-      //   - 0x87     : Genre information, encoded as 2 bytes (MSB first) in the first two bytes of the text data (values: CD-EXTRA spec III.3.2.5.3.8).
-      //                The supplementary description of the genre may be appended.
+      //   - 0x87     : Genre information, encoded as 2 bytes (MSB first) in the first two bytes of the text data. The supplementary description of the genre may be appended.
       //   - 0x88     : TOC information; copy of what is stored in the Q channel of the lead-in.
       //                For ID2 = 0, this is
       //                  byte FirstTrack;
