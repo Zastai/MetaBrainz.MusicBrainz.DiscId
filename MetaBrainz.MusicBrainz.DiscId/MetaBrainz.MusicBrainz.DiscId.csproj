@@ -58,7 +58,9 @@
     <Compile Include="Platforms\UnixFileDescriptor.cs" />
     <Compile Include="Platforms\Unsupported.cs" />
     <Compile Include="Platforms\Windows.cs" />
+    <Compile Include="Standards\EBU.cs" />
     <Compile Include="Standards\MMC.cs" />
+    <Compile Include="Standards\RedBook.cs" />
     <Compile Include="Standards\SAM.cs" />
     <Compile Include="Standards\SPC.cs" />
     <Compile Include="DiscReadFeature.cs" />
