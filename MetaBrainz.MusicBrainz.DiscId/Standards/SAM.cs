@@ -16,8 +16,6 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
   /// </remarks>
   [SuppressMessage("ReSharper", "InconsistentNaming")]
   [SuppressMessage("ReSharper", "UnusedMember.Global")]
-  [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
-  [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
   internal static class SAM {
 
     #region Enumerations
