@@ -190,6 +190,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
     }
 
     #endregion
+
   }
 
 }
