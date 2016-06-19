@@ -58,9 +58,9 @@
     <Compile Include="Platforms\UnixFileDescriptor.cs" />
     <Compile Include="Platforms\Unsupported.cs" />
     <Compile Include="Platforms\Windows.cs" />
-    <Compile Include="Scsi\MMC.cs" />
-    <Compile Include="Scsi\SAM.cs" />
-    <Compile Include="Scsi\SPC.cs" />
+    <Compile Include="Standards\MMC.cs" />
+    <Compile Include="Standards\SAM.cs" />
+    <Compile Include="Standards\SPC.cs" />
     <Compile Include="DiscReadFeature.cs" />
     <Compile Include="IPlatform.cs" />
     <Compile Include="Platform.cs" />

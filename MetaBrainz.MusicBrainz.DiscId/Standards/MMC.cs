@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Runtime.InteropServices;
 
-namespace MetaBrainz.MusicBrainz.DiscId.Scsi {
+namespace MetaBrainz.MusicBrainz.DiscId.Standards {
 
   /// <summary>Static class containing structures, enumerations and constants for the SCSI MultiMedia Commands.</summary>
   /// <remarks>

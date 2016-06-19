@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-using MetaBrainz.MusicBrainz.DiscId.Scsi;
+using MetaBrainz.MusicBrainz.DiscId.Standards;
 
 namespace MetaBrainz.MusicBrainz.DiscId {
 

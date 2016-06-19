@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using MetaBrainz.MusicBrainz.DiscId.Scsi;
 using Microsoft.Win32.SafeHandles;
+
+using MetaBrainz.MusicBrainz.DiscId.Standards;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 

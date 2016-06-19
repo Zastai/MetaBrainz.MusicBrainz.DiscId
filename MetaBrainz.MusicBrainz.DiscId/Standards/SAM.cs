@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace MetaBrainz.MusicBrainz.DiscId.Scsi {
+namespace MetaBrainz.MusicBrainz.DiscId.Standards {
 
   /// <summary>Static class containing structures, enumerations and constants for the SCSI Architecture Model.</summary>
   /// <remarks>
