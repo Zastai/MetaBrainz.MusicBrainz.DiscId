@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -55,17 +56,18 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
             throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtracks[i].TrackNumber} instead of 0xAA (lead-out)");
           tracks[0] = new Track(rawtracks[i].Address, rawtracks[i].ControlAndADR.Control, null);
         }
-        // TODO: If requested, try getting CD-TEXT data.
         var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(fd) : null;
-        return new TableOfContents(device, first, last, tracks, mcn);
+        // TODO: Find out how to get CD-TEXT data.
+        return new TableOfContents(device, first, last, tracks, mcn, null);
       }
     }
 
     #region Native API
 
-    // ReSharper disable InconsistentNaming
-    // ReSharper disable UnusedMember.Local
-
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    [SuppressMessage("ReSharper", "UnusedMember.Local")]
+    [SuppressMessage("ReSharper", "MemberCanBePrivate.Local")]
+    [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Local")]
     private static class NativeApi {
 
       #region Constants

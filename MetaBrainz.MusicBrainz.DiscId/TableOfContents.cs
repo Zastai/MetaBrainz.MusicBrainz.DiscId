@@ -370,7 +370,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       }
     }
 
-    internal TableOfContents(string device, byte first, byte last, Track[] tracks, string mcn) : this(device, first, last) {
+    internal TableOfContents(string device, byte first, byte last, Track[] tracks, string mcn, CdTextInfo cdti) : this(device, first, last) {
       if (tracks == null)
         throw new ArgumentNullException(nameof(tracks));
       if (tracks.Length < last + 1)
@@ -393,6 +393,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
         tracks[0] = new Track(tracks[this.LastTrack].Address - TableOfContents.XAInterval);
       if (this.LastTrack < this.FirstTrack)
         throw new NotSupportedException("Invalid TOC (no tracks remain): \"copy-protected\" disc?");
+      // TODO: Apply CD-TEXT information.
     }
 
     #endregion

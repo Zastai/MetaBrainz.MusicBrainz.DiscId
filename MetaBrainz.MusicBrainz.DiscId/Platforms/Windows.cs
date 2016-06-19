@@ -47,13 +47,14 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
             throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtoc.Tracks[i].TrackNumber} instead of 0xAA (lead-out)");
           tracks[0] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, null);
         }
+        var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(hDevice) : null;
+        CdTextInfo cdti = null;
         if ((features & DiscReadFeature.CdText) != 0) {
           MMC.CDTextDescriptor cdtext;
           NativeApi.GetCdTextInfo(hDevice, out cdtext);
-          // TODO: Do something with the information
+          cdti = new CdTextInfo(cdtext.Data);
         }
-        var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(hDevice) : null;
-        return new TableOfContents(device, first, last, tracks, mcn);
+        return new TableOfContents(device, first, last, tracks, mcn, cdti);
       }
     }
 
