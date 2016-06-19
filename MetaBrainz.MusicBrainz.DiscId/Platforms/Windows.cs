@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -11,7 +13,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
   internal sealed class Windows : Platform {
 
-    public Windows() : base(DiscReadFeature.TableOfContents | DiscReadFeature.MediaCatalogNumber | DiscReadFeature.TrackIsrc) { }
+    public Windows() : base(DiscReadFeature.TableOfContents | DiscReadFeature.MediaCatalogNumber | DiscReadFeature.TrackIsrc | DiscReadFeature.CdText) { }
 
     public override IEnumerable<string> AvailableDevices {
       get {
@@ -45,7 +47,11 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
             throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtoc.Tracks[i].TrackNumber} instead of 0xAA (lead-out)");
           tracks[0] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, null);
         }
-        // TODO: If requested, try getting CD-TEXT data.
+        if ((features & DiscReadFeature.CdText) != 0) {
+          MMC.CDTextDescriptor cdtext;
+          NativeApi.GetCdTextInfo(hDevice, out cdtext);
+          // TODO: Do something with the information
+        }
         var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(hDevice) : null;
         return new TableOfContents(device, first, last, tracks, mcn);
       }
@@ -55,8 +61,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
     // FIXME: Ideally, I'd rework this to use SPTI, to align the Linux & Windows implementation; but initial attempts have been unsuccessful.
 
-    // ReSharper disable InconsistentNaming
-
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    [SuppressMessage("ReSharper", "PrivateFieldCanBeConvertedToLocalVariable")]
     private static class NativeApi {
 
       #region Constants
@@ -72,16 +78,19 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
       [StructLayout(LayoutKind.Sequential, Pack = 1)]
       private struct SubChannelRequest { // aka CDROM_SUB_Q_DATA_FORMAT
+
         public MMC.SubChannelRequestFormat Format;
         public byte                        Track;
+
       }
 
       [StructLayout(LayoutKind.Sequential, Pack = 1)]
       private struct TOCRequest {
-        public readonly byte FormatInfo;
-        public readonly byte SessionTrack;
-        public readonly byte Reserved1;
-        public readonly byte Reserved2;
+
+        private readonly byte FormatInfo;
+        private readonly byte SessionTrack;
+        private readonly byte Reserved1;
+        private readonly byte Reserved2;
 
         public TOCRequest(MMC.TOCRequestFormat format = MMC.TOCRequestFormat.TOC, byte track = 0, bool msf = false) {
           this.FormatInfo   = (byte) format;
@@ -101,6 +110,16 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       #endregion
 
       #region Public Methods
+
+      public static void GetCdTextInfo(SafeFileHandle hDevice, out MMC.CDTextDescriptor cdtext) {
+        var req = new NativeApi.TOCRequest(MMC.TOCRequestFormat.CDText);
+        var returned = 0;
+        var cdtextlen = Marshal.SizeOf(typeof(MMC.CDTextDescriptor));
+        var ok = NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_TOC_EX, ref req, Marshal.SizeOf(req), out cdtext, cdtextlen, out returned, IntPtr.Zero);
+        if (!ok)
+          throw new IOException("Failed to retrieve CD-TEXT information.", new Win32Exception(Marshal.GetLastWin32Error()));
+        cdtext.FixUp();
+      }
 
       public static string GetMediaCatalogNumber(SafeFileHandle hDevice) {
         var req = new SubChannelRequest { Format = MMC.SubChannelRequestFormat.MediaCatalogNumber, Track = 0 };
@@ -161,7 +180,10 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       private static extern bool DeviceIoControl(SafeFileHandle hDevice, IOCTL command, ref SubChannelRequest request, int requestSize, out MMC.SubChannelISRC data, int dataSize, out int pBytesReturned, IntPtr overlapped);
 
       [DllImport("Kernel32.dll", SetLastError = true)]
-      private static extern bool DeviceIoControl(SafeFileHandle hDevice, IOCTL command, ref TOCRequest request, int nInBufferSize, out MMC.TOCDescriptor toc, int tocSize, out int pBytesReturned, IntPtr overlapped);
+      private static extern bool DeviceIoControl(SafeFileHandle hDevice, IOCTL command, ref TOCRequest request, int nInBufferSize, out MMC.CDTextDescriptor data, int dataSize, out int pBytesReturned, IntPtr overlapped);
+
+      [DllImport("Kernel32.dll", SetLastError = true)]
+      private static extern bool DeviceIoControl(SafeFileHandle hDevice, IOCTL command, ref TOCRequest request, int nInBufferSize, out MMC.TOCDescriptor data, int dataSize, out int pBytesReturned, IntPtr overlapped);
 
       #endregion
 

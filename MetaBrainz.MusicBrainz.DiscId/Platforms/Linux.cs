@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -9,7 +11,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
   internal sealed class Linux : Unix {
 
-    public Linux() : base(DiscReadFeature.TableOfContents | DiscReadFeature.MediaCatalogNumber | DiscReadFeature.TrackIsrc) { }
+    public Linux() : base(DiscReadFeature.TableOfContents | DiscReadFeature.MediaCatalogNumber | DiscReadFeature.TrackIsrc | DiscReadFeature.CdText) { }
 
     private const string GenericDevice = "/dev/cdrom";
 
@@ -68,7 +70,11 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
             throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtoc.Tracks[i].TrackNumber} instead of 0xAA (lead-out)");
           tracks[0] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, null);
         }
-        // TODO: If requested, try getting CD-TEXT data.
+        if ((features & DiscReadFeature.CdText) != 0) {
+          MMC.CDTextDescriptor cdtext;
+          NativeApi.GetCdTextInfo(fd, out cdtext);
+          // TODO: Do something with the information
+        }
         var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(fd) : null;
         return new TableOfContents(device, first, last, tracks, mcn);
       }
@@ -76,9 +82,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
     #region Native API
 
-    // ReSharper disable InconsistentNaming
-    // ReSharper disable UnusedMember.Local
-
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    [SuppressMessage("ReSharper", "UnusedMember.Local")]
     private static class NativeApi {
 
       #region Constants
@@ -167,6 +172,13 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       #endregion
 
       #region Public Methods
+
+      public static void GetCdTextInfo(UnixFileDescriptor fd, out MMC.CDTextDescriptor cdtext) {
+        var cmd = MMC.CDB.ReadTocPmaAtip.CDText();
+        try { NativeApi.SendSCSIRequest(fd, ref cmd, out cdtext); }
+        catch (Exception e) { throw new IOException("Failed to retrieve CD-TEXT information.", e); }
+        cdtext.FixUp();
+      }
 
       public static string GetMediaCatalogNumber(UnixFileDescriptor fd) {
         MMC.SubChannelMediaCatalogNumber mcn;
