@@ -64,13 +64,14 @@
     <Compile Include="Standards\RedBook.cs" />
     <Compile Include="Standards\SAM.cs" />
     <Compile Include="Standards\SPC.cs" />
-    <Compile Include="CdTextInfo.cs" />
+    <Compile Include="AlbumText.cs" />
     <Compile Include="DiscReadFeature.cs" />
     <Compile Include="IPlatform.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="ScsiException.cs" />
     <Compile Include="TableOfContents.cs" />
     <Compile Include="Track.cs" />
+    <Compile Include="TrackText.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

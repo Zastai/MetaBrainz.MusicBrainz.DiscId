@@ -48,13 +48,13 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           tracks[0] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, null);
         }
         var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(hDevice) : null;
-        CdTextInfo cdti = null;
+        RedBook.CDTextGroup? cdtg = null;
         if ((features & DiscReadFeature.CdText) != 0) {
           MMC.CDTextDescriptor cdtext;
           NativeApi.GetCdTextInfo(hDevice, out cdtext);
-          cdti = new CdTextInfo(cdtext.Data);
+          cdtg = cdtext.Data;
         }
-        return new TableOfContents(device, first, last, tracks, mcn, cdti);
+        return new TableOfContents(device, first, last, tracks, mcn, cdtg);
       }
     }
 
