@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
@@ -113,6 +114,15 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <summary>The port number to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property); -1 to not specify any explicit port.</summary>
     public int Port { get; set; }
 
+    /// <summary>
+    ///   The album-level CD-TEXT data.
+    ///   If no such data is available, this is null; otherwise, it will have as many entries as <see cref="TextLanguages"/>.
+    /// </summary>
+    public ReadOnlyCollection<AlbumText> TextInfo => (this._albumText == null) ? null : Array.AsReadOnly(this._albumText);
+
+    /// <summary>The languages for which CD-TEXT data is available (null if CD-TEXT information is not available).</summary>
+    public ReadOnlyCollection<EBU.LanguageCode> TextLanguages => (this._textLanguages == null) ? null : Array.AsReadOnly(this._textLanguages);
+
     /// <summary>The tracks in this table of contents. Only subscripts between <see cref="FirstTrack"/> and <see cref="LastTrack"/> (inclusive) are valid.</summary>
     public AudioTrackCollection Tracks => new AudioTrackCollection(this);
 
@@ -144,10 +154,6 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     #endregion
 
-    #region CD-TEXT-Related Helper Types
-
-    #endregion
-
     #region Track-Related Helper Types
 
     /// <summary>Class providing information about a single audio track on a cd-rom.</summary>
@@ -162,6 +168,11 @@ namespace MetaBrainz.MusicBrainz.DiscId {
         this.Number    = number;
         this.Offset    = address;
         this.StartTime = new TimeSpan(0, 0, 0, 0, address * 1000 / 75);
+        if (toc._trackText != null) {
+          var idx = number - toc.FirstTrack;
+          if (idx >= 0 && idx <= toc._trackText.Length)
+            this.TextInfo = (toc._trackText[idx] == null) ? null : Array.AsReadOnly(toc._trackText[idx]);
+        }
       }
 
       /// <summary>The length of this track expressed as a timespan.</summary>
@@ -181,6 +192,12 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
       /// <summary>The start position of this track expressed as a timespan.</summary>
       public TimeSpan StartTime { get; }
+
+      /// <summary>
+      ///   The track-level CD-TEXT data.
+      ///   If no such data is available, this is null; otherwise, it will have as many entries as <see cref="TextLanguages"/>.
+      /// </summary>
+      public ReadOnlyCollection<TrackText> TextInfo { get; }
 
     }
 
