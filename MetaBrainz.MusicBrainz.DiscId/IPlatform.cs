@@ -6,6 +6,8 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     IEnumerable<string> AvailableDevices { get; }
 
+    DiscReadFeature AvailableFeatures { get; }
+
     string DefaultDevice { get; }
 
     bool HasFeature(DiscReadFeature feature);

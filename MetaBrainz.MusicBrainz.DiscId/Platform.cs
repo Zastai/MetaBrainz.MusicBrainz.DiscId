@@ -31,6 +31,8 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     public abstract IEnumerable<string> AvailableDevices { get; }
 
+    public DiscReadFeature AvailableFeatures => this._features;
+
     public virtual string DefaultDevice => this.AvailableDevices.FirstOrDefault();
 
     public bool HasFeature(DiscReadFeature feature) => (feature & this._features) != 0;

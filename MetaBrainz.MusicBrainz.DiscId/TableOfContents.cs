@@ -34,6 +34,9 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <returns>The names of all cd-rom devices in the system.</returns>
     public static IEnumerable<string> AvailableDevices => TableOfContents.Platform.AvailableDevices;
 
+    /// <summary>The list of features supported on this platform for use with <see cref="ReadDisc"/>.</summary>
+    public static DiscReadFeature AvailableFeatures => TableOfContents.Platform.AvailableFeatures;
+
     /// <summary>The default cd-rom device (used when passing null to <see cref="ReadDisc"/>.</summary>
     public static string DefaultDevice => TableOfContents.Platform.DefaultDevice;
 
@@ -53,16 +56,6 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <param name="feature">The (single) feature to test.</param>
     /// <returns>true if the feature is supported; false otherwise.</returns>
     public static bool HasReadFeature(DiscReadFeature feature) => TableOfContents.Platform.HasFeature(feature);
-
-    /// <summary>The list of features supported for use with <see cref="ReadDisc"/>.</summary>
-    public static IEnumerable<DiscReadFeature> ReadFeatures {
-      get {
-        if (TableOfContents.Platform.HasFeature(DiscReadFeature.TableOfContents   )) yield return DiscReadFeature.TableOfContents;
-        if (TableOfContents.Platform.HasFeature(DiscReadFeature.MediaCatalogNumber)) yield return DiscReadFeature.MediaCatalogNumber;
-        if (TableOfContents.Platform.HasFeature(DiscReadFeature.TrackIsrc         )) yield return DiscReadFeature.TrackIsrc;
-        if (TableOfContents.Platform.HasFeature(DiscReadFeature.CdText            )) yield return DiscReadFeature.CdText;
-      }
-    }
 
     #endregion
 
