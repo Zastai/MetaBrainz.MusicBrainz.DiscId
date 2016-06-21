@@ -52,7 +52,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         if ((features & DiscReadFeature.CdText) != 0) {
           MMC.CDTextDescriptor cdtext;
           NativeApi.GetCdTextInfo(hDevice, out cdtext);
-          cdtg = cdtext.Data;
+          if (cdtext.Data.Packs != null)
+            cdtg = cdtext.Data;
         }
         return new TableOfContents(device, first, last, tracks, mcn, cdtg);
       }
