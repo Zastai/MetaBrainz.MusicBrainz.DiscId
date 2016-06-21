@@ -548,10 +548,10 @@ namespace MetaBrainz.MusicBrainz.DiscId {
         if (si.PacksWithType83 * 12 != composerBytes .Count) { Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 83).", "CD-TEXT"); continue; }
         if (si.PacksWithType84 * 12 != arrangerBytes .Count) { Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 84).", "CD-TEXT"); continue; }
         if (si.PacksWithType85 * 12 != messageBytes  .Count) { Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 85).", "CD-TEXT"); continue; }
-        if (si.PacksWithType86 * 12 != identBytes     .Count) { Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 86).", "CD-TEXT"); continue; }
-        if (si.PacksWithType87 * 12 != genreBytes.Count) { Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 87).", "CD-TEXT"); continue; }
+        if (si.PacksWithType86 * 12 != identBytes    .Count) { Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 86).", "CD-TEXT"); continue; }
+        if (si.PacksWithType87 * 12 != genreBytes    .Count) { Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 87).", "CD-TEXT"); continue; }
         if (si.PacksWithType8E * 12 != codeBytes     .Count) { Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 8E).", "CD-TEXT"); continue; }
-        if (si.PacksWithType8F * 12 != sizeinfoBytes  .Count) { Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 8F).", "CD-TEXT"); continue; }
+        if (si.PacksWithType8F * 12 != sizeinfoBytes .Count) { Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 8F).", "CD-TEXT"); continue; }
         Encoding encoding = null;
         if (dbcs) {
           Trace.WriteLine("This block contains DBCS data; assuming this means UTF-16.", "CD-TEXT");
