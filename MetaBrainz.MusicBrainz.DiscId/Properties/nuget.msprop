@@ -3,6 +3,8 @@
   <!-- NuGet Package Settings (Project-Specific) -->
   <PropertyGroup>
     <NuGetPackageDescription>This package provides classes for accessing information about a CD (its MusicBrainz Disc ID, EAN/ISRC values, CD-TEXT info, ...).</NuGetPackageDescription>
+    <NuGetPackageReleaseNotes>
+    </NuGetPackageReleaseNotes>
     <NuGetPackageSummary>C# implementation of libdiscid</NuGetPackageSummary>
     <NuGetPackageTags>MusicBrainz discid audio cd cd-text isrc upc ean libdiscid</NuGetPackageTags>
     <NuGetPackageVersion>0.2.0-dev</NuGetPackageVersion>
