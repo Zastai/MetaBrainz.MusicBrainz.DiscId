@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MetaBrainz.MusicBrainz.DiscId {
 
@@ -33,7 +32,15 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     public DiscReadFeature AvailableFeatures => this._features;
 
-    public virtual string DefaultDevice => this.AvailableDevices.FirstOrDefault();
+    public virtual string DefaultDevice {
+      get { // Equivalent to FirstOrDefault(), but for v2.0 compatibility we can't use LINQ.
+        using (var it = this.AvailableDevices.GetEnumerator()) {
+          if (it.MoveNext())
+            return it.Current;
+        }
+        return null;
+      }
+    }
 
     public bool HasFeature(DiscReadFeature feature) => (feature & this._features) != 0;
 

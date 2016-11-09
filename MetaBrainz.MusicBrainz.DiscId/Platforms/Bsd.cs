@@ -167,12 +167,17 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
               throw new IOException("Failed to retrieve TOC entries.", new UnixException());
             tracks = new MMC.TrackDescriptor[trackcount];
             var walker = req.data;
-            for (var i = 0; i < trackcount; ++i, walker += itemsize) {
+            for (var i = 0; i < trackcount; ++i) {
               tracks[i] = (MMC.TrackDescriptor) Marshal.PtrToStructure(walker, datatype);
               // The FixUp call assumes the address is in network byte order.
               if (nativeAddress)
                 tracks[i].Address = IPAddress.HostToNetworkOrder(tracks[i].Address);
               tracks[i].FixUp(req.address_format == CDAddressFormat.CD_MSF_FORMAT);
+#if NETFX_LT_4_0
+              walker = new IntPtr(walker.ToInt64() + itemsize);
+#else
+              walker += itemsize;
+#endif
             }
           }
           finally {
