@@ -31,7 +31,7 @@
     <Prefer32Bit>false</Prefer32Bit>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-  <Import Project="..\build\Common.msprop" />
+  <Import Project="..\build\Common.props" />
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
