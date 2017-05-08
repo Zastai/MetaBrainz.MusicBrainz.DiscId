@@ -31,19 +31,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
     [DllImport("libc", EntryPoint = "strerror", SetLastError = true)]
     private static extern IntPtr StrError(int error);
 
-#if NETFX_LT_3_5
-
-    private static readonly ReaderWriterLock ThreadLock = new ReaderWriterLock();
-
-    private static void Lock() {
-      UnixException.ThreadLock.AcquireWriterLock(-1);
-    }
-
-    private static void Unlock() {
-      UnixException.ThreadLock.ReleaseWriterLock();
-    }
-
-#else
+#if NETFX_GE_3_5
 
     private static readonly ReaderWriterLockSlim ThreadLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
@@ -53,6 +41,18 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
     private static void Unlock() {
       UnixException.ThreadLock.ExitWriteLock();
+    }
+
+#else
+
+    private static readonly ReaderWriterLock ThreadLock = new ReaderWriterLock();
+
+    private static void Lock() {
+      UnixException.ThreadLock.AcquireWriterLock(-1);
+    }
+
+    private static void Unlock() {
+      UnixException.ThreadLock.ReleaseWriterLock();
     }
 
 #endif

@@ -234,12 +234,12 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         var bytes = NativeApi.AllocZero(new UIntPtr(1), new UIntPtr(memlen));
         try {
           req.cmdp   = bytes;
-#if NETFX_LT_4_0
-         req.sbp    = new IntPtr(req.cmdp.ToInt64() + req.cmd_len);
-         req.dxferp = new IntPtr(req.sbp.ToInt64() + req.mx_sb_len);
-#else
+#if NETFX_GE_4_0
          req.sbp    = req.cmdp + req.cmd_len;
          req.dxferp = req.sbp  + req.mx_sb_len;
+#else
+          req.sbp    = new IntPtr(req.cmdp.ToInt64() + req.cmd_len);
+          req.dxferp = new IntPtr(req.sbp .ToInt64() + req.mx_sb_len);
 #endif
           Marshal.StructureToPtr(cmd, req.cmdp, false);
           try {

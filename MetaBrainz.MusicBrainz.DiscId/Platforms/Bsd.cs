@@ -173,10 +173,10 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
               if (nativeAddress)
                 tracks[i].Address = IPAddress.HostToNetworkOrder(tracks[i].Address);
               tracks[i].FixUp(req.address_format == CDAddressFormat.CD_MSF_FORMAT);
-#if NETFX_LT_4_0
-              walker = new IntPtr(walker.ToInt64() + itemsize);
-#else
+#if NETFX_GE_4_0
               walker += itemsize;
+#else
+              walker = new IntPtr(walker.ToInt64() + itemsize);
 #endif
             }
           }
