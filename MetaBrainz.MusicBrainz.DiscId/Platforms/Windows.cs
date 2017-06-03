@@ -175,16 +175,16 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
       private static extern SafeFileHandle CreateFile(string filename, [MarshalAs(UnmanagedType.U4)] FileAccess access, [MarshalAs(UnmanagedType.U4)] FileShare share, IntPtr securityAttributes, [MarshalAs(UnmanagedType.U4)] FileMode mode, uint flags, IntPtr templateFile);
 
-      [DllImport("Kernel32.dll", SetLastError = true)]
+      [DllImport("kernel32.dll", SetLastError = true)]
       private static extern bool DeviceIoControl(SafeFileHandle hDevice, IOCTL command, ref SubChannelRequest request, int requestSize, out MMC.SubChannelMediaCatalogNumber data, int dataSize, out int pBytesReturned, IntPtr overlapped);
 
-      [DllImport("Kernel32.dll", SetLastError = true)]
+      [DllImport("kernel32.dll", SetLastError = true)]
       private static extern bool DeviceIoControl(SafeFileHandle hDevice, IOCTL command, ref SubChannelRequest request, int requestSize, out MMC.SubChannelISRC data, int dataSize, out int pBytesReturned, IntPtr overlapped);
 
-      [DllImport("Kernel32.dll", SetLastError = true)]
+      [DllImport("kernel32.dll", SetLastError = true)]
       private static extern bool DeviceIoControl(SafeFileHandle hDevice, IOCTL command, ref TOCRequest request, int nInBufferSize, out MMC.CDTextDescriptor data, int dataSize, out int pBytesReturned, IntPtr overlapped);
 
-      [DllImport("Kernel32.dll", SetLastError = true)]
+      [DllImport("kernel32.dll", SetLastError = true)]
       private static extern bool DeviceIoControl(SafeFileHandle hDevice, IOCTL command, ref TOCRequest request, int nInBufferSize, out MMC.TOCDescriptor data, int dataSize, out int pBytesReturned, IntPtr overlapped);
 
       #endregion
