@@ -172,7 +172,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
       #region Private Methods
 
-      [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+      [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
       private static extern SafeFileHandle CreateFile(string filename, [MarshalAs(UnmanagedType.U4)] FileAccess access, [MarshalAs(UnmanagedType.U4)] FileShare share, IntPtr securityAttributes, [MarshalAs(UnmanagedType.U4)] FileMode mode, uint flags, IntPtr templateFile);
 
       [DllImport("Kernel32.dll", SetLastError = true)]
