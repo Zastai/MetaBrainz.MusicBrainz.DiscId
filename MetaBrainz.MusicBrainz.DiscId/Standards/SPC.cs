@@ -91,7 +91,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
 
     #region Utility Methods
 
-    /// <summary>Creates an string describing the specified SCSI sense key value.</summary>
+    /// <summary>Creates a string describing the specified SCSI sense key value.</summary>
     /// <param name="senseKey">The SCSI &quot;sense key&quot; value to descrive.</param>
     /// <returns>A description of the specified SCSI sense key value.</returns>
     public static string SenseKeyDescription(byte senseKey) {
@@ -117,7 +117,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
       }
     }
 
-    /// <summary>Creates an string describing the specified SCSI additional sense information.</summary>
+    /// <summary>Creates a string describing the specified SCSI additional sense information.</summary>
     /// <param name="asc">The SCSI &quot;additional sense code&quot; value.</param>
     /// <param name="ascq">The SCSI &quot;additional sense code qualifier&quot; value.</param>
     /// <returns>A description of the specified SCSI additional sense key information.</returns>
