@@ -33,11 +33,9 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     public DiscReadFeature AvailableFeatures => this._features;
 
     public virtual string DefaultDevice {
-      get { // Equivalent to FirstOrDefault(), but for v2.0 compatibility we can't use LINQ.
-        using (var it = this.AvailableDevices.GetEnumerator()) {
-          if (it.MoveNext())
-            return it.Current;
-        }
+      get { // Equivalent to FirstOrDefault(), but without using LINQ.
+        foreach (var device in this.AvailableDevices)
+          return device;
         return null;
       }
     }
