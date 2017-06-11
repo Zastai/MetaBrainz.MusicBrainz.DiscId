@@ -4,10 +4,10 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
   /// <summary>Enumeration of features the library may support on any given platform.</summary>
   [Flags]
-  public enum DiscReadFeature : uint {
+  public enum DiscReadFeature {
 
     /// <summary>No functionality.</summary>
-    None = 0,
+    None               = 0,
 
     /// <summary>The core functionality of reading the TOC, enabling DiscId (and freedb id) computation.</summary>
     TableOfContents    = 1 << 0,
@@ -24,7 +24,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     CdText             = 1 << 3,
 
     /// <summary>All available features.</summary>
-    All = 0xffffffff,
+    All                = -1
 
   }
 
