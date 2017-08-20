@@ -1,18 +1,31 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
-  <PropertyGroup>
-    <TargetFrameworks>net35;net20</TargetFrameworks>
-  </PropertyGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+
   <Import Project="..\build\Common.props" />
   <Import Project="..\build\NuGetPackage.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net45;net40</TargetFrameworks>
+  </PropertyGroup>
+
   <PropertyGroup>
     <Version>0.2.0-pre</Version>
     <AssemblyVersion>0.2</AssemblyVersion>
     <FileVersion>0.2.0</FileVersion>
-    <Description>This package provides classes for accessing information about a CD (its MusicBrainz Disc ID, EAN/ISRC values, CD-TEXT info, ...).</Description>
-    <PackageTags>MusicBrainz discid audio cd cd-text isrc upc ean libdiscid</PackageTags>
-    <!-- Owners and Summary are currently arbitrarily left out of MSBuild -->
-    <PackageSummary>.NET Implementation of libdiscid</PackageSummary>
+    <PackageReleaseNotes>
+      Dropped support for .NET framework versions before 4.0 (and 4.0 may be dropped in a later version); this allows for builds using .NET Core (which cannot target 2.0/3.5).
+      Added support for .NET Standard 2.0.
+    </PackageReleaseNotes>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <Title>MusicBrainz DiscID Library</Title>
+    <Description>
+      This package provides classes for accessing information about a CD (its MusicBrainz Disc ID, EAN/ISRC values, CD-TEXT info, ...).
+    </Description>
+    <PackageTags>MusicBrainz discid audio cd cd-text isrc upc ean libdiscid</PackageTags>
+  </PropertyGroup>
+
   <Import Project="..\build\NuGetPackage.targets" />
+
 </Project>

@@ -53,28 +53,26 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         byte last  = 0;
         Track[] tracks = null;
         { // Read the TOC itself
-          MMC.TOCDescriptor rawtoc;
-          NativeApi.GetTableOfContents(fd, out rawtoc);
+          NativeApi.GetTableOfContents(fd, out MMC.TOCDescriptor rawtoc);
           first = rawtoc.FirstTrack;
           last = rawtoc.LastTrack;
           tracks = new Track[last + 1];
           var i = 0;
           for (var trackno = rawtoc.FirstTrack; trackno <= rawtoc.LastTrack; ++trackno, ++i) { // Add the regular tracks.
             if (rawtoc.Tracks[i].TrackNumber != trackno)
-              throw new InvalidDataException($"Internal logic error; first track is {rawtoc.FirstTrack}, but entry at index {i} claims to be track {rawtoc.Tracks[i].TrackNumber} instead of {trackno}");
+              throw new InvalidDataException($"Internal logic error; first track is {rawtoc.FirstTrack}, but entry at index {i} claims to be track {rawtoc.Tracks[i].TrackNumber} instead of {trackno}.");
             var isrc = ((features & DiscReadFeature.TrackIsrc) != 0) ? NativeApi.GetTrackIsrc(fd, trackno) : null;
             tracks[trackno] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, isrc);
           }
-          // Next entry should be the leadout (track number 0xAA)
+          // Next entry should be the lead-out (track number 0xAA)
           if (rawtoc.Tracks[i].TrackNumber != 0xAA)
-            throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtoc.Tracks[i].TrackNumber} instead of 0xAA (lead-out)");
+            throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtoc.Tracks[i].TrackNumber} instead of 0xAA (lead-out).");
           tracks[0] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, null);
         }
         var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(fd) : null;
         RedBook.CDTextGroup? cdtg = null;
         if ((features & DiscReadFeature.CdText) != 0) {
-          MMC.CDTextDescriptor cdtext;
-          NativeApi.GetCdTextInfo(fd, out cdtext);
+          NativeApi.GetCdTextInfo(fd, out MMC.CDTextDescriptor cdtext);
           if (cdtext.Data.Packs != null)
             cdtg = cdtext.Data;
         }
@@ -219,7 +217,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       #region Private Methods
 
       private static void SendSCSIRequest<TCommand, TData>(UnixFileDescriptor fd, ref TCommand cmd, out TData data) where TCommand : struct where TData : struct {
-        var cmdlen = Marshal.SizeOf(typeof(TCommand));
+        var cmdlen = Util.SizeOfStructure<TCommand>();
         if (cmdlen > 16)
           throw new InvalidOperationException("A SCSI command must not exceed 16 bytes in size.");
         var req = new SCSIRequest {
@@ -228,19 +226,14 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           timeout         = NativeApi.DefaultSCSIRequestTimeOut,
           cmd_len         = (byte) cmdlen,
           mx_sb_len       = (byte) 64,
-          dxfer_len       = (uint) Marshal.SizeOf(typeof(TData)),
+          dxfer_len       = (uint) Util.SizeOfStructure<TData>(),
         };
         var memlen = (uint) (req.cmd_len + req.mx_sb_len + req.dxfer_len);
         var bytes = NativeApi.AllocZero(new UIntPtr(1), new UIntPtr(memlen));
         try {
           req.cmdp   = bytes;
-#if NETFX_GE_4_0
-         req.sbp    = req.cmdp + req.cmd_len;
-         req.dxferp = req.sbp  + req.mx_sb_len;
-#else
-          req.sbp    = new IntPtr(req.cmdp.ToInt64() + req.cmd_len);
-          req.dxferp = new IntPtr(req.sbp .ToInt64() + req.mx_sb_len);
-#endif
+          req.sbp    = req.cmdp + req.cmd_len;
+          req.dxferp = req.sbp  + req.mx_sb_len;
           Marshal.StructureToPtr(cmd, req.cmdp, false);
           try {
             if (NativeApi.SendSCSIRequest(fd.Value, IOCTL.SG_IO, ref req) != 0)
@@ -249,17 +242,17 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
               var response = Marshal.ReadByte(req.sbp) & 0x7f;
               switch (response) {
                 case 0x70: case 0x71: // Fixed Format (Current or Deferred)
-                  throw new ScsiException((SPC.FixedSenseData) Marshal.PtrToStructure(req.sbp, typeof(SPC.FixedSenseData)));
+                  throw new ScsiException(Util.MarshalPointerToStructure<SPC.FixedSenseData>(req.sbp));
                 case 0x72: case 0x73: // Descriptor Format (Current or Deferred)
-                  throw new ScsiException((SPC.DescriptorSenseData) Marshal.PtrToStructure(req.sbp, typeof(SPC.DescriptorSenseData)));
+                  throw new ScsiException(Util.MarshalPointerToStructure<SPC.DescriptorSenseData>(req.sbp));
                 default:
                   throw new IOException($"SCSI CHECK CONDITION: BAD RESPONSE CODE ({response:X2})");
               }
             }
-            data = (TData) Marshal.PtrToStructure(req.dxferp, typeof(TData));
+            data = Util.MarshalPointerToStructure<TData>(req.dxferp);
           }
           finally {
-            Marshal.DestroyStructure(req.cmdp, typeof(TCommand));
+            Util.DestroyStructure<TCommand>(req.cmdp);
           }
         }
         finally {

@@ -35,27 +35,22 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       using (var fd = NativeApi.OpenDevice(device)) {
         if (fd.IsInvalid)
           throw new IOException($"Failed to open '{device}'.", new UnixException());
-        byte first;
-        byte last;
-        Track[] tracks;
-        { // Read the TOC itself
-          MMC.TrackDescriptor[] rawtracks;
-          NativeApi.ReadTOC(fd, out first, out last, out rawtracks, this.AddressesAreNative);
-          tracks = new Track[rawtracks.Length];
-          var i = 0;
-          if (first > 0) {
-            for (var trackno = first; trackno <= last; ++trackno, ++i) { // Add the regular tracks.
-              if (rawtracks[i].TrackNumber != trackno)
-                throw new InvalidDataException($"Internal logic error; first track is {first}, but entry at index {i} claims to be track {rawtracks[i].TrackNumber} instead of {trackno}");
-              var isrc = ((features & DiscReadFeature.TrackIsrc) != 0) ? NativeApi.GetTrackIsrc(fd, trackno) : null;
-              tracks[trackno] = new Track(rawtracks[i].Address, rawtracks[i].ControlAndADR.Control, isrc);
-            }
+        // Read the TOC itself
+        NativeApi.ReadTOC(fd, out var first, out var last, out var rawtracks, this.AddressesAreNative);
+        var tracks = new Track[rawtracks.Length];
+        var i = 0;
+        if (first > 0) {
+          for (var trackno = first; trackno <= last; ++trackno, ++i) { // Add the regular tracks.
+            if (rawtracks[i].TrackNumber != trackno)
+              throw new InvalidDataException($"Internal logic error; first track is {first}, but entry at index {i} claims to be track {rawtracks[i].TrackNumber} instead of {trackno}.");
+            var isrc = ((features & DiscReadFeature.TrackIsrc) != 0) ? NativeApi.GetTrackIsrc(fd, trackno) : null;
+            tracks[trackno] = new Track(rawtracks[i].Address, rawtracks[i].ControlAndADR.Control, isrc);
           }
-          // Next entry should be the leadout (track number 0xAA)
-          if (rawtracks[i].TrackNumber != 0xAA)
-            throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtracks[i].TrackNumber} instead of 0xAA (lead-out)");
-          tracks[0] = new Track(rawtracks[i].Address, rawtracks[i].ControlAndADR.Control, null);
         }
+        // Next entry should be the lead-out (track number 0xAA)
+        if (rawtracks[i].TrackNumber != 0xAA)
+          throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtracks[i].TrackNumber} instead of 0xAA (lead-out).");
+        tracks[0] = new Track(rawtracks[i].Address, rawtracks[i].ControlAndADR.Control, null);
         var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(fd) : null;
         // TODO: Find out how to get CD-TEXT data.
         return new TableOfContents(device, first, last, tracks, mcn, null);
@@ -123,16 +118,14 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       #region Public Methods
 
       public static string GetMediaCatalogNumber(UnixFileDescriptor fd) {
-        MMC.SubChannelMediaCatalogNumber mcn;
-        if (NativeApi.ReadSubChannel(fd, CDDataFormat.CD_MEDIA_CATALOG, 0, out mcn) != 0)
+        if (NativeApi.ReadSubChannel(fd, CDDataFormat.CD_MEDIA_CATALOG, 0, out MMC.SubChannelMediaCatalogNumber mcn) != 0)
           throw new IOException("Failed to retrieve media catalog number.", new UnixException());
         mcn.FixUp();
         return mcn.Status.IsValid ? Encoding.ASCII.GetString(mcn.MCN) : string.Empty;
       }
 
       public static string GetTrackIsrc(UnixFileDescriptor fd, byte track) {
-        MMC.SubChannelISRC isrc;
-        if (NativeApi.ReadSubChannel(fd, CDDataFormat.CD_TRACK_INFO, track, out isrc) != 0)
+        if (NativeApi.ReadSubChannel(fd, CDDataFormat.CD_TRACK_INFO, track, out MMC.SubChannelISRC isrc) != 0)
           throw new IOException($"Failed to retrieve ISRC for track {track}.", new UnixException());
         isrc.FixUp();
         return isrc.Status.IsValid ? Encoding.ASCII.GetString(isrc.ISRC) : string.Empty;
@@ -153,9 +146,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           last  = req.ending_track;
         }
         {
-          var datatype = typeof(MMC.TrackDescriptor);
           var trackcount = last - first + 2; // first->last plus lead-out
-          var itemsize = Marshal.SizeOf(datatype);
+          var itemsize = Util.SizeOfStructure<MMC.TrackDescriptor>();
           var req = new TOCEntriesRequest {
             address_format = CDAddressFormat.CD_LBA_FORMAT,
             starting_track = first,
@@ -168,16 +160,12 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
             tracks = new MMC.TrackDescriptor[trackcount];
             var walker = req.data;
             for (var i = 0; i < trackcount; ++i) {
-              tracks[i] = (MMC.TrackDescriptor) Marshal.PtrToStructure(walker, datatype);
+              tracks[i] = Util.MarshalPointerToStructure<MMC.TrackDescriptor>(walker);
               // The FixUp call assumes the address is in network byte order.
               if (nativeAddress)
                 tracks[i].Address = IPAddress.HostToNetworkOrder(tracks[i].Address);
               tracks[i].FixUp(req.address_format == CDAddressFormat.CD_MSF_FORMAT);
-#if NETFX_GE_4_0
               walker += itemsize;
-#else
-              walker = new IntPtr(walker.ToInt64() + itemsize);
-#endif
             }
           }
           finally {
@@ -200,18 +188,17 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       private static extern int SendIORequest(int fd, IOCTL command, ref ReadSubChannelRequest request);
 
       private static int ReadSubChannel<T>(UnixFileDescriptor fd, CDDataFormat format, byte track, out T data) where T : struct {
-        var datatype = typeof(T);
         var req = new ReadSubChannelRequest {
           address_format = CDAddressFormat.CD_LBA_FORMAT,
           data_format    = format,
           track          = track,
-          data_len       = Marshal.SizeOf(datatype),
+          data_len       = Util.SizeOfStructure<T>(),
         };
         req.data = Marshal.AllocHGlobal(new IntPtr(req.data_len));
         try {
           var rc = NativeApi.SendIORequest(fd.Value, IOCTL.CDIOCREADSUBCHANNEL, ref req);
           if (rc == 0)
-            data = (T) Marshal.PtrToStructure(req.data, datatype);
+            data = Util.MarshalPointerToStructure<T>(req.data);
           else
             data = default(T);
           return rc;

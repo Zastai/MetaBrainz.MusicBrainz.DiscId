@@ -91,7 +91,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
 
       public void FixUp(int size) {
         // Fix up the items too, reducing the array to the actual size.
-        var packcount = (size / Marshal.SizeOf(typeof(CDTextPack)));
+        var packcount = size / Util.SizeOfStructure<CDTextPack>();
         if (packcount < 0 || packcount > 2048)
           throw new InvalidOperationException($"Invalid pack count ({packcount}) for CD-TEXT text group; should be between 0 and 2048.");
         if (packcount == 0) {

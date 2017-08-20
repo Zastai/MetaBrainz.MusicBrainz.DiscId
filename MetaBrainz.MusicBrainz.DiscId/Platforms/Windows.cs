@@ -26,32 +26,26 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
     protected override TableOfContents ReadTableOfContents(string device, DiscReadFeature features) {
       using (var hDevice = NativeApi.OpenDevice(device)) {
-        byte first = 0;
-        byte last  = 0;
-        Track[] tracks = null;
-        { // Read the TOC itself
-          MMC.TOCDescriptor rawtoc;
-          NativeApi.GetTableOfContents(hDevice, out rawtoc);
-          first = rawtoc.FirstTrack;
-          last = rawtoc.LastTrack;
-          tracks = new Track[last + 1];
-          var i = 0;
-          for (var trackno = rawtoc.FirstTrack; trackno <= rawtoc.LastTrack; ++trackno, ++i) { // Add the regular tracks.
-            if (rawtoc.Tracks[i].TrackNumber != trackno)
-              throw new InvalidDataException($"Internal logic error; first track is {rawtoc.FirstTrack}, but entry at index {i} claims to be track {rawtoc.Tracks[i].TrackNumber} instead of {trackno}");
-            var isrc = ((features & DiscReadFeature.TrackIsrc) != 0) ? NativeApi.GetTrackIsrc(hDevice, trackno) : null;
-            tracks[trackno] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, isrc);
-          }
-          // Next entry should be the leadout (track number 0xAA)
-          if (rawtoc.Tracks[i].TrackNumber != 0xAA)
-            throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtoc.Tracks[i].TrackNumber} instead of 0xAA (lead-out)");
-          tracks[0] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, null);
+        // Read the TOC itself
+        NativeApi.GetTableOfContents(hDevice, out MMC.TOCDescriptor rawtoc);
+        var first = rawtoc.FirstTrack;
+        var last = rawtoc.LastTrack;
+        var tracks = new Track[last + 1];
+        var i = 0;
+        for (var trackno = rawtoc.FirstTrack; trackno <= rawtoc.LastTrack; ++trackno, ++i) { // Add the regular tracks.
+          if (rawtoc.Tracks[i].TrackNumber != trackno)
+            throw new InvalidDataException($"Internal logic error; first track is {rawtoc.FirstTrack}, but entry at index {i} claims to be track {rawtoc.Tracks[i].TrackNumber} instead of {trackno}");
+          var isrc = ((features & DiscReadFeature.TrackIsrc) != 0) ? NativeApi.GetTrackIsrc(hDevice, trackno) : null;
+          tracks[trackno] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, isrc);
         }
+        // Next entry should be the leadout (track number 0xAA)
+        if (rawtoc.Tracks[i].TrackNumber != 0xAA)
+          throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtoc.Tracks[i].TrackNumber} instead of 0xAA (lead-out)");
+        tracks[0] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, null);
         var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(hDevice) : null;
         RedBook.CDTextGroup? cdtg = null;
         if ((features & DiscReadFeature.CdText) != 0) {
-          MMC.CDTextDescriptor cdtext;
-          NativeApi.GetCdTextInfo(hDevice, out cdtext);
+          NativeApi.GetCdTextInfo(hDevice, out MMC.CDTextDescriptor cdtext);
           if (cdtext.Data.Packs != null)
             cdtg = cdtext.Data;
         }
@@ -115,9 +109,9 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
       public static void GetCdTextInfo(SafeFileHandle hDevice, out MMC.CDTextDescriptor cdtext) {
         var req = new NativeApi.TOCRequest(MMC.TOCRequestFormat.CDText);
-        var returned = 0;
-        var cdtextlen = Marshal.SizeOf(typeof(MMC.CDTextDescriptor));
-        var ok = NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_TOC_EX, ref req, Marshal.SizeOf(req), out cdtext, cdtextlen, out returned, IntPtr.Zero);
+        var reqlen = Util.SizeOfStructure<TOCRequest>();
+        var cdtextlen = Util.SizeOfStructure<MMC.CDTextDescriptor>();
+        var ok = NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_TOC_EX, ref req, reqlen, out cdtext, cdtextlen, out int _, IntPtr.Zero);
         if (!ok)
           throw new IOException("Failed to retrieve CD-TEXT information.", new Win32Exception(Marshal.GetLastWin32Error()));
         cdtext.FixUp();
@@ -125,9 +119,9 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
       public static string GetMediaCatalogNumber(SafeFileHandle hDevice) {
         var req = new SubChannelRequest { Format = MMC.SubChannelRequestFormat.MediaCatalogNumber, Track = 0 };
-        var mcn = new MMC.SubChannelMediaCatalogNumber();
-        var returned = 0;
-        if (!NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_Q_CHANNEL, ref req, Marshal.SizeOf(req), out mcn, Marshal.SizeOf(mcn), out returned, IntPtr.Zero))
+        var reqlen = Util.SizeOfStructure<SubChannelRequest>();
+        var mcnlen = Util.SizeOfStructure<MMC.SubChannelMediaCatalogNumber>();
+        if (!NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_Q_CHANNEL, ref req, reqlen, out MMC.SubChannelMediaCatalogNumber mcn, mcnlen, out int _, IntPtr.Zero))
           throw new IOException("Failed to retrieve media catalog number.", new Win32Exception(Marshal.GetLastWin32Error()));
         mcn.FixUp();
         return mcn.Status.IsValid ? Encoding.ASCII.GetString(mcn.MCN) : string.Empty;
@@ -135,12 +129,12 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
       public static void GetTableOfContents(SafeFileHandle hDevice, out MMC.TOCDescriptor rawtoc) {
         var req = new NativeApi.TOCRequest(MMC.TOCRequestFormat.TOC);
-        var returned = 0;
-        var rawtoclen = Marshal.SizeOf(typeof(MMC.TOCDescriptor));
+        var reqlen = Util.SizeOfStructure<TOCRequest>();
+        var rawtoclen = Util.SizeOfStructure<MMC.TOCDescriptor>();
         // LIB-44: Apparently for some multi-session discs, the first TOC read can be wrong. So issue two reads.
-        var ok = NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_TOC_EX, ref req, Marshal.SizeOf(req), out rawtoc, rawtoclen, out returned, IntPtr.Zero);
+        var ok = NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_TOC_EX, ref req, reqlen, out rawtoc, rawtoclen, out int returned, IntPtr.Zero);
         if (ok)
-          ok = NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_TOC_EX, ref req, Marshal.SizeOf(req), out rawtoc, rawtoclen, out returned, IntPtr.Zero);
+          ok = NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_TOC_EX, ref req, reqlen, out rawtoc, rawtoclen, out returned, IntPtr.Zero);
         if (!ok)
           throw new IOException("Failed to retrieve TOC.", new Win32Exception(Marshal.GetLastWin32Error()));
         rawtoc.FixUp(req.AddressAsMSF);
@@ -148,9 +142,9 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
       public static string GetTrackIsrc(SafeFileHandle hDevice, byte track) {
         var req = new SubChannelRequest { Format = MMC.SubChannelRequestFormat.ISRC, Track = track };
-        var isrc = new MMC.SubChannelISRC();
-        var returned = 0;
-        if (!NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_Q_CHANNEL, ref req, Marshal.SizeOf(req), out isrc, Marshal.SizeOf(isrc), out returned, IntPtr.Zero))
+        var reqlen = Util.SizeOfStructure<SubChannelRequest>();
+        var isrclen = Util.SizeOfStructure<MMC.SubChannelISRC>();
+        if (!NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_Q_CHANNEL, ref req, reqlen, out MMC.SubChannelISRC isrc, isrclen, out int _, IntPtr.Zero))
           throw new IOException($"Failed to retrieve ISRC for track {track}.", new Win32Exception(Marshal.GetLastWin32Error()));
         isrc.FixUp();
         return isrc.Status.IsValid ? Encoding.ASCII.GetString(isrc.ISRC) : string.Empty;

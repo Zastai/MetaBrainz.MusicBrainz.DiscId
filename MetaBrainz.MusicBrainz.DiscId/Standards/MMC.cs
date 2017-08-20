@@ -183,10 +183,10 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
         public readonly byte                    Control;
 
         private ReadSubChannel(SubChannelRequestFormat format, bool msf = false, byte track = 0) {
-          Type responsetype;
+          var size = 0;
           switch (format) {
-            case SubChannelRequestFormat.ISRC:               responsetype = typeof(SubChannelISRC);               break;
-            case SubChannelRequestFormat.MediaCatalogNumber: responsetype = typeof(SubChannelMediaCatalogNumber); break;
+            case SubChannelRequestFormat.ISRC:               size = Util.SizeOfStructure<SubChannelISRC>();               break;
+            case SubChannelRequestFormat.MediaCatalogNumber: size = Util.SizeOfStructure<SubChannelMediaCatalogNumber>(); break;
             default:
               throw new NotSupportedException($"READ SUB-CHANNEL with format '{format}' is not (yet) supported.");
           }
@@ -197,7 +197,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
           this.Reserved1        = 0;
           this.Reserved2        = 0;
           this.TrackNumber      = track;
-          this.AllocationLength = (ushort) IPAddress.HostToNetworkOrder((short) Marshal.SizeOf(responsetype));
+          this.AllocationLength = (ushort) IPAddress.HostToNetworkOrder((short) size);
           this.Control          = 0;
         }
 
@@ -220,10 +220,10 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
         public readonly byte             Control;
 
         private ReadTocPmaAtip(TOCRequestFormat format, bool msf = false, byte trackOrSession = 0) {
-          Type responsetype;
+          var size = 0;
           switch (format) {
-            case TOCRequestFormat.TOC:    responsetype = typeof(TOCDescriptor);    break;
-            case TOCRequestFormat.CDText: responsetype = typeof(CDTextDescriptor); break;
+            case TOCRequestFormat.TOC:    size = Util.SizeOfStructure<TOCDescriptor>();    break;
+            case TOCRequestFormat.CDText: size = Util.SizeOfStructure<CDTextDescriptor>(); break;
             default:
               throw new NotSupportedException($"READ TOC/PMA/ATIP with format '{format}' is not (yet) supported.");
           }
@@ -234,7 +234,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
           this.Reserved2          = 0;
           this.Reserved3          = 0;
           this.TrackSessionNumber = trackOrSession;
-          this.AllocationLength   = (ushort) IPAddress.HostToNetworkOrder((short) Marshal.SizeOf(responsetype));
+          this.AllocationLength   = (ushort) IPAddress.HostToNetworkOrder((short) size);
           this.Control            = 0;
         }
 
