@@ -5,22 +5,22 @@ Add-Type -Path "$PSScriptRoot\MetaBrainz.MusicBrainz.DiscId.dll"
 
 $twoSeconds = New-Object -TypeName System.TimeSpan -ArgumentList 0, 0, 2
 
-function Get-MusicBrainz-AvailableDevices {
+function Get-AvailableDevices {
   [TableOfContents]::AvailableDevices
 }
 
 [string]
-function Get-MusicBrainz-AvailableFeatures {
+function Get-AvailableFeatures {
   [TableOfContents]::AvailableFeatures
 }
 
 [string]
-function Get-MusicBrainz-DefaultDevice {
+function Get-DefaultDevice {
   [TableOfContents]::DefaultDevice
 }
 
 [string]
-function Get-MusicBrainz-DiscId {
+function Get-DiscId {
   [CmdletBinding()]
   param (
     [Parameter(Position = 1, Mandatory = $false)]
@@ -32,7 +32,7 @@ function Get-MusicBrainz-DiscId {
 }
 
 [System.Uri]
-function Get-MusicBrainz-SubmissionUrl {
+function Get-SubmissionUrl {
   [CmdletBinding()]
   param (
     [Parameter(Position = 1, Mandatory = $false)]
@@ -57,7 +57,7 @@ function Read-TableOfContents {
   return [TableOfContents]::ReadDisc($Device, $Features)
 }
 
-function Show-MusicBrainz-TableOfContents {
+function Show-TableOfContents {
   [CmdletBinding()]
   param (
     [Parameter(Position = 1, Mandatory = $false)]
@@ -176,5 +176,3 @@ function Show-MusicBrainz-TableOfContents {
     }
   }
 }
-
-Export-ModuleMember -Function *-MusicBrainz-*
