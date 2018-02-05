@@ -45,7 +45,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     protected abstract TableOfContents ReadTableOfContents(string device, DiscReadFeature features);
 
     TableOfContents IPlatform.ReadTableOfContents(string device, DiscReadFeature features) {
-      if (device == null) // Map null to the default device
+      if (string.IsNullOrWhiteSpace(device)) // Map null/blanks to the default device
         device = this.DefaultDevice;
       if (device == null) // But we do need a device at this point
         throw new NotSupportedException("No cd-rom device found.");
