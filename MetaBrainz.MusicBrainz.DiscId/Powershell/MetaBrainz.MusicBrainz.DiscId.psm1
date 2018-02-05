@@ -24,9 +24,8 @@ function Get-DiscId {
   [CmdletBinding()]
   param (
     [Parameter(Position = 1, Mandatory = $false)]
-    [ValidateNotNullOrEmpty()]
     [string]
-    $Device = [TableOfContents]::DefaultDevice
+    $Device = $null
   )
   (Read-TableOfContents -Device $Device -Features TableOfContents).DiscId
 }
@@ -36,9 +35,8 @@ function Get-SubmissionUrl {
   [CmdletBinding()]
   param (
     [Parameter(Position = 1, Mandatory = $false)]
-    [ValidateNotNullOrEmpty()]
     [string]
-    $Device = [TableOfContents]::DefaultDevice
+    $Device = $null
   )
   (Read-TableOfContents -Device $Device -Features TableOfContents).SubmissionUrl
 }
@@ -48,12 +46,12 @@ function Read-TableOfContents {
   [CmdletBinding()]
   param (
     [Parameter(Position = 1, Mandatory = $false)]
-    [ValidateNotNullOrEmpty()]
     [string]
-    $Device = [TableOfContents]::DefaultDevice,
+    $Device = $null,
     [DiscReadFeature]
     $Features = [TableOfContents]::AvailableFeatures
   )
+  # Note that Powershell will map $null to "" for $Device.
   return [TableOfContents]::ReadDisc($Device, $Features)
 }
 
@@ -61,9 +59,8 @@ function Show-TableOfContents {
   [CmdletBinding()]
   param (
     [Parameter(Position = 1, Mandatory = $false)]
-    [ValidateNotNullOrEmpty()]
     [string]
-    $Device = [TableOfContents]::DefaultDevice,
+    $Device = $null,
     [switch] $NoTrackISRC          = $false,
     [switch] $NoMediaCatalogNumber = $false,
     [switch] $NoCdText             = $false
@@ -79,10 +76,10 @@ function Show-TableOfContents {
       $devices += ' (default)';
     }
   }
-  Write-Host ('Available Devices   : {0}' -f $devices)
-  Write-Host ('Supported Features  : {0}' -f [TableOfContents]::AvailableFeatures)
-  Write-Host ''
   $features = [TableOfContents]::AvailableFeatures
+  Write-Host ('Available Devices   : {0}' -f $devices)
+  Write-Host ('Supported Features  : {0}' -f $features)
+  Write-Host ''
   if ($NoTrackISRC)          { $features = $features -band -bnot [DiscReadFeature]::TrackIsrc          }
   if ($NoMediaCatalogNumber) { $features = $features -band -bnot [DiscReadFeature]::MediaCatalogNumber }
   if ($NoCdText)             { $features = $features -band -bnot [DiscReadFeature]::CdText             }
@@ -90,7 +87,15 @@ function Show-TableOfContents {
     $toc = Read-TableOfContents -Device $Device -Features $features
   }
   catch [System.Exception] {
-    Write-Error ('Failed to read table of contents (for device {0}): ${1}' -f $Device, $_)
+    if ([string]::IsNullOrWhiteSpace($Device)) {
+      $Device = $defaultDevice
+    }
+    $ex = $_.Exception
+    if ($ex -is [System.Management.Automation.MethodInvocationException]) { # Skip that level
+      $ex = $ex.InnerException
+    }
+    Write-Host ('Failed to read table of contents (for device ''{0}''): {1}' -f $Device, $ex) -ForegroundColor Red
+    Write-Host ''
   }
   if ($toc -eq $null) {
     Write-Host 'No table of contents available.'
