@@ -64,6 +64,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <summary>Reads the table of contents for the current disc in the specified device, getting the requested information.</summary>
     /// <param name="device">The name of the device to read from; null to read from <see cref="DefaultDevice"/>.</param>
     /// <param name="features">The features to use (if supported). Note that the table of contents will always be read.</param>
+    /// <returns>The table of contents for the current disc in <paramref name="device"/>.</returns>
     public static TableOfContents ReadDisc(string device, DiscReadFeature features = DiscReadFeature.All) {
       return TableOfContents.Platform.ReadTableOfContents(device, features);
     }
@@ -72,6 +73,7 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     /// <param name="first">The first audio track for the disc.</param>
     /// <param name="last">The last audio track for the disc.</param>
     /// <param name="offsets">Array of track offsets; the offset at index 0 should be the offset of the end of the last (audio) track.</param>
+    /// <returns>The table of contents for a disc with the specified track layout.</returns>
     /// <exception cref="ArgumentNullException">When <paramref name="offsets"/> is null.</exception>
     public static TableOfContents SimulateDisc(byte first, byte last, int[] offsets) {
       if (offsets == null)
