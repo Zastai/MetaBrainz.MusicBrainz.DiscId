@@ -109,8 +109,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
       public static void GetCdTextInfo(SafeFileHandle hDevice, out MMC.CDTextDescriptor cdtext) {
         var req = new NativeApi.TOCRequest(MMC.TOCRequestFormat.CDText);
-        var reqlen = Util.SizeOfStructure<TOCRequest>();
-        var cdtextlen = Util.SizeOfStructure<MMC.CDTextDescriptor>();
+        var reqlen = Marshal.SizeOf<TOCRequest>();
+        var cdtextlen = Marshal.SizeOf<MMC.CDTextDescriptor>();
         var ok = NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_TOC_EX, ref req, reqlen, out cdtext, cdtextlen, out int _, IntPtr.Zero);
         if (!ok)
           throw new IOException("Failed to retrieve CD-TEXT information.", new Win32Exception(Marshal.GetLastWin32Error()));
@@ -119,8 +119,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
       public static string GetMediaCatalogNumber(SafeFileHandle hDevice) {
         var req = new SubChannelRequest { Format = MMC.SubChannelRequestFormat.MediaCatalogNumber, Track = 0 };
-        var reqlen = Util.SizeOfStructure<SubChannelRequest>();
-        var mcnlen = Util.SizeOfStructure<MMC.SubChannelMediaCatalogNumber>();
+        var reqlen = Marshal.SizeOf<SubChannelRequest>();
+        var mcnlen = Marshal.SizeOf<MMC.SubChannelMediaCatalogNumber>();
         if (!NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_Q_CHANNEL, ref req, reqlen, out MMC.SubChannelMediaCatalogNumber mcn, mcnlen, out int _, IntPtr.Zero))
           throw new IOException("Failed to retrieve media catalog number.", new Win32Exception(Marshal.GetLastWin32Error()));
         mcn.FixUp();
@@ -129,8 +129,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
       public static void GetTableOfContents(SafeFileHandle hDevice, out MMC.TOCDescriptor rawtoc) {
         var req = new NativeApi.TOCRequest(MMC.TOCRequestFormat.TOC);
-        var reqlen = Util.SizeOfStructure<TOCRequest>();
-        var rawtoclen = Util.SizeOfStructure<MMC.TOCDescriptor>();
+        var reqlen = Marshal.SizeOf<TOCRequest>();
+        var rawtoclen = Marshal.SizeOf<MMC.TOCDescriptor>();
         // LIB-44: Apparently for some multi-session discs, the first TOC read can be wrong. So issue two reads.
         var ok = NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_TOC_EX, ref req, reqlen, out rawtoc, rawtoclen, out int returned, IntPtr.Zero);
         if (ok)
@@ -142,8 +142,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
       public static string GetTrackIsrc(SafeFileHandle hDevice, byte track) {
         var req = new SubChannelRequest { Format = MMC.SubChannelRequestFormat.ISRC, Track = track };
-        var reqlen = Util.SizeOfStructure<SubChannelRequest>();
-        var isrclen = Util.SizeOfStructure<MMC.SubChannelISRC>();
+        var reqlen = Marshal.SizeOf<SubChannelRequest>();
+        var isrclen = Marshal.SizeOf<MMC.SubChannelISRC>();
         if (!NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_Q_CHANNEL, ref req, reqlen, out MMC.SubChannelISRC isrc, isrclen, out int _, IntPtr.Zero))
           throw new IOException($"Failed to retrieve ISRC for track {track}.", new Win32Exception(Marshal.GetLastWin32Error()));
         isrc.FixUp();

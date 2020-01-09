@@ -1,25 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\build\NuGetPackage.props" />
-
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net45;net40</TargetFrameworks>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <Version>1.0.2-pre</Version>
-    <AssemblyVersion>1.0</AssemblyVersion>
-    <FileVersion>1.0.2</FileVersion>
-    <PackageReleaseNotes/>
-  </PropertyGroup>
-
   <PropertyGroup>
     <Title>MusicBrainz DiscID Library</Title>
     <Description>This package provides classes for accessing information about a CD (its MusicBrainz Disc ID, EAN/ISRC values, CD-TEXT info, ...).</Description>
     <PackageTags>MusicBrainz discid audio cd cd-text isrc upc ean libdiscid</PackageTags>
+    <Version>1.0.2-pre</Version>
+    <PackageReleaseNotes/>
   </PropertyGroup>
 
-  <Import Project="..\build\NuGetPackage.targets" />
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+  </PropertyGroup>
 
 </Project>

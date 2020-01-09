@@ -147,7 +147,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         }
         {
           var trackcount = last - first + 2; // first->last plus lead-out
-          var itemsize = Util.SizeOfStructure<MMC.TrackDescriptor>();
+          var itemsize = Marshal.SizeOf<MMC.TrackDescriptor>();
           var req = new TOCEntriesRequest {
             address_format = CDAddressFormat.CD_LBA_FORMAT,
             starting_track = first,
@@ -160,7 +160,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
             tracks = new MMC.TrackDescriptor[trackcount];
             var walker = req.data;
             for (var i = 0; i < trackcount; ++i) {
-              tracks[i] = Util.MarshalPointerToStructure<MMC.TrackDescriptor>(walker);
+              tracks[i] = Marshal.PtrToStructure<MMC.TrackDescriptor>(walker);
               // The FixUp call assumes the address is in network byte order.
               if (nativeAddress)
                 tracks[i].Address = IPAddress.HostToNetworkOrder(tracks[i].Address);
@@ -192,13 +192,13 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           address_format = CDAddressFormat.CD_LBA_FORMAT,
           data_format    = format,
           track          = track,
-          data_len       = Util.SizeOfStructure<T>(),
+          data_len       = Marshal.SizeOf<T>(),
         };
         req.data = Marshal.AllocHGlobal(new IntPtr(req.data_len));
         try {
           var rc = NativeApi.SendIORequest(fd.Value, IOCTL.CDIOCREADSUBCHANNEL, ref req);
           if (rc == 0)
-            data = Util.MarshalPointerToStructure<T>(req.data);
+            data = Marshal.PtrToStructure<T>(req.data);
           else
             data = default(T);
           return rc;

@@ -217,7 +217,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       #region Private Methods
 
       private static void SendSCSIRequest<TCommand, TData>(UnixFileDescriptor fd, ref TCommand cmd, out TData data) where TCommand : struct where TData : struct {
-        var cmdlen = Util.SizeOfStructure<TCommand>();
+        var cmdlen = Marshal.SizeOf<TCommand>();
         if (cmdlen > 16)
           throw new InvalidOperationException("A SCSI command must not exceed 16 bytes in size.");
         var req = new SCSIRequest {
@@ -226,7 +226,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           timeout         = NativeApi.DefaultSCSIRequestTimeOut,
           cmd_len         = (byte) cmdlen,
           mx_sb_len       = (byte) 64,
-          dxfer_len       = (uint) Util.SizeOfStructure<TData>(),
+          dxfer_len       = (uint) Marshal.SizeOf<TData>(),
         };
         var memlen = (uint) (req.cmd_len + req.mx_sb_len + req.dxfer_len);
         var bytes = NativeApi.AllocZero(new UIntPtr(1), new UIntPtr(memlen));
@@ -242,17 +242,17 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
               var response = Marshal.ReadByte(req.sbp) & 0x7f;
               switch (response) {
                 case 0x70: case 0x71: // Fixed Format (Current or Deferred)
-                  throw new ScsiException(Util.MarshalPointerToStructure<SPC.FixedSenseData>(req.sbp));
+                  throw new ScsiException(Marshal.PtrToStructure<SPC.FixedSenseData>(req.sbp));
                 case 0x72: case 0x73: // Descriptor Format (Current or Deferred)
-                  throw new ScsiException(Util.MarshalPointerToStructure<SPC.DescriptorSenseData>(req.sbp));
+                  throw new ScsiException(Marshal.PtrToStructure<SPC.DescriptorSenseData>(req.sbp));
                 default:
                   throw new IOException($"SCSI CHECK CONDITION: BAD RESPONSE CODE ({response:X2})");
               }
             }
-            data = Util.MarshalPointerToStructure<TData>(req.dxferp);
+            data = Marshal.PtrToStructure<TData>(req.dxferp);
           }
           finally {
-            Util.DestroyStructure<TCommand>(req.cmdp);
+            Marshal.DestroyStructure<TCommand>(req.cmdp);
           }
         }
         finally {

@@ -185,8 +185,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
         private ReadSubChannel(SubChannelRequestFormat format, bool msf = false, byte track = 0) {
           var size = 0;
           switch (format) {
-            case SubChannelRequestFormat.ISRC:               size = Util.SizeOfStructure<SubChannelISRC>();               break;
-            case SubChannelRequestFormat.MediaCatalogNumber: size = Util.SizeOfStructure<SubChannelMediaCatalogNumber>(); break;
+            case SubChannelRequestFormat.ISRC:               size = Marshal.SizeOf<SubChannelISRC>();               break;
+            case SubChannelRequestFormat.MediaCatalogNumber: size = Marshal.SizeOf<SubChannelMediaCatalogNumber>(); break;
             default:
               throw new NotSupportedException($"READ SUB-CHANNEL with format '{format}' is not (yet) supported.");
           }
@@ -222,8 +222,8 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
         private ReadTocPmaAtip(TOCRequestFormat format, bool msf = false, byte trackOrSession = 0) {
           var size = 0;
           switch (format) {
-            case TOCRequestFormat.TOC:    size = Util.SizeOfStructure<TOCDescriptor>();    break;
-            case TOCRequestFormat.CDText: size = Util.SizeOfStructure<CDTextDescriptor>(); break;
+            case TOCRequestFormat.TOC:    size = Marshal.SizeOf<TOCDescriptor>();    break;
+            case TOCRequestFormat.CDText: size = Marshal.SizeOf<CDTextDescriptor>(); break;
             default:
               throw new NotSupportedException($"READ TOC/PMA/ATIP with format '{format}' is not (yet) supported.");
           }
