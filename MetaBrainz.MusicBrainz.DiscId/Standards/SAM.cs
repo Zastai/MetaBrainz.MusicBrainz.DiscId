@@ -22,6 +22,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
 
     /// <summary>Enumeration of the status codes that can be returned by SCSI commands.</summary>
     public enum StatusCode : byte {
+
       GOOD                       = 0x00,
       CHECK_CONDITION            = 0x02,
       CONDITION_MET              = 0x04,
@@ -33,6 +34,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
       TASK_SET_FULL              = 0x28,
       ACA_ACTIVE                 = 0x30,
       TASK_ABORTED               = 0x40,
+
     }
 
     #endregion

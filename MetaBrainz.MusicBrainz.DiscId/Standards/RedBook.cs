@@ -91,15 +91,16 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
 
       public void FixUp(int size) {
         // Fix up the items too, reducing the array to the actual size.
-        var packcount = size / Marshal.SizeOf<CDTextPack>();
-        if (packcount < 0 || packcount > 2048)
-          throw new InvalidOperationException($"Invalid pack count ({packcount}) for CD-TEXT text group; should be between 0 and 2048.");
-        if (packcount == 0) {
+        var count = size / Marshal.SizeOf<CDTextPack>();
+        if (count < 0 || count > 2048)
+          throw new InvalidOperationException($"Invalid pack count ({count}) for CD-TEXT text group; should be between 0 and 2048.");
+        if (count == 0) {
           this.Packs = null;
           return;
         }
-        var packs = new CDTextPack[packcount];
-        for (var i = 0; i < packcount; ++i) {
+        // This assumes this structure was created via marshaling, so Packs is a 2048-element array containing real data.
+        var packs = new CDTextPack[count];
+        for (var i = 0; i < count; ++i) {
           packs[i] = this.Packs[i];
           packs[i].FixUp();
         }
@@ -199,7 +200,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
         data[3] = this.ID4;
         Array.Copy(this.Data, 0, data, 4, 12);
         foreach (var b in data) {
-          remainder = remainder ^ (((int) b) << (n - 8));
+          remainder ^= (((int) b) << (n - 8));
           for (var j = 1; j <= 8; ++j) {
             if ((remainder & 0x8000) != 0)
               remainder = (remainder << 1) ^ polynomial;
@@ -211,7 +212,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
         return (ushort) ~remainder;
       }
 
-      public void FixUp() { this.CRC = (ushort) IPAddress.NetworkToHostOrder((short) this.CRC); }
+      public void FixUp() => this.CRC = (ushort) IPAddress.NetworkToHostOrder((short) this.CRC);
 
     }
 

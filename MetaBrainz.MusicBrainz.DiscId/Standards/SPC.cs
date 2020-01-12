@@ -92,30 +92,28 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
     #region Utility Methods
 
     /// <summary>Creates a string describing the specified SCSI sense key value.</summary>
-    /// <param name="senseKey">The SCSI &quot;sense key&quot; value to descrive.</param>
+    /// <param name="senseKey">The SCSI &quot;sense key&quot; value to describe.</param>
     /// <returns>A description of the specified SCSI sense key value.</returns>
-    public static string SenseKeyDescription(byte senseKey) {
-      switch (senseKey) {
-        case 0x0: return "NO SENSE";
-        case 0x1: return "RECOVERED ERROR";
-        case 0x2: return "NOT READY";
-        case 0x3: return "MEDIUM ERROR";
-        case 0x4: return "HARDWARE ERROR";
-        case 0x5: return "ILLEGAL REQUEST";
-        case 0x6: return "UNIT ATTENTION";
-        case 0x7: return "DATA PROTECT";
-        case 0x8: return "BLANK CHECK";
-        case 0x9: return "VENDOR SPECIFIC";
-        case 0xa: return "COPY ABORTED";
-        case 0xb: return "ABORTED COMMAND";
-        case 0xc: return "RESERVED";
-        case 0xd: return "VOLUME OVERFLOW";
-        case 0xe: return "NO SENSE";
-        case 0xf: return "COMPLETED";
-        default: // Not technically possible (value is only 4 bits)
-          return null;
-      }
-    }
+    public static string SenseKeyDescription(byte senseKey) => senseKey switch {
+      0x0 => "NO SENSE",
+      0x1 => "RECOVERED ERROR",
+      0x2 => "NOT READY",
+      0x3 => "MEDIUM ERROR",
+      0x4 => "HARDWARE ERROR",
+      0x5 => "ILLEGAL REQUEST",
+      0x6 => "UNIT ATTENTION",
+      0x7 => "DATA PROTECT",
+      0x8 => "BLANK CHECK",
+      0x9 => "VENDOR SPECIFIC",
+      0xa => "COPY ABORTED",
+      0xb => "ABORTED COMMAND",
+      0xc => "RESERVED",
+      0xd => "VOLUME OVERFLOW",
+      0xe => "NO SENSE",
+      0xf => "COMPLETED",
+      // Not technically possible (value is only 4 bits)
+      _ => null
+    };
 
     /// <summary>Creates a string describing the specified SCSI additional sense information.</summary>
     /// <param name="asc">The SCSI &quot;additional sense code&quot; value.</param>
