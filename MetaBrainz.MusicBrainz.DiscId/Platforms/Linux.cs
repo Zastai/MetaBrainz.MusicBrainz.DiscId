@@ -17,19 +17,20 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
     public override IEnumerable<string> AvailableDevices {
       get {
-        string[] devices = null;
+        string[]? devices = null;
         try {
-          using (var info = File.OpenText("/proc/sys/dev/cdrom/info")) {
-            string line;
-            while ((line = info.ReadLine()) != null) {
-              if (!line.StartsWith("drive name:", StringComparison.Ordinal))
-                continue;
-              devices = line.Substring(11).Split(new[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
-              break;
-            }
+          using var info = File.OpenText("/proc/sys/dev/cdrom/info");
+          string? line;
+          while ((line = info.ReadLine()) != null) {
+            if (!line.StartsWith("drive name:", StringComparison.Ordinal))
+              continue;
+            devices = line.Substring(11).Split(new[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            break;
           }
         }
-        catch { }
+        catch {
+          // ignore
+        }
         if (devices != null) {
           Array.Reverse(devices);
           foreach (var device in devices)
@@ -38,46 +39,45 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       }
     }
 
-    public override string DefaultDevice {
+    public override string? DefaultDevice {
       get { // Prefer the generic device name (typically a symlink to the "preferred" device)
-        using (var fd = NativeApi.OpenDevice(Linux.GenericDevice))
-          return fd.IsInvalid ? base.DefaultDevice : Linux.GenericDevice;
+        using var fd = NativeApi.OpenDevice(Linux.GenericDevice);
+        return fd.IsInvalid ? base.DefaultDevice : Linux.GenericDevice;
       }
     }
 
     protected override TableOfContents ReadTableOfContents(string device, DiscReadFeature features) {
-      using (var fd = NativeApi.OpenDevice(device)) {
-        if (fd.IsInvalid)
-          throw new IOException($"Failed to open '{device}'.", new UnixException());
-        byte first = 0;
-        byte last  = 0;
-        Track[] tracks = null;
-        { // Read the TOC itself
-          NativeApi.GetTableOfContents(fd, out MMC.TOCDescriptor rawtoc);
-          first = rawtoc.FirstTrack;
-          last = rawtoc.LastTrack;
-          tracks = new Track[last + 1];
-          var i = 0;
-          for (var trackno = rawtoc.FirstTrack; trackno <= rawtoc.LastTrack; ++trackno, ++i) { // Add the regular tracks.
-            if (rawtoc.Tracks[i].TrackNumber != trackno)
-              throw new InvalidDataException($"Internal logic error; first track is {rawtoc.FirstTrack}, but entry at index {i} claims to be track {rawtoc.Tracks[i].TrackNumber} instead of {trackno}.");
-            var isrc = ((features & DiscReadFeature.TrackIsrc) != 0) ? NativeApi.GetTrackIsrc(fd, trackno) : null;
-            tracks[trackno] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, isrc);
-          }
-          // Next entry should be the lead-out (track number 0xAA)
-          if (rawtoc.Tracks[i].TrackNumber != 0xAA)
-            throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtoc.Tracks[i].TrackNumber} instead of 0xAA (lead-out).");
-          tracks[0] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, null);
+      using var fd = NativeApi.OpenDevice(device);
+      if (fd.IsInvalid)
+        throw new IOException($"Failed to open '{device}'.", new UnixException());
+      byte first;
+      byte last;
+      Track[] tracks;
+      { // Read the TOC itself
+        NativeApi.GetTableOfContents(fd, out var rawToc);
+        first = rawToc.FirstTrack;
+        last = rawToc.LastTrack;
+        tracks = new Track[last + 1];
+        var i = 0;
+        for (var trackNo = rawToc.FirstTrack; trackNo <= rawToc.LastTrack; ++trackNo, ++i) { // Add the regular tracks.
+          if (rawToc.Tracks[i].TrackNumber != trackNo)
+            throw new InvalidDataException($"Internal logic error; first track is {rawToc.FirstTrack}, but entry at index {i} claims to be track {rawToc.Tracks[i].TrackNumber} instead of {trackNo}.");
+          var isrc = ((features & DiscReadFeature.TrackIsrc) != 0) ? NativeApi.GetTrackIsrc(fd, trackNo) : null;
+          tracks[trackNo] = new Track(rawToc.Tracks[i].Address, rawToc.Tracks[i].ControlAndADR.Control, isrc);
         }
-        var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(fd) : null;
-        RedBook.CDTextGroup? cdtg = null;
-        if ((features & DiscReadFeature.CdText) != 0) {
-          NativeApi.GetCdTextInfo(fd, out MMC.CDTextDescriptor cdtext);
-          if (cdtext.Data.Packs != null)
-            cdtg = cdtext.Data;
-        }
-        return new TableOfContents(device, first, last, tracks, mcn, cdtg);
+        // Next entry should be the lead-out (track number 0xAA)
+        if (rawToc.Tracks[i].TrackNumber != 0xAA)
+          throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawToc.Tracks[i].TrackNumber} instead of 0xAA (lead-out).");
+        tracks[0] = new Track(rawToc.Tracks[i].Address, rawToc.Tracks[i].ControlAndADR.Control, null);
       }
+      var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(fd) : null;
+      RedBook.CDTextGroup? cdTextGroup = null;
+      if ((features & DiscReadFeature.CdText) != 0) {
+        NativeApi.GetCdTextInfo(fd, out var cdText);
+        if (cdText.Data.Packs != null)
+          cdTextGroup = cdText.Data;
+      }
+      return new TableOfContents(device, first, last, tracks, mcn, cdTextGroup);
     }
 
     #region Native API

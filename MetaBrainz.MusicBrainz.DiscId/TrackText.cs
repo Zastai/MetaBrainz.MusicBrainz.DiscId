@@ -8,35 +8,25 @@ namespace MetaBrainz.MusicBrainz.DiscId {
   public sealed class TrackText {
 
     /// <summary>The track's title.</summary>
-    public string Title { get; }
+    public string? Title { get; internal set; }
 
     /// <summary>The track's performer.</summary>
-    public string Performer { get; }
+    public string? Performer { get; internal set; }
 
     /// <summary>The track's lyricist.</summary>
-    public string Lyricist { get; }
+    public string? Lyricist { get; internal set; }
 
     /// <summary>The track's composer.</summary>
-    public string Composer { get; }
+    public string? Composer { get; internal set; }
 
     /// <summary>The track's arranger.</summary>
-    public string Arranger { get; }
+    public string? Arranger { get; internal set; }
 
     /// <summary>A message associated with the track.</summary>
-    public string Message { get; }
+    public string? Message { get; internal set; }
 
     /// <summary>The track's ISRC.</summary>
-    public string Isrc { get; }
-
-    internal TrackText(string title, string performer, string lyricist, string composer, string arranger, string message, string code) {
-      this.Title     = title;
-      this.Performer = performer;
-      this.Lyricist  = lyricist;
-      this.Composer  = composer;
-      this.Arranger  = arranger;
-      this.Message   = message;
-      this.Isrc      = code;
-    }
+    public string? Isrc { get; internal set; }
 
   }
 

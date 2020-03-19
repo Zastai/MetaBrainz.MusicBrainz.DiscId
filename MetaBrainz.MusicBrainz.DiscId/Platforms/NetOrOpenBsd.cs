@@ -12,7 +12,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
     private static class NativeApi {
 
-      public static char RawPartition;
+      public static readonly char RawPartition;
 
       static NativeApi() {
         NativeApi.RawPartition = (char) ('a' + NativeApi.GetRawPartition());

@@ -8,23 +8,27 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
   [Serializable]
   public class UnixException : ExternalException {
 
-    /// <summary>Initializes a new instance of the <see cref="UnixException"/> class, for the most recent error reported by a Unix system routine.</summary>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UnixException"/> class, for the most recent error reported by a Unix system
+    /// routine.
+    /// </summary>
     public UnixException() : this(Marshal.GetLastWin32Error()) { }
 
     /// <summary>Initializes a new instance of the <see cref="UnixException"/> class, for the specified error code.</summary>
     /// <param name="errno">The error code for which the exception is being created.</param>
     public UnixException(int errno) : base(UnixException.GetErrorText(errno), errno) { }
 
-    private static string GetErrorText(int errno) {
-      // strerror() is not threadsafe, and strerror_r() is not portable, so use strerror() plus a lock to help with the threadsafety issue.
-      UnixException.Lock();
+    private static string? GetErrorText(int errno) {
+      // strerror() is not thread-safe, and strerror_r() is not portable, so use strerror() plus a lock to help with the
+      // thread-safety issue.
+      UnixException.ThreadLock.EnterWriteLock();
       try {
         return Marshal.PtrToStringAnsi(UnixException.StrError(errno));
       }
       catch (DllNotFoundException)        { }
       catch (EntryPointNotFoundException) { }
       finally {
-        UnixException.Unlock();
+        UnixException.ThreadLock.ExitWriteLock();
       }
       return $"[errno {errno}]";
     }
@@ -33,14 +37,6 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
     private static extern IntPtr StrError(int error);
 
     private static readonly ReaderWriterLockSlim ThreadLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
-
-    private static void Lock() {
-      UnixException.ThreadLock.EnterWriteLock();
-    }
-
-    private static void Unlock() {
-      UnixException.ThreadLock.ExitWriteLock();
-    }
 
   }
 

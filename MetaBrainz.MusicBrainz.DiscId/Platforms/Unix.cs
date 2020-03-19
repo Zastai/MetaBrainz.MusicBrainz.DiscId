@@ -13,11 +13,11 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       var os = string.Empty;
       try { // uname() technically fills a struct with multiple arrays of fixed-but-undefined size.
         // However, the arrays are guaranteed to be NUL-terminated, and since there's only 6 of them, 8K should be plenty.
-      var buf = new byte[8 * 1024];
+        var buf = new byte[8 * 1024];
         if (NativeApi.UName(buf) == 0) {
-        var endpos = Array.IndexOf<byte>(buf, 0);
-          if (endpos >= 0)
-            os = Encoding.ASCII.GetString(buf, 0, endpos); // FIXME: Or Encoding.Default?
+          var endPos = Array.IndexOf<byte>(buf, 0);
+          if (endPos >= 0)
+            os = Encoding.ASCII.GetString(buf, 0, endPos); // FIXME: Or Encoding.Default?
         }
       }
       catch (DllNotFoundException) { }

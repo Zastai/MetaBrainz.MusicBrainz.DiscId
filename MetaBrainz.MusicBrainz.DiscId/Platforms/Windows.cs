@@ -25,32 +25,31 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
     }
 
     protected override TableOfContents ReadTableOfContents(string device, DiscReadFeature features) {
-      using (var hDevice = NativeApi.OpenDevice(device)) {
-        // Read the TOC itself
-        NativeApi.GetTableOfContents(hDevice, out MMC.TOCDescriptor rawtoc);
-        var first = rawtoc.FirstTrack;
-        var last = rawtoc.LastTrack;
-        var tracks = new Track[last + 1];
-        var i = 0;
-        for (var trackno = rawtoc.FirstTrack; trackno <= rawtoc.LastTrack; ++trackno, ++i) { // Add the regular tracks.
-          if (rawtoc.Tracks[i].TrackNumber != trackno)
-            throw new InvalidDataException($"Internal logic error; first track is {rawtoc.FirstTrack}, but entry at index {i} claims to be track {rawtoc.Tracks[i].TrackNumber} instead of {trackno}");
-          var isrc = ((features & DiscReadFeature.TrackIsrc) != 0) ? NativeApi.GetTrackIsrc(hDevice, trackno) : null;
-          tracks[trackno] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, isrc);
-        }
-        // Next entry should be the leadout (track number 0xAA)
-        if (rawtoc.Tracks[i].TrackNumber != 0xAA)
-          throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtoc.Tracks[i].TrackNumber} instead of 0xAA (lead-out)");
-        tracks[0] = new Track(rawtoc.Tracks[i].Address, rawtoc.Tracks[i].ControlAndADR.Control, null);
-        var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(hDevice) : null;
-        RedBook.CDTextGroup? cdtg = null;
-        if ((features & DiscReadFeature.CdText) != 0) {
-          NativeApi.GetCdTextInfo(hDevice, out MMC.CDTextDescriptor cdtext);
-          if (cdtext.Data.Packs != null)
-            cdtg = cdtext.Data;
-        }
-        return new TableOfContents(device, first, last, tracks, mcn, cdtg);
+      using var hDevice = NativeApi.OpenDevice(device);
+      // Read the TOC itself
+      NativeApi.GetTableOfContents(hDevice, out var rawToc);
+      var first = rawToc.FirstTrack;
+      var last = rawToc.LastTrack;
+      var tracks = new Track[last + 1];
+      var i = 0;
+      for (var trackNo = rawToc.FirstTrack; trackNo <= rawToc.LastTrack; ++trackNo, ++i) { // Add the regular tracks.
+        if (rawToc.Tracks[i].TrackNumber != trackNo)
+          throw new InvalidDataException($"Internal logic error; first track is {rawToc.FirstTrack}, but entry at index {i} claims to be track {rawToc.Tracks[i].TrackNumber} instead of {trackNo}");
+        var isrc = ((features & DiscReadFeature.TrackIsrc) != 0) ? NativeApi.GetTrackIsrc(hDevice, trackNo) : null;
+        tracks[trackNo] = new Track(rawToc.Tracks[i].Address, rawToc.Tracks[i].ControlAndADR.Control, isrc);
       }
+      // Next entry should be the lead-out (track number 0xAA)
+      if (rawToc.Tracks[i].TrackNumber != 0xAA)
+        throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawToc.Tracks[i].TrackNumber} instead of 0xAA (lead-out)");
+      tracks[0] = new Track(rawToc.Tracks[i].Address, rawToc.Tracks[i].ControlAndADR.Control, null);
+      var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(hDevice) : null;
+      RedBook.CDTextGroup? cdTextGroup = null;
+      if ((features & DiscReadFeature.CdText) != 0) {
+        NativeApi.GetCdTextInfo(hDevice, out var cdText);
+        if (cdText.Data.Packs != null)
+          cdTextGroup = cdText.Data;
+      }
+      return new TableOfContents(device, first, last, tracks, mcn, cdTextGroup);
     }
 
     #region Native API

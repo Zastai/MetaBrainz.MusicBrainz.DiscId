@@ -8,11 +8,11 @@ namespace MetaBrainz.MusicBrainz.DiscId {
 
     DiscReadFeature AvailableFeatures { get; }
 
-    string DefaultDevice { get; }
+    string? DefaultDevice { get; }
 
     bool HasFeature(DiscReadFeature feature);
 
-    TableOfContents ReadTableOfContents(string device, DiscReadFeature features);
+    TableOfContents ReadTableOfContents(string? device, DiscReadFeature features);
 
   }
 

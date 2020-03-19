@@ -22,17 +22,15 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       }
     }
 
-    private readonly DiscReadFeature _features;
-
     protected Platform(DiscReadFeature features) {
-      this._features = features;
+      this.AvailableFeatures = features;
     }
 
     public abstract IEnumerable<string> AvailableDevices { get; }
 
-    public DiscReadFeature AvailableFeatures => this._features;
+    public DiscReadFeature AvailableFeatures { get; }
 
-    public virtual string DefaultDevice {
+    public virtual string? DefaultDevice {
       get { // Equivalent to FirstOrDefault(), but without using LINQ.
         foreach (var device in this.AvailableDevices)
           return device;
@@ -40,17 +38,17 @@ namespace MetaBrainz.MusicBrainz.DiscId {
       }
     }
 
-    public bool HasFeature(DiscReadFeature feature) => (feature & this._features) != 0;
+    public bool HasFeature(DiscReadFeature feature) => (feature & this.AvailableFeatures) == feature;
 
     protected abstract TableOfContents ReadTableOfContents(string device, DiscReadFeature features);
 
-    TableOfContents IPlatform.ReadTableOfContents(string device, DiscReadFeature features) {
+    TableOfContents IPlatform.ReadTableOfContents(string? device, DiscReadFeature features) {
       if (string.IsNullOrWhiteSpace(device)) // Map null/blanks to the default device
         device = this.DefaultDevice;
       if (device == null) // But we do need a device at this point
         throw new NotSupportedException("No cd-rom device found.");
       // Mask off unsupported features
-      features &= this._features;
+      features &= this.AvailableFeatures;
       return this.ReadTableOfContents(device, features);
     }
 

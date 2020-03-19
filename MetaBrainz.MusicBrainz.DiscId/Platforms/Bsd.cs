@@ -32,29 +32,28 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
     }
 
     protected override TableOfContents ReadTableOfContents(string device, DiscReadFeature features) {
-      using (var fd = NativeApi.OpenDevice(device)) {
-        if (fd.IsInvalid)
-          throw new IOException($"Failed to open '{device}'.", new UnixException());
-        // Read the TOC itself
-        NativeApi.ReadTOC(fd, out var first, out var last, out var rawtracks, this.AddressesAreNative);
-        var tracks = new Track[rawtracks.Length];
-        var i = 0;
-        if (first > 0) {
-          for (var trackno = first; trackno <= last; ++trackno, ++i) { // Add the regular tracks.
-            if (rawtracks[i].TrackNumber != trackno)
-              throw new InvalidDataException($"Internal logic error; first track is {first}, but entry at index {i} claims to be track {rawtracks[i].TrackNumber} instead of {trackno}.");
-            var isrc = ((features & DiscReadFeature.TrackIsrc) != 0) ? NativeApi.GetTrackIsrc(fd, trackno) : null;
-            tracks[trackno] = new Track(rawtracks[i].Address, rawtracks[i].ControlAndADR.Control, isrc);
-          }
+      using var fd = NativeApi.OpenDevice(device);
+      if (fd.IsInvalid)
+        throw new IOException($"Failed to open '{device}'.", new UnixException());
+      // Read the TOC itself
+      NativeApi.ReadTOC(fd, out var first, out var last, out var rawTracks, this.AddressesAreNative);
+      var tracks = new Track[rawTracks.Length];
+      var i = 0;
+      if (first > 0) {
+        for (var trackNo = first; trackNo <= last; ++trackNo, ++i) { // Add the regular tracks.
+          if (rawTracks[i].TrackNumber != trackNo)
+            throw new InvalidDataException($"Internal logic error; first track is {first}, but entry at index {i} claims to be track {rawTracks[i].TrackNumber} instead of {trackNo}.");
+          var isrc = ((features & DiscReadFeature.TrackIsrc) != 0) ? NativeApi.GetTrackIsrc(fd, trackNo) : null;
+          tracks[trackNo] = new Track(rawTracks[i].Address, rawTracks[i].ControlAndADR.Control, isrc);
         }
-        // Next entry should be the lead-out (track number 0xAA)
-        if (rawtracks[i].TrackNumber != 0xAA)
-          throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawtracks[i].TrackNumber} instead of 0xAA (lead-out).");
-        tracks[0] = new Track(rawtracks[i].Address, rawtracks[i].ControlAndADR.Control, null);
-        var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(fd) : null;
-        // TODO: Find out how to get CD-TEXT data.
-        return new TableOfContents(device, first, last, tracks, mcn, null);
       }
+      // Next entry should be the lead-out (track number 0xAA)
+      if (rawTracks[i].TrackNumber != 0xAA)
+        throw new InvalidDataException($"Internal logic error; track data ends with a record that reports track number {rawTracks[i].TrackNumber} instead of 0xAA (lead-out).");
+      tracks[0] = new Track(rawTracks[i].Address, rawTracks[i].ControlAndADR.Control, null);
+      var mcn = ((features & DiscReadFeature.MediaCatalogNumber) != 0) ? NativeApi.GetMediaCatalogNumber(fd) : null;
+      // TODO: Find out how to get CD-TEXT data.
+      return new TableOfContents(device, first, last, tracks, mcn, null);
     }
 
     #region Native API
@@ -146,26 +145,26 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
           last  = req.ending_track;
         }
         {
-          var trackcount = last - first + 2; // first->last plus lead-out
-          var itemsize = Marshal.SizeOf<MMC.TrackDescriptor>();
+          var trackCount = last - first + 2; // first->last plus lead-out
+          var itemSize = Marshal.SizeOf<MMC.TrackDescriptor>();
           var req = new TOCEntriesRequest {
             address_format = CDAddressFormat.CD_LBA_FORMAT,
             starting_track = first,
-            data_len       = (ushort) (trackcount * itemsize),
+            data_len       = (ushort) (trackCount * itemSize),
           };
           req.data = Marshal.AllocHGlobal(new IntPtr(req.data_len));
           try {
             if (NativeApi.SendIORequest(fd.Value, IOCTL.CDIOREADTOCENTRIES, ref req) != 0)
               throw new IOException("Failed to retrieve TOC entries.", new UnixException());
-            tracks = new MMC.TrackDescriptor[trackcount];
+            tracks = new MMC.TrackDescriptor[trackCount];
             var walker = req.data;
-            for (var i = 0; i < trackcount; ++i) {
+            for (var i = 0; i < trackCount; ++i) {
               tracks[i] = Marshal.PtrToStructure<MMC.TrackDescriptor>(walker);
               // The FixUp call assumes the address is in network byte order.
               if (nativeAddress)
                 tracks[i].Address = IPAddress.HostToNetworkOrder(tracks[i].Address);
               tracks[i].FixUp(req.address_format == CDAddressFormat.CD_MSF_FORMAT);
-              walker += itemsize;
+              walker += itemSize;
             }
           }
           finally {
@@ -197,10 +196,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
         req.data = Marshal.AllocHGlobal(new IntPtr(req.data_len));
         try {
           var rc = NativeApi.SendIORequest(fd.Value, IOCTL.CDIOCREADSUBCHANNEL, ref req);
-          if (rc == 0)
-            data = Marshal.PtrToStructure<T>(req.data);
-          else
-            data = default(T);
+          data = (rc == 0) ? Marshal.PtrToStructure<T>(req.data) : default;
           return rc;
         }
         finally {

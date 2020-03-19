@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Standards {
@@ -112,7 +113,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
       0xe => "NO SENSE",
       0xf => "COMPLETED",
       // Not technically possible (value is only 4 bits)
-      _ => null
+      _ => throw new ArgumentOutOfRangeException(nameof(senseKey), senseKey, "A SCSI sense key must be between 0 and 15.")
     };
 
     /// <summary>Creates a string describing the specified SCSI additional sense information.</summary>

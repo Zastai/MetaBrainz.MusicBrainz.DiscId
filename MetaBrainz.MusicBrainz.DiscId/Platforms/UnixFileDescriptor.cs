@@ -9,30 +9,28 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
     public static UnixFileDescriptor OpenPath(string path, uint flags, int mode) => new UnixFileDescriptor(NativeApi.Open(path, flags, mode));
 
-    public bool IsInvalid => this._descriptor == -1;
+    public bool IsInvalid => this.Value == -1;
 
-    public int Value => this._descriptor;
+    public int Value { get; private set; }
 
     public void Close() {
-      if (this._descriptor == -1)
+      if (this.Value == -1)
         return;
-      var rc = NativeApi.Close(this._descriptor);
-      this._descriptor = -1;
+      var rc = NativeApi.Close(this.Value);
+      this.Value = -1;
       if (rc != 0)
         throw new IOException("Failed to close file descriptor.", new UnixException());
     }
 
-    public override string ToString() => $"fd {this._descriptor}";
+    public override string ToString() => $"fd {this.Value}";
 
     void IDisposable.Dispose() {
       this.Close();
     }
 
     private UnixFileDescriptor(int descriptor) {
-      this._descriptor = descriptor;
+      this.Value = descriptor;
     }
-
-    private int _descriptor;
 
     private static class NativeApi {
 

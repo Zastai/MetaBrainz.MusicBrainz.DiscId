@@ -87,17 +87,17 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards {
       // - The size of a text group is recommended to be less than 512 PACKs, and shall be at maximum 2048 PACKs.
 
       [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2048)]
-      public CDTextPack[] Packs;
+      public CDTextPack[]? Packs;
 
       public void FixUp(int size) {
         // Fix up the items too, reducing the array to the actual size.
         var count = size / Marshal.SizeOf<CDTextPack>();
         if (count < 0 || count > 2048)
           throw new InvalidOperationException($"Invalid pack count ({count}) for CD-TEXT text group; should be between 0 and 2048.");
-        if (count == 0) {
+        if (count == 0)
           this.Packs = null;
+        if (this.Packs == null)
           return;
-        }
         // This assumes this structure was created via marshaling, so Packs is a 2048-element array containing real data.
         var packs = new CDTextPack[count];
         for (var i = 0; i < count; ++i) {
