@@ -5,9 +5,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using Microsoft.Win32.SafeHandles;
 
 using MetaBrainz.MusicBrainz.DiscId.Standards;
+
+using Microsoft.Win32.SafeHandles;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
 
@@ -107,7 +108,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       #region Public Methods
 
       public static void GetCdTextInfo(SafeFileHandle hDevice, out MMC.CDTextDescriptor cdtext) {
-        var req = new NativeApi.TOCRequest(MMC.TOCRequestFormat.CDText);
+        var req = new TOCRequest(MMC.TOCRequestFormat.CDText);
         var reqlen = Marshal.SizeOf<TOCRequest>();
         var cdtextlen = Marshal.SizeOf<MMC.CDTextDescriptor>();
         var ok = NativeApi.DeviceIoControl(hDevice, IOCTL.CDROM_READ_TOC_EX, ref req, reqlen, out cdtext, cdtextlen, out int _, IntPtr.Zero);
@@ -127,7 +128,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
       }
 
       public static void GetTableOfContents(SafeFileHandle hDevice, out MMC.TOCDescriptor rawtoc) {
-        var req = new NativeApi.TOCRequest(MMC.TOCRequestFormat.TOC);
+        var req = new TOCRequest(MMC.TOCRequestFormat.TOC);
         var reqlen = Marshal.SizeOf<TOCRequest>();
         var rawtoclen = Marshal.SizeOf<MMC.TOCDescriptor>();
         // LIB-44: Apparently for some multi-session discs, the first TOC read can be wrong. So issue two reads.

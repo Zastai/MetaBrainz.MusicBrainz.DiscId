@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using MetaBrainz.MusicBrainz.DiscId.Platforms;
+
 namespace MetaBrainz.MusicBrainz.DiscId {
 
   internal abstract class Platform : IPlatform {
@@ -8,17 +10,17 @@ namespace MetaBrainz.MusicBrainz.DiscId {
     public static IPlatform Create() {
       switch (Environment.OSVersion.Platform) {
         case PlatformID.MacOSX:
-          return new Platforms.Darwin();
+          return new Darwin();
         case PlatformID.Win32NT:
         case PlatformID.Win32S:
         case PlatformID.Win32Windows:
         case PlatformID.WinCE:
         case PlatformID.Xbox:
-          return new Platforms.Windows();
+          return new Windows();
         case PlatformID.Unix:
-          return Platforms.Unix.Create();
+          return Unix.Create();
         default:
-          return new Platforms.Unsupported();
+          return new Unsupported();
       }
     }
 

@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 
 using JetBrains.Annotations;
+
 using MetaBrainz.MusicBrainz.DiscId.Standards;
 
 namespace MetaBrainz.MusicBrainz.DiscId {
