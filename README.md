@@ -11,7 +11,7 @@ Support for OSX is similarly unlikely, because I have no access to a system.
 
 ## Release Notes
 
-### v2.0 (2020-03-21)
+### v2.0 (2020-03-22)
 
 - Target .NET Standard 2.0 and 2.1, .NET Core 2.1 and 3.1 (the current LTS releases) and .NET Framework 4.6.1, 4.7.2 and 4.8.
 - Minor doc fixes.
