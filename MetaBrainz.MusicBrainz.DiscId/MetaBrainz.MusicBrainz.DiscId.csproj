@@ -5,7 +5,7 @@
     <Title>MusicBrainz DiscID Library</Title>
     <Description>This package provides classes for accessing information about a CD (its MusicBrainz Disc ID, EAN/ISRC values, CD-TEXT info, ...).</Description>
     <PackageTags>MusicBrainz discid audio cd cd-text isrc upc ean libdiscid</PackageTags>
-    <Version>2.0.1</Version>
+    <Version>2.0.2-pre</Version>
   </PropertyGroup>
 
   <PropertyGroup>
