@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Title>MusicBrainz DiscID Library</Title>
     <Description>This package provides classes for accessing information about a CD (its MusicBrainz Disc ID, EAN/ISRC values, CD-TEXT info, ...).</Description>
-    <PackageCopyrightYears>2016-2020</PackageCopyrightYears>
+    <PackageCopyrightYears>2016-2021</PackageCopyrightYears>
     <PackageRepositoryName>MetaBrainz.MusicBrainz.DiscId</PackageRepositoryName>
     <PackageTags>MusicBrainz discid audio cd cd-text isrc upc ean libdiscid</PackageTags>
-    <Version>2.0.2-pre</Version>
+    <Version>3.0.0-pre</Version>
   </PropertyGroup>
 
   <ItemGroup>
