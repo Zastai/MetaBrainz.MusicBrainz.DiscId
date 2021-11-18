@@ -1,18 +1,36 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30804.86
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaBrainz.MusicBrainz.DiscId", "MetaBrainz.MusicBrainz.DiscId\MetaBrainz.MusicBrainz.DiscId.csproj", "{0686B2DB-E960-4602-B2FC-6747C6AB4845}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Support Files", "Support Files", "{F997B31A-CF25-4C63-BEB5-172F7E13D9B3}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
 		appveyor.yml = appveyor.yml
+		build-package.ps1 = build-package.ps1
 		Directory.Packages.props = Directory.Packages.props
 		global.json = global.json
+		LICENSE.md = LICENSE.md
+		package-icon.png = package-icon.png
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GitHub", "GitHub", "{935533F7-8706-4D16-8BD0-91B696CAFA39}"
+	ProjectSection(SolutionItems) = preProject
+		.github\dependabot.yml = .github\dependabot.yml
+		.github\github-labels.yml = .github\github-labels.yml
+		.github\release-drafter.yml = .github\release-drafter.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{9FD24444-85F6-4C28-AFA0-3F00E9F307F0}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\release-drafter.yml = .github\workflows\release-drafter.yml
+		.github\workflows\update-labels.yml = .github\workflows\update-labels.yml
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaBrainz.MusicBrainz.DiscId", "MetaBrainz.MusicBrainz.DiscId\MetaBrainz.MusicBrainz.DiscId.csproj", "{0686B2DB-E960-4602-B2FC-6747C6AB4845}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +45,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{935533F7-8706-4D16-8BD0-91B696CAFA39} = {F997B31A-CF25-4C63-BEB5-172F7E13D9B3}
+		{9FD24444-85F6-4C28-AFA0-3F00E9F307F0} = {935533F7-8706-4D16-8BD0-91B696CAFA39}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7268F3E7-38C2-4A79-B3AD-F4AE1326F3C0}
