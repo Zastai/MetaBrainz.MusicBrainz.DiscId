@@ -1,9 +1,7 @@
-﻿namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
+namespace MetaBrainz.MusicBrainz.DiscId.Platforms;
 
-  internal sealed class NetBsd : NetOrOpenBsd {
+internal sealed class NetBsd : NetOrOpenBsd {
 
-    // Currently just a placeholder for any functionality specific to NetBSD
-
-  }
+  // Currently just a placeholder for any functionality specific to NetBSD
 
 }

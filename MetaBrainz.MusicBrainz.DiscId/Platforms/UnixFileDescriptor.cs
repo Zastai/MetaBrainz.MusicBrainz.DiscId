@@ -1,46 +1,53 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
+using JetBrains.Annotations;
 
-  [StructLayout(LayoutKind.Sequential)]
-  internal sealed class UnixFileDescriptor : IDisposable {
+namespace MetaBrainz.MusicBrainz.DiscId.Platforms;
 
-    public static UnixFileDescriptor OpenPath(string path, uint flags, int mode) => new UnixFileDescriptor(NativeApi.Open(path, flags, mode));
+[PublicAPI]
+[StructLayout(LayoutKind.Sequential)]
+internal sealed class UnixFileDescriptor : IDisposable {
 
-    public bool IsInvalid => this.Value == -1;
+  public static UnixFileDescriptor OpenPath(string path, uint flags, int mode) => new(NativeApi.Open(path, flags, mode));
 
-    public int Value { get; private set; }
+  public bool IsInvalid => this.Value == -1;
 
-    public void Close() {
-      if (this.Value == -1)
-        return;
-      var rc = NativeApi.Close(this.Value);
-      this.Value = -1;
-      if (rc != 0)
-        throw new IOException("Failed to close file descriptor.", new UnixException());
+  public int Value { get; private set; }
+
+  public void Close() {
+    if (this.Value == -1) {
+      return;
     }
-
-    public override string ToString() => $"fd {this.Value}";
-
-    void IDisposable.Dispose() {
-      this.Close();
+    var rc = NativeApi.Close(this.Value);
+    this.Value = -1;
+    if (rc != 0) {
+      throw new IOException("Failed to close file descriptor.", new UnixException());
     }
+  }
 
-    private UnixFileDescriptor(int descriptor) {
-      this.Value = descriptor;
-    }
+  public override string ToString() => $"fd {this.Value}";
 
-    private static class NativeApi {
+  void IDisposable.Dispose() {
+    this.Close();
+  }
 
-      [DllImport("libc", EntryPoint = "close", SetLastError = true)]
-      public static extern int Close(int handle);
+  private UnixFileDescriptor(int descriptor) {
+    this.Value = descriptor;
+  }
 
-      [DllImport("libc", EntryPoint = "open", SetLastError = true)]
-      public static extern int Open(string path, uint flags, int mode);
+  private static class NativeApi {
 
-    }
+    [DllImport("libc", EntryPoint = "close", SetLastError = true)]
+    public static extern int Close(int handle);
+
+#pragma warning disable CA2101 // Inspection about string marshaling; unavoidable on non-Windows (no Unicode API)
+
+    [DllImport("libc", EntryPoint = "open", SetLastError = true)]
+    public static extern int Open(string path, uint flags, int mode);
+
+#pragma warning restore CA2101
 
   }
 
