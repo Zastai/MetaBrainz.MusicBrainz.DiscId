@@ -1,18 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
+namespace MetaBrainz.MusicBrainz.DiscId.Platforms;
 
-  internal class Unsupported : Platform {
+internal class Unsupported : Platform {
 
-    public Unsupported() : base(DiscReadFeature.None) { }
+  public Unsupported() : base(DiscReadFeature.None) { }
 
-    public override IEnumerable<string> AvailableDevices { get { yield break; } }
+  public override IEnumerable<string> AvailableDevices { get { yield break; } }
 
-    protected override TableOfContents ReadTableOfContents(string device, DiscReadFeature features) {
-      throw new PlatformNotSupportedException($"CD device access is not supported on this platform ({Environment.OSVersion}).");
-    }
-
-  }
+  protected override TableOfContents ReadTableOfContents(string device, DiscReadFeature features)
+    => throw new PlatformNotSupportedException($"CD device access is not supported on this platform ({Environment.OSVersion}).");
 
 }

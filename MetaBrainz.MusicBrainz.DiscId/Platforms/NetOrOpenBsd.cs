@@ -1,30 +1,28 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 
-namespace MetaBrainz.MusicBrainz.DiscId.Platforms {
+namespace MetaBrainz.MusicBrainz.DiscId.Platforms;
 
-  internal abstract class NetOrOpenBsd : Bsd {
+internal abstract class NetOrOpenBsd : Bsd {
 
-    protected override bool AddressesAreNative => true;
+  protected override bool AddressesAreNative => true;
 
-    protected override string GetDevicePath(string device) => string.Concat("/dev/r", device, NativeApi.RawPartition);
+  protected override string GetDevicePath(string device) => string.Concat("/dev/r", device, NativeApi.RawPartition);
 
-    #region Native API
+  #region Native API
 
-    private static class NativeApi {
+  private static class NativeApi {
 
-      public static readonly char RawPartition;
+    public static readonly char RawPartition;
 
-      static NativeApi() {
-        NativeApi.RawPartition = (char) ('a' + NativeApi.GetRawPartition());
-      }
-
-      [DllImport("libutil", EntryPoint = "getrawpartition", SetLastError = true)]
-      private static extern int GetRawPartition();
-
+    static NativeApi() {
+      NativeApi.RawPartition = (char) ('a' + NativeApi.GetRawPartition());
     }
 
-    #endregion
+    [DllImport("libutil", EntryPoint = "getrawpartition", SetLastError = true)]
+    private static extern int GetRawPartition();
 
   }
+
+  #endregion
 
 }

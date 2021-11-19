@@ -1,19 +1,17 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
-namespace MetaBrainz.MusicBrainz.DiscId {
+namespace MetaBrainz.MusicBrainz.DiscId;
 
-  internal interface IPlatform {
+internal interface IPlatform {
 
-    IEnumerable<string> AvailableDevices { get; }
+  IEnumerable<string> AvailableDevices { get; }
 
-    DiscReadFeature AvailableFeatures { get; }
+  DiscReadFeature AvailableFeatures { get; }
 
-    string? DefaultDevice { get; }
+  string? DefaultDevice { get; }
 
-    bool HasFeature(DiscReadFeature feature);
+  bool HasFeature(DiscReadFeature feature);
 
-    TableOfContents ReadTableOfContents(string? device, DiscReadFeature features);
-
-  }
+  TableOfContents ReadTableOfContents(string? device, DiscReadFeature features);
 
 }
