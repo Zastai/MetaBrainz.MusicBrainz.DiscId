@@ -15,8 +15,8 @@ easy way to get Mono to work on it.
 Support for OSX is similarly unlikely, because I have no access to a
 system.
 
-[CI-S]: https://img.shields.io/appveyor/build/zastai/metabrainz-musicbrainz-discid
-[CI-L]: https://ci.appveyor.com/project/Zastai/metabrainz-musicbrainz-discid
+[CI-S]: https://github.com/Zastai/MetaBrainz.MusicBrainz.DiscId/actions/workflows/build.yml/badge.svg
+[CI-L]: https://github.com/Zastai/MetaBrainz.MusicBrainz.DiscId/actions/workflows/build.yml
 
 [NuGet-S]: https://img.shields.io/nuget/v/MetaBrainz.MusicBrainz.DiscId
 [NuGet-L]: https://www.nuget.org/packages/MetaBrainz.MusicBrainz.DiscId
