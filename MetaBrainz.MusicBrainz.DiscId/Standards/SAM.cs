@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using JetBrains.Annotations;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Standards;
@@ -19,6 +21,7 @@ internal static class SAM {
   #region Enumerations
 
   /// <summary>Enumeration of the status codes that can be returned by SCSI commands.</summary>
+  [SuppressMessage("ReSharper", "InconsistentNaming")]
   [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
   public enum StatusCode : byte {
 
@@ -52,6 +55,8 @@ internal static class SAM {
   #endregion
 
   #region Structures
+
+  // No relevant structures (yet).
 
   #endregion
 

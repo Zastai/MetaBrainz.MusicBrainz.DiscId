@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Runtime.InteropServices;
 
@@ -16,9 +17,11 @@ internal static class RedBook {
   public enum CDTextCharacterCode : byte {
 
     // modified, see CD-EXTRA specification, appendix 1
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
     ISO_8859_1 = 0x00,
 
     // 7-bit ASCII
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
     ISO_646 = 0x01,
 
     // 0x02-0x7f: Reserved
@@ -131,7 +134,7 @@ internal static class RedBook {
       if (count == 0) {
         this.Packs = null;
       }
-      if (this.Packs == null) {
+      if (this.Packs is null) {
         return;
       }
       // This assumes this structure was created via marshaling, so Packs is a 2048-element array containing real data.
@@ -180,7 +183,7 @@ internal static class RedBook {
     // - For content types 0x88, 0x89 and 0x8f, this is pure binary data. For all others, this (also) contains text.
     // - In the case of content types 0x80-0x85 and 0x8e, this should provide one string per track.
     //   Multiple strings are separated by a NUL byte (or 2 NUL bytes for DBCS); strings can be empty.
-    // - A string is recommended to be 160 characters or less.
+    // - A string is recommended to be 160 characters or fewer.
     // - Strings exceeding the size of a pack (and at just 12 or 6 characters, that is likely), continue into the next one (with
     //   the same ID1).
     // - Unused bytes at the end of a sequence with the same ID1 are set to NULL.
