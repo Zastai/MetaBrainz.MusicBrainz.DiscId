@@ -435,12 +435,12 @@ public sealed class TableOfContents {
     }
     var packs = cdTextGroup.Value.Packs;
     if (packs is null || packs.Length == 0) {
-      Trace.WriteLine("No CD-TEXT information (no packs found).", "CD-TEXT");
+      Tracing.Verbose(100, "No CD-TEXT packs found.");
       return;
     }
     // Assumption: Valid CD-TEXT blocks must have a SizeInfo entry.
     if (packs.Length < 3 || packs[^1].Type != RedBook.CDTextContentType.SizeInfo) {
-      Trace.WriteLine("No CD-TEXT information (packs do not end with SizeInfo data).", "CD-TEXT");
+      Tracing.Verbose(101, "No CD-TEXT information (packs do not end with SizeInfo data).");
       return;
     }
     RedBook.CDTextSizeInfo si;
@@ -456,7 +456,7 @@ public sealed class TableOfContents {
       --blockCount;
     }
     if (blockCount == 0) {
-      Trace.WriteLine("No CD-TEXT information (size info says there are 0 blocks).", "CD-TEXT");
+      Tracing.Verbose(102, "No CD-TEXT information (size info says there are 0 blocks).");
       return;
     }
     // Now set up the info arrays
@@ -493,20 +493,20 @@ public sealed class TableOfContents {
       var albumArranger = false;
       var albumMessage = false;
       var albumCode = false;
-      Trace.WriteLine($"Processing CD-TEXT block #{b + 1} (language: {si.LanguageCode[b]})...", "CD-TEXT");
+      Tracing.Verbose(103, "Processing CD-TEXT block #{0} (language: {1})...", b + 1, si.LanguageCode[b]);
       var dbcs = packs[p].IsUnicode;
       for (; p <= endPack; ++p) {
         var pack = packs[p];
         if (!pack.IsValid) {
-          Trace.WriteLine($"Ignoring pack #{p + 1} (type: {pack.Type}) because it failed the CRC check.", "CD-TEXT");
+          Tracing.Verbose(104, "Ignoring CD-TEXT pack #{0} (type: {1}) because it failed the CRC check.", p + 1, pack.Type);
           continue;
         }
         if (pack.IsExtension) {
-          Trace.WriteLine($"Ignoring pack #{p + 1} (type: {pack.Type}) because it's flagged as an extension.", "CD-TEXT");
+          Tracing.Verbose(105, "Ignoring CD-TEXT pack #{0} (type: {1}) because it's flagged as an extension.", p + 1, pack.Type);
           continue;
         }
         if (pack.IsUnicode != dbcs) {
-          Trace.WriteLine($"Pack #{p + 1} (type: {pack.Type}) has a mismatched DBCS flag.", "CD-TEXT");
+          Tracing.Verbose(106, "CD-TEXT Pack #{0} (type: {1}) has a mismatched DBCS flag.", p + 1, pack.Type);
         }
         switch (pack.Type) {
           case RedBook.CDTextContentType.Arranger:
@@ -561,7 +561,8 @@ public sealed class TableOfContents {
             }
             break;
           default:
-            Trace.WriteLine($"Ignoring pack #{p + 1} because it is of ignored or unsupported type '{pack.Type}'.", "CD-TEXT");
+            Tracing.Verbose(107, "Ignoring CD-TEXT pack #{0} because it is of ignored or unsupported type '{1}'.", p + 1,
+                            pack.Type);
             break;
         }
       }
@@ -569,53 +570,53 @@ public sealed class TableOfContents {
         si = Util.MarshalBytesToStructure<RedBook.CDTextSizeInfo>(sizeInfoBytes.ToArray());
       }
       else {
-        Trace.WriteLine("Ignoring this block because it does not include size info.", "CD-TEXT");
+        Tracing.Verbose(108, "Ignoring CD-TEXT block because it does not include size info.");
         continue;
       }
       // FIXME: Any skipped packs above will cause these checks to fail.
       if (si.PacksWithType80 * 12 != titleBytes.Count) {
-        Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 80).", "CD-TEXT");
+        Tracing.Verbose(109, "Ignoring this CD-TEXT block because it fails validation (pack count, type 80).");
         continue;
       }
       if (si.PacksWithType81 * 12 != performerBytes.Count) {
-        Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 81).", "CD-TEXT");
+        Tracing.Verbose(110, "Ignoring this CD-TEXT block because it fails validation (pack count, type 81).");
         continue;
       }
       if (si.PacksWithType82 * 12 != lyricistBytes.Count) {
-        Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 82).", "CD-TEXT");
+        Tracing.Verbose(111, "Ignoring this CD-TEXT block because it fails validation (pack count, type 82).");
         continue;
       }
       if (si.PacksWithType83 * 12 != composerBytes.Count) {
-        Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 83).", "CD-TEXT");
+        Tracing.Verbose(112, "Ignoring this CD-TEXT block because it fails validation (pack count, type 83).");
         continue;
       }
       if (si.PacksWithType84 * 12 != arrangerBytes.Count) {
-        Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 84).", "CD-TEXT");
+        Tracing.Verbose(113, "Ignoring this CD-TEXT block because it fails validation (pack count, type 84).");
         continue;
       }
       if (si.PacksWithType85 * 12 != messageBytes.Count) {
-        Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 85).", "CD-TEXT");
+        Tracing.Verbose(114, "Ignoring this CD-TEXT block because it fails validation (pack count, type 85).");
         continue;
       }
       if (si.PacksWithType86 * 12 != identBytes.Count) {
-        Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 86).", "CD-TEXT");
+        Tracing.Verbose(115, "Ignoring this CD-TEXT block because it fails validation (pack count, type 86).");
         continue;
       }
       if (si.PacksWithType87 * 12 != genreBytes.Count) {
-        Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 87).", "CD-TEXT");
+        Tracing.Verbose(116, "Ignoring this CD-TEXT block because it fails validation (pack count, type 87).");
         continue;
       }
       if (si.PacksWithType8E * 12 != codeBytes.Count) {
-        Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 8E).", "CD-TEXT");
+        Tracing.Verbose(117, "Ignoring this CD-TEXT block because it fails validation (pack count, type 8E).");
         continue;
       }
       if (si.PacksWithType8F * 12 != sizeInfoBytes.Count) {
-        Trace.WriteLine("Ignoring this block because it fails validation (pack count, type 8F).", "CD-TEXT");
+        Tracing.Verbose(118, "Ignoring this CD-TEXT block because it fails validation (pack count, type 8F).");
         continue;
       }
       Encoding encoding;
       if (dbcs) {
-        Trace.WriteLine("This block contains DBCS data; assuming this means UTF-16.", "CD-TEXT");
+        Tracing.Verbose(119, "This CD-TEXT block contains DBCS data; assuming this means UTF-16.");
         encoding = Encoding.BigEndianUnicode;
       }
       else {
@@ -626,25 +627,32 @@ public sealed class TableOfContents {
           case RedBook.CDTextCharacterCode.ISO_8859_1:
             // FIXME: It's supposed to be a modified form of latin-1, but without the Blue Book, it's unclear what those
             //        modifications entail.
-            Trace.WriteLine("Using plain ISO-8859-1 as encoding; some characters may not be correct.", "CD-TEXT");
+            Tracing.Verbose(120, "Using plain ISO-8859-1 as CD-TEXT block encoding; some characters may not be correct.");
             encoding = Encoding.GetEncoding("iso-8859-1");
             break;
           case RedBook.CDTextCharacterCode.Korean:
-            Trace.WriteLine("Assuming EUC-KR as Korean encoding.", "CD-TEXT");
+            Tracing.Verbose(121, "Assuming EUC-KR as Korean CD-TEXT block encoding.");
             encoding = Encoding.GetEncoding("euc-kr");
             break;
           case RedBook.CDTextCharacterCode.MandarinChinese:
-            Trace.WriteLine("Assuming GB2312 as Mandarin Chinese encoding.", "CD-TEXT");
+            Tracing.Verbose(122, "Assuming GB2312 as Mandarin Chinese CD-TEXT block encoding.");
             encoding = Encoding.GetEncoding("gb2312");
             break;
           case RedBook.CDTextCharacterCode.MusicShiftJis:
             // FIXME: Without standard RIAJ RS506 it's unclear how this differs from plain Shift-JIS, but some comments online
             //        suggest it has a LOT of extra emoji.
-            Trace.WriteLine("Using plain Shift-Jis as encoding; some characters may not be correct.", "CD-TEXT");
+            Tracing.Verbose(123, "Using plain Shift-Jis as CD-TEXT block encoding; some characters may not be correct.");
             encoding = Encoding.GetEncoding("iso-2022-jp");
             break;
           default:
-            Trace.WriteLine($"Ignoring this block because it specifies an unknown character set ({si.CharacterCode}).", "CD-TEXT");
+            if ((byte) si.CharacterCode >= 0x83) {
+              Tracing.Verbose(124, "Ignoring this CD-TEXT block because it specifies a reserved character set ({0}).",
+                              si.CharacterCode);
+            }
+            else {
+              Tracing.Verbose(125, "Ignoring this CD-TEXT block because it specifies an unknown character set ({0}).",
+                              si.CharacterCode);
+            }
             continue;
         }
       }
@@ -660,12 +668,17 @@ public sealed class TableOfContents {
         genre = (BlueBook.Genre) code;
         genreDescription = latin1.GetString(rawGenre, 2, rawGenre.Length - 2).TrimEnd('\0');
         if (genreDescription.Length == 0) {
+          Tracing.Verbose(126, "CD-TEXT: Genre set as {0:D} ({0}), with no description.", genre);
           genreDescription = null;
+        }
+        else {
+          Tracing.Verbose(127, "CD-TEXT: Genre set as {0:D} ({0}) [{1}].", genre, genreDescription);
         }
       }
       string? ident = null;
       if (identBytes.Count > 0) {
         ident = latin1.GetString(identBytes.ToArray()).TrimEnd('\0');
+        Tracing.Verbose(128, "CD-TEXT: Disc identification set as [{0}].", ident);
       }
       var tracks = si.LastTrack - si.FirstTrack + 1;
       var titleCount = tracks + (albumTitle ? 1 : 0);
@@ -797,18 +810,23 @@ public sealed class TableOfContents {
       parts[items - 1] = parts[items - 1].TrimEnd('\0');
     }
     if (parts.Length < items) {
-      Trace.WriteLine($"Not enough values provided in the {type} packs (expected {items}, got {parts.Length}).", "CD-TEXT");
+      Tracing.Verbose(200, "CD-TEXT: Not enough values provided in the {0} packs (expected {1}, got {2}).", type, items,
+                      parts.Length);
     }
     for (var i = 0; i < parts.Length; ++i) {
-      if (parts[i] != "\t") {
-        continue;
-      }
       // TAB means "same as preceding value"
-      if (i == 0) {
-        Trace.WriteLine($"Found a TAB in the first value of the {type} packs.", "CD-TEXT");
+      if (parts[i] == "\t") {
+        if (i == 0) {
+          Tracing.Verbose(201, "CD-TEXT: Found a TAB in the first value of the {0} packs.", type);
+          parts[i] = "";
+        }
+        else {
+          parts[i] = parts[i - 1];
+          Tracing.Verbose(202, "CD-TEXT: Value #{0} for content type {1:X} ({1}) is the same as the previous value.", i + 1, type);
+        }
       }
       else {
-        parts[i] = parts[i - 1];
+        Tracing.Verbose(203, "CD-TEXT: Value #{0} for content type {1:X} ({1}) is [{2}].", i + 1, type, parts[i]);
       }
     }
     return parts;
