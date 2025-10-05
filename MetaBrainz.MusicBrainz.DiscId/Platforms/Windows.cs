@@ -50,7 +50,6 @@ internal sealed class Windows() : Platform(Windows.Features) {
 
   private static string GetMediaCatalogNumber(SafeFileHandle hDevice) {
     Kernel32.ReadMediaCatalogNumber(hDevice, out var mcn, out var length);
-    mcn.FixUp();
     var expected = mcn.Header.DataLength + Marshal.SizeOf(mcn.Header);
     if (length != expected) {
       Debug.Print($"I/O: MCN has data length as {expected} but {length} bytes were read.");

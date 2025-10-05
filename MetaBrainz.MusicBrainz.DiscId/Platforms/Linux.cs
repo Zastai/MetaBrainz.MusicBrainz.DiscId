@@ -55,24 +55,18 @@ internal sealed class Linux() : Unix(Linux.Features) {
 
   private static RedBook.CDTextGroup? GetCdTextInfo(UnixFileDescriptor fd) {
     LibC.Linux.ReadCdText(fd, out var cdText);
-    cdText.FixUp();
     return cdText.Data.Packs is not null ? cdText.Data : null;
   }
 
   private static string GetMediaCatalogNumber(UnixFileDescriptor fd) {
     LibC.Linux.ReadMediaCatalogNumber(fd, out var mcn);
-    mcn.FixUp();
     return mcn.Status.IsValid ? Encoding.ASCII.GetString(mcn.MCN) : "";
   }
 
-  private static void GetTableOfContents(UnixFileDescriptor fd, out MMC.TOCDescriptor toc) {
-    LibC.Linux.ReadTOC(fd, out toc);
-    toc.FixUp(false);
-  }
+  private static void GetTableOfContents(UnixFileDescriptor fd, out MMC.TOCDescriptor toc) => LibC.Linux.ReadTOC(fd, out toc);
 
   private static string GetTrackIsrc(UnixFileDescriptor fd, byte track) {
     LibC.Linux.ReadTrackISRC(fd, track, out var isrc);
-    isrc.FixUp();
     return isrc.Status.IsValid ? Encoding.ASCII.GetString(isrc.ISRC) : string.Empty;
   }
 

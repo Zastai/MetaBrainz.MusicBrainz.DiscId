@@ -194,6 +194,7 @@ internal static partial class LibC {
       catch (Exception e) {
         throw new IOException("Failed to retrieve CD-TEXT information.", e);
       }
+      cdText.FixUp();
     }
 
     public static void ReadMediaCatalogNumber(UnixFileDescriptor fd, out MMC.SubChannelMediaCatalogNumber mcn) {
@@ -204,6 +205,7 @@ internal static partial class LibC {
       catch (Exception e) {
         throw new IOException("Failed to retrieve media catalog number.", e);
       }
+      mcn.FixUp();
     }
 
     public static void ReadTOC(UnixFileDescriptor fd, out MMC.TOCDescriptor toc) {
@@ -214,6 +216,7 @@ internal static partial class LibC {
       catch (Exception e) {
         throw new IOException("Failed to retrieve table of contents.", e);
       }
+      toc.FixUp(false);
     }
 
     public static void ReadTrackISRC(UnixFileDescriptor fd, byte track, out MMC.SubChannelISRC isrc) {
@@ -224,6 +227,7 @@ internal static partial class LibC {
       catch (Exception e) {
         throw new IOException($"Failed to retrieve ISRC for track {track}.", e);
       }
+      isrc.FixUp();
     }
 
     private static void SendSCSIRequest<TCommand, TData>(UnixFileDescriptor fd, ref TCommand cmd,
