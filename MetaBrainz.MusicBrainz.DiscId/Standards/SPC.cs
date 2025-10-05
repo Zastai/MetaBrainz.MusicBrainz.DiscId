@@ -150,1510 +150,754 @@ internal static class SPC {
   /// <param name="asc">The SCSI &quot;additional sense code&quot; value.</param>
   /// <param name="ascq">The SCSI &quot;additional sense code qualifier&quot; value.</param>
   /// <returns>A description of the specified SCSI additional sense key information.</returns>
-  public static string AdditionalSenseDescription(byte asc, byte ascq) {
-    switch ((ushort) ((asc << 8) | ascq)) {
-      case 0x0000:
-        return "NO ADDITIONAL SENSE INFORMATION";
-      case 0x0001:
-        return "FILEMARK DETECTED";
-      case 0x0002:
-        return "END-OF-PARTITION/MEDIUM DETECTED";
-      case 0x0003:
-        return "SETMARK DETECTED";
-      case 0x0004:
-        return "BEGINNING-OF-PARTITION/MEDIUM DETECTED";
-      case 0x0005:
-        return "END-OF-DATA DETECTED";
-      case 0x0006:
-        return "I/O PROCESS TERMINATED";
-      case 0x0007:
-        return "PROGRAMMABLE EARLY WARNING DETECTED";
-      case 0x0011:
-        return "AUDIO PLAY OPERATION IN PROGRESS";
-      case 0x0012:
-        return "AUDIO PLAY OPERATION PAUSED";
-      case 0x0013:
-        return "AUDIO PLAY OPERATION SUCCESSFULLY COMPLETED";
-      case 0x0014:
-        return "AUDIO PLAY OPERATION STOPPED DUE TO ERROR";
-      case 0x0015:
-        return "NO CURRENT AUDIO STATUS TO RETURN";
-      case 0x0016:
-        return "OPERATION IN PROGRESS";
-      case 0x0017:
-        return "CLEANING REQUESTED";
-      case 0x0018:
-        return "ERASE OPERATION IN PROGRESS";
-      case 0x0019:
-        return "LOCATE OPERATION IN PROGRESS";
-      case 0x001A:
-        return "REWIND OPERATION IN PROGRESS";
-      case 0x001B:
-        return "SET CAPACITY OPERATION IN PROGRESS";
-      case 0x001C:
-        return "VERIFY OPERATION IN PROGRESS";
-      case 0x001D:
-        return "ATA PASS THROUGH INFORMATION AVAILABLE";
-      case 0x001E:
-        return "CONFLICTING SA CREATION REQUEST";
-      case 0x001F:
-        return "LOGICAL UNIT TRANSITIONING TO ANOTHER POWER CONDITION";
-      case 0x0020:
-        return "EXTENDED COPY INFORMATION AVAILABLE";
-      case 0x0021:
-        return "ATOMIC COMMAND ABORTED DUE TO ACA";
-      case 0x0100:
-        return "NO INDEX/SECTOR SIGNAL";
-      case 0x0200:
-        return "NO SEEK COMPLETE";
-      case 0x0300:
-        return "PERIPHERAL DEVICE WRITE FAULT";
-      case 0x0301:
-        return "NO WRITE CURRENT";
-      case 0x0302:
-        return "EXCESSIVE WRITE ERRORS";
-      case 0x0400:
-        return "LOGICAL UNIT NOT READY, CAUSE NOT REPORTABLE";
-      case 0x0401:
-        return "LOGICAL UNIT IS IN PROCESS OF BECOMING READY";
-      case 0x0402:
-        return "LOGICAL UNIT NOT READY, INITIALIZING COMMAND REQUIRED";
-      case 0x0403:
-        return "LOGICAL UNIT NOT READY, MANUAL INTERVENTION REQUIRED";
-      case 0x0404:
-        return "LOGICAL UNIT NOT READY, FORMAT IN PROGRESS";
-      case 0x0405:
-        return "LOGICAL UNIT NOT READY, REBUILD IN PROGRESS";
-      case 0x0406:
-        return "LOGICAL UNIT NOT READY, RECALCULATION IN PROGRESS";
-      case 0x0407:
-        return "LOGICAL UNIT NOT READY, OPERATION IN PROGRESS";
-      case 0x0408:
-        return "LOGICAL UNIT NOT READY, LONG WRITE IN PROGRESS";
-      case 0x0409:
-        return "LOGICAL UNIT NOT READY, SELF-TEST IN PROGRESS";
-      case 0x040A:
-        return "LOGICAL UNIT NOT ACCESSIBLE, ASYMMETRIC ACCESS STATE TRANSITION";
-      case 0x040B:
-        return "LOGICAL UNIT NOT ACCESSIBLE, TARGET PORT IN STANDBY STATE";
-      case 0x040C:
-        return "LOGICAL UNIT NOT ACCESSIBLE, TARGET PORT IN UNAVAILABLE STATE";
-      case 0x040D:
-        return "LOGICAL UNIT NOT READY, STRUCTURE CHECK REQUIRED";
-      case 0x040E:
-        return "LOGICAL UNIT NOT READY, SECURITY SESSION IN PROGRESS";
-      case 0x0410:
-        return "LOGICAL UNIT NOT READY, AUXILIARY MEMORY NOT ACCESSIBLE";
-      case 0x0411:
-        return "LOGICAL UNIT NOT READY, NOTIFY (ENABLE SPINUP) REQUIRED";
-      case 0x0412:
-        return "LOGICAL UNIT NOT READY, OFFLINE";
-      case 0x0413:
-        return "LOGICAL UNIT NOT READY, SA CREATION IN PROGRESS";
-      case 0x0414:
-        return "LOGICAL UNIT NOT READY, SPACE ALLOCATION IN PROGRESS";
-      case 0x0415:
-        return "LOGICAL UNIT NOT READY, ROBOTICS DISABLED";
-      case 0x0416:
-        return "LOGICAL UNIT NOT READY, CONFIGURATION REQUIRED";
-      case 0x0417:
-        return "LOGICAL UNIT NOT READY, CALIBRATION REQUIRED";
-      case 0x0418:
-        return "LOGICAL UNIT NOT READY, A DOOR IS OPEN";
-      case 0x0419:
-        return "LOGICAL UNIT NOT READY, OPERATING IN SEQUENTIAL MODE";
-      case 0x041A:
-        return "LOGICAL UNIT NOT READY, START STOP UNIT COMMAND IN PROGRESS";
-      case 0x041B:
-        return "LOGICAL UNIT NOT READY, SANITIZE IN PROGRESS";
-      case 0x041C:
-        return "LOGICAL UNIT NOT READY, ADDITIONAL POWER USE NOT YET GRANTED";
-      case 0x041D:
-        return "LOGICAL UNIT NOT READY, CONFIGURATION IN PROGRESS";
-      case 0x041E:
-        return "LOGICAL UNIT NOT READY, MICROCODE ACTIVATION REQUIRED";
-      case 0x041F:
-        return "LOGICAL UNIT NOT READY, MICROCODE DOWNLOAD REQUIRED";
-      case 0x0420:
-        return "LOGICAL UNIT NOT READY, LOGICAL UNIT RESET REQUIRED";
-      case 0x0421:
-        return "LOGICAL UNIT NOT READY, HARD RESET REQUIRED";
-      case 0x0422:
-        return "LOGICAL UNIT NOT READY, POWER CYCLE REQUIRED";
-      case 0x0423:
-        return "LOGICAL UNIT NOT READY, AFFILIATION REQUIRED";
-      case 0x0500:
-        return "LOGICAL UNIT DOES NOT RESPOND TO SELECTION";
-      case 0x0600:
-        return "NO REFERENCE POSITION FOUND";
-      case 0x0700:
-        return "MULTIPLE PERIPHERAL DEVICES SELECTED";
-      case 0x0800:
-        return "LOGICAL UNIT COMMUNICATION FAILURE";
-      case 0x0801:
-        return "LOGICAL UNIT COMMUNICATION TIME-OUT";
-      case 0x0802:
-        return "LOGICAL UNIT COMMUNICATION PARITY ERROR";
-      case 0x0803:
-        return "LOGICAL UNIT COMMUNICATION CRC ERROR (ULTRA-DMA/32)";
-      case 0x0804:
-        return "UNREACHABLE COPY TARGET";
-      case 0x0900:
-        return "TRACK FOLLOWING ERROR";
-      case 0x0901:
-        return "TRACKING SERVO FAILURE";
-      case 0x0902:
-        return "FOCUS SERVO FAILURE";
-      case 0x0903:
-        return "SPINDLE SERVO FAILURE";
-      case 0x0904:
-        return "HEAD SELECT FAULT";
-      case 0x0905:
-        return "VIBRATION INDUCED TRACKING ERROR";
-      case 0x0A00:
-        return "ERROR LOG OVERFLOW";
-      case 0x0B00:
-        return "WARNING";
-      case 0x0B01:
-        return "WARNING - SPECIFIED TEMPERATURE EXCEEDED";
-      case 0x0B02:
-        return "WARNING - ENCLOSURE DEGRADED";
-      case 0x0B03:
-        return "WARNING - BACKGROUND SELF-TEST FAILED";
-      case 0x0B04:
-        return "WARNING - BACKGROUND PRE-SCAN DETECTED MEDIUM ERROR";
-      case 0x0B05:
-        return "WARNING - BACKGROUND MEDIUM SCAN DETECTED MEDIUM ERROR";
-      case 0x0B06:
-        return "WARNING - NON-VOLATILE CACHE NOW VOLATILE";
-      case 0x0B07:
-        return "WARNING - DEGRADED POWER TO NON-VOLATILE CACHE";
-      case 0x0B08:
-        return "WARNING - POWER LOSS EXPECTED";
-      case 0x0B09:
-        return "WARNING - DEVICE STATISTICS NOTIFICATION ACTIVE";
-      case 0x0B0A:
-        return "WARNING - HIGH CRITICAL TEMPERATURE LIMIT EXCEEDED";
-      case 0x0B0B:
-        return "WARNING - LOW CRITICAL TEMPERATURE LIMIT EXCEEDED";
-      case 0x0B0C:
-        return "WARNING - HIGH OPERATING TEMPERATURE LIMIT EXCEEDED";
-      case 0x0B0D:
-        return "WARNING - LOW OPERATING TEMPERATURE LIMIT EXCEEDED";
-      case 0x0B0E:
-        return "WARNING - HIGH CRITICAL HUMIDITY LIMIT EXCEEDED";
-      case 0x0B0F:
-        return "WARNING - LOW CRITICAL HUMIDITY LIMIT EXCEEDED";
-      case 0x0B10:
-        return "WARNING - HIGH OPERATING HUMIDITY LIMIT EXCEEDED";
-      case 0x0B11:
-        return "WARNING - LOW OPERATING HUMIDITY LIMIT EXCEEDED";
-      case 0x0C00:
-        return "WRITE ERROR";
-      case 0x0C01:
-        return "WRITE ERROR - RECOVERED WITH AUTO REALLOCATION";
-      case 0x0C02:
-        return "WRITE ERROR - AUTO REALLOCATION FAILED";
-      case 0x0C03:
-        return "WRITE ERROR - RECOMMEND REASSIGNMENT";
-      case 0x0C04:
-        return "COMPRESSION CHECK MISCOMPARE ERROR";
-      case 0x0C05:
-        return "DATA EXPANSION OCCURRED DURING COMPRESSION";
-      case 0x0C06:
-        return "BLOCK NOT COMPRESSIBLE";
-      case 0x0C07:
-        return "WRITE ERROR - RECOVERY NEEDED";
-      case 0x0C08:
-        return "WRITE ERROR - RECOVERY FAILED";
-      case 0x0C09:
-        return "WRITE ERROR - LOSS OF STREAMING";
-      case 0x0C0A:
-        return "WRITE ERROR - PADDING BLOCKS ADDED";
-      case 0x0C0B:
-        return "AUXILIARY MEMORY WRITE ERROR";
-      case 0x0C0C:
-        return "WRITE ERROR - UNEXPECTED UNSOLICITED DATA";
-      case 0x0C0D:
-        return "WRITE ERROR - NOT ENOUGH UNSOLICITED DATA";
-      case 0x0C0E:
-        return "MULTIPLE WRITE ERRORS";
-      case 0x0C0F:
-        return "DEFECTS IN ERROR WINDOW";
-      case 0x0C10:
-        return "INCOMPLETE MULTIPLE ATOMIC WRITE OPERATIONS";
-      case 0x0C11:
-        return "WRITE ERROR - RECOVERY SCAN NEEDED";
-      case 0x0C12:
-        return "WRITE ERROR - INSUFFICIENT ZONE RESOURCES";
-      case 0x0D00:
-        return "ERROR DETECTED BY THIRD PARTY TEMPORARY INITIATOR";
-      case 0x0D01:
-        return "THIRD PARTY DEVICE FAILURE";
-      case 0x0D02:
-        return "COPY TARGET DEVICE NOT REACHABLE";
-      case 0x0D03:
-        return "INCORRECT COPY TARGET DEVICE TYPE";
-      case 0x0D04:
-        return "COPY TARGET DEVICE DATA UNDERRUN";
-      case 0x0D05:
-        return "COPY TARGET DEVICE DATA OVERRUN";
-      case 0x0E00:
-        return "INVALID INFORMATION UNIT";
-      case 0x0E01:
-        return "INFORMATION UNIT TOO SHORT";
-      case 0x0E02:
-        return "INFORMATION UNIT TOO LONG";
-      case 0x0E03:
-        return "INVALID FIELD IN COMMAND INFORMATION UNIT";
-      case 0x0F00:
-        return "10h 00h ID CRC OR ECC ERROR";
-      case 0x1001:
-        return "LOGICAL BLOCK GUARD CHECK FAILED";
-      case 0x1002:
-        return "LOGICAL BLOCK APPLICATION TAG CHECK FAILED";
-      case 0x1003:
-        return "LOGICAL BLOCK REFERENCE TAG CHECK FAILED";
-      case 0x1004:
-        return "LOGICAL BLOCK PROTECTION ERROR ON RECOVER BUFFERED DATA";
-      case 0x1005:
-        return "LOGICAL BLOCK PROTECTION METHOD ERROR";
-      case 0x1100:
-        return "UNRECOVERED READ ERROR";
-      case 0x1101:
-        return "READ RETRIES EXHAUSTED";
-      case 0x1102:
-        return "ERROR TOO LONG TO CORRECT";
-      case 0x1103:
-        return "MULTIPLE READ ERRORS";
-      case 0x1104:
-        return "UNRECOVERED READ ERROR - AUTO REALLOCATE FAILED";
-      case 0x1105:
-        return "L-EC UNCORRECTABLE ERROR";
-      case 0x1106:
-        return "CIRC UNRECOVERED ERROR";
-      case 0x1107:
-        return "DATA RE-SYNCHRONIZATION ERROR";
-      case 0x1108:
-        return "INCOMPLETE BLOCK READ";
-      case 0x1109:
-        return "NO GAP FOUND";
-      case 0x110A:
-        return "MISCORRECTED ERROR";
-      case 0x110B:
-        return "UNRECOVERED READ ERROR - RECOMMEND REASSIGNMENT";
-      case 0x110C:
-        return "UNRECOVERED READ ERROR - RECOMMEND REWRITE THE DATA";
-      case 0x110D:
-        return "DE-COMPRESSION CRC ERROR";
-      case 0x110E:
-        return "CANNOT DECOMPRESS USING DECLARED ALGORITHM";
-      case 0x110F:
-        return "ERROR READING UPC/EAN NUMBER";
-      case 0x1110:
-        return "ERROR READING ISRC NUMBER";
-      case 0x1111:
-        return "READ ERROR - LOSS OF STREAMING";
-      case 0x1112:
-        return "AUXILIARY MEMORY READ ERROR";
-      case 0x1113:
-        return "READ ERROR - FAILED RETRANSMISSION REQUEST";
-      case 0x1114:
-        return "READ ERROR - LBA MARKED BAD BY APPLICATION CLIENT";
-      case 0x1115:
-        return "WRITE AFTER SANITIZE REQUIRED";
-      case 0x1200:
-        return "ADDRESS MARK NOT FOUND FOR ID FIELD";
-      case 0x1300:
-        return "ADDRESS MARK NOT FOUND FOR DATA FIELD";
-      case 0x1400:
-        return "RECORDED ENTITY NOT FOUND";
-      case 0x1401:
-        return "RECORD NOT FOUND";
-      case 0x1402:
-        return "FILEMARK OR SETMARK NOT FOUND";
-      case 0x1403:
-        return "END-OF-DATA NOT FOUND";
-      case 0x1404:
-        return "BLOCK SEQUENCE ERROR";
-      case 0x1405:
-        return "RECORD NOT FOUND - RECOMMEND REASSIGNMENT";
-      case 0x1406:
-        return "RECORD NOT FOUND - DATA AUTO-REALLOCATED";
-      case 0x1407:
-        return "LOCATE OPERATION FAILURE";
-      case 0x1500:
-        return "RANDOM POSITIONING ERROR";
-      case 0x1501:
-        return "MECHANICAL POSITIONING ERROR";
-      case 0x1502:
-        return "POSITIONING ERROR DETECTED BY READ OF MEDIUM";
-      case 0x1600:
-        return "DATA SYNCHRONIZATION MARK ERROR";
-      case 0x1601:
-        return "DATA SYNC ERROR - DATA REWRITTEN";
-      case 0x1602:
-        return "DATA SYNC ERROR - RECOMMEND REWRITE";
-      case 0x1603:
-        return "DATA SYNC ERROR - DATA AUTO-REALLOCATED";
-      case 0x1604:
-        return "DATA SYNC ERROR - RECOMMEND REASSIGNMENT";
-      case 0x1700:
-        return "RECOVERED DATA WITH NO ERROR CORRECTION APPLIED";
-      case 0x1701:
-        return "RECOVERED DATA WITH RETRIES";
-      case 0x1702:
-        return "RECOVERED DATA WITH POSITIVE HEAD OFFSET";
-      case 0x1703:
-        return "RECOVERED DATA WITH NEGATIVE HEAD OFFSET";
-      case 0x1704:
-        return "RECOVERED DATA WITH RETRIES AND/OR CIRC APPLIED";
-      case 0x1705:
-        return "RECOVERED DATA USING PREVIOUS SECTOR ID";
-      case 0x1706:
-        return "RECOVERED DATA WITHOUT ECC - DATA AUTO-REALLOCATED";
-      case 0x1707:
-        return "RECOVERED DATA WITHOUT ECC - RECOMMEND REASSIGNMENT";
-      case 0x1708:
-        return "RECOVERED DATA WITHOUT ECC - RECOMMEND REWRITE";
-      case 0x1709:
-        return "RECOVERED DATA WITHOUT ECC - DATA REWRITTEN";
-      case 0x1800:
-        return "RECOVERED DATA WITH ERROR CORRECTION APPLIED";
-      case 0x1801:
-        return "RECOVERED DATA WITH ERROR CORR. & RETRIES APPLIED";
-      case 0x1802:
-        return "RECOVERED DATA - DATA AUTO-REALLOCATED";
-      case 0x1803:
-        return "RECOVERED DATA WITH CIRC";
-      case 0x1804:
-        return "RECOVERED DATA WITH L-EC";
-      case 0x1805:
-        return "RECOVERED DATA - RECOMMEND REASSIGNMENT";
-      case 0x1806:
-        return "RECOVERED DATA - RECOMMEND REWRITE";
-      case 0x1807:
-        return "RECOVERED DATA WITH ECC - DATA REWRITTEN";
-      case 0x1808:
-        return "RECOVERED DATA WITH LINKING";
-      case 0x1900:
-        return "DEFECT LIST ERROR";
-      case 0x1901:
-        return "DEFECT LIST NOT AVAILABLE";
-      case 0x1902:
-        return "DEFECT LIST ERROR IN PRIMARY LIST";
-      case 0x1903:
-        return "DEFECT LIST ERROR IN GROWN LIST";
-      case 0x1A00:
-        return "PARAMETER LIST LENGTH ERROR";
-      case 0x1B00:
-        return "SYNCHRONOUS DATA TRANSFER ERROR";
-      case 0x1C00:
-        return "DEFECT LIST NOT FOUND";
-      case 0x1C01:
-        return "PRIMARY DEFECT LIST NOT FOUND";
-      case 0x1C02:
-        return "GROWN DEFECT LIST NOT FOUND";
-      case 0x1D00:
-        return "MISCOMPARE DURING VERIFY OPERATION";
-      case 0x1D01:
-        return "MISCOMPARE VERIFY OF UNMAPPED LBA";
-      case 0x1E00:
-        return "RECOVERED ID WITH ECC CORRECTION";
-      case 0x1F00:
-        return "PARTIAL DEFECT LIST TRANSFER";
-      case 0x2000:
-        return "INVALID COMMAND OPERATION CODE";
-      case 0x2001:
-        return "ACCESS DENIED - INITIATOR PENDING-ENROLLED";
-      case 0x2002:
-        return "ACCESS DENIED - NO ACCESS RIGHTS";
-      case 0x2003:
-        return "ACCESS DENIED - INVALID MGMT ID KEY";
-      case 0x2004:
-        return "ILLEGAL COMMAND WHILE IN WRITE CAPABLE STATE";
-      case 0x2005:
-        return "Obsolete";
-      case 0x2006:
-        return "ILLEGAL COMMAND WHILE IN EXPLICIT ADDRESS MODE";
-      case 0x2007:
-        return "ILLEGAL COMMAND WHILE IN IMPLICIT ADDRESS MODE";
-      case 0x2008:
-        return "ACCESS DENIED - ENROLLMENT CONFLICT";
-      case 0x2009:
-        return "ACCESS DENIED - INVALID LU IDENTIFIER";
-      case 0x200A:
-        return "ACCESS DENIED - INVALID PROXY TOKEN";
-      case 0x200B:
-        return "ACCESS DENIED - ACL LUN CONFLICT";
-      case 0x200C:
-        return "ILLEGAL COMMAND WHEN NOT IN APPEND-ONLY MODE";
-      case 0x200D:
-        return "NOT AN ADMINISTRATIVE LOGICAL UNIT";
-      case 0x200E:
-        return "NOT A SUBSIDIARY LOGICAL UNIT";
-      case 0x200F:
-        return "NOT A CONGLOMERATE LOGICAL UNIT";
-      case 0x2100:
-        return "LOGICAL BLOCK ADDRESS OUT OF RANGE";
-      case 0x2101:
-        return "INVALID ELEMENT ADDRESS";
-      case 0x2102:
-        return "INVALID ADDRESS FOR WRITE";
-      case 0x2103:
-        return "INVALID WRITE CROSSING LAYER JUMP";
-      case 0x2104:
-        return "UNALIGNED WRITE COMMAND";
-      case 0x2105:
-        return "WRITE BOUNDARY VIOLATION";
-      case 0x2106:
-        return "ATTEMPT TO READ INVALID DATA";
-      case 0x2107:
-        return "READ BOUNDARY VIOLATION";
-      case 0x2108:
-        return "MISALIGNED WRITE COMMAND";
-      case 0x2200:
-        return "ILLEGAL FUNCTION (USE 20 00, 24 00, OR 26 00)";
-      case 0x2300:
-        return "INVALID TOKEN OPERATION, CAUSE NOT REPORTABLE";
-      case 0x2301:
-        return "INVALID TOKEN OPERATION, UNSUPPORTED TOKEN TYPE";
-      case 0x2302:
-        return "INVALID TOKEN OPERATION, REMOTE TOKEN USAGE NOT SUPPORTED";
-      case 0x2303:
-        return "INVALID TOKEN OPERATION, REMOTE ROD TOKEN CREATION NOT SUPPORTED";
-      case 0x2304:
-        return "INVALID TOKEN OPERATION, TOKEN UNKNOWN";
-      case 0x2305:
-        return "INVALID TOKEN OPERATION, TOKEN CORRUPT";
-      case 0x2306:
-        return "INVALID TOKEN OPERATION, TOKEN REVOKED";
-      case 0x2307:
-        return "INVALID TOKEN OPERATION, TOKEN EXPIRED";
-      case 0x2308:
-        return "INVALID TOKEN OPERATION, TOKEN CANCELLED";
-      case 0x2309:
-        return "INVALID TOKEN OPERATION, TOKEN DELETED";
-      case 0x230A:
-        return "INVALID TOKEN OPERATION, INVALID TOKEN LENGTH";
-      case 0x2400:
-        return "INVALID FIELD IN CDB";
-      case 0x2401:
-        return "CDB DECRYPTION ERROR";
-      case 0x2402:
-        return "Obsolete";
-      case 0x2403:
-        return "Obsolete";
-      case 0x2404:
-        return "SECURITY AUDIT VALUE FROZEN";
-      case 0x2405:
-        return "SECURITY WORKING KEY FROZEN";
-      case 0x2406:
-        return "NONCE NOT UNIQUE";
-      case 0x2407:
-        return "NONCE TIMESTAMP OUT OF RANGE";
-      case 0x2408:
-        return "INVALID XCDB";
-      case 0x2500:
-        return "LOGICAL UNIT NOT SUPPORTED";
-      case 0x2600:
-        return "INVALID FIELD IN PARAMETER LIST";
-      case 0x2601:
-        return "PARAMETER NOT SUPPORTED";
-      case 0x2602:
-        return "PARAMETER VALUE INVALID";
-      case 0x2603:
-        return "THRESHOLD PARAMETERS NOT SUPPORTED";
-      case 0x2604:
-        return "INVALID RELEASE OF PERSISTENT RESERVATION";
-      case 0x2605:
-        return "DATA DECRYPTION ERROR";
-      case 0x2606:
-        return "TOO MANY TARGET DESCRIPTORS";
-      case 0x2607:
-        return "UNSUPPORTED TARGET DESCRIPTOR TYPE CODE";
-      case 0x2608:
-        return "TOO MANY SEGMENT DESCRIPTORS";
-      case 0x2609:
-        return "UNSUPPORTED SEGMENT DESCRIPTOR TYPE CODE";
-      case 0x260A:
-        return "UNEXPECTED INEXACT SEGMENT";
-      case 0x260B:
-        return "INLINE DATA LENGTH EXCEEDED";
-      case 0x260C:
-        return "INVALID OPERATION FOR COPY SOURCE OR DESTINATION";
-      case 0x260D:
-        return "COPY SEGMENT GRANULARITY VIOLATION";
-      case 0x260E:
-        return "INVALID PARAMETER WHILE PORT IS ENABLED";
-      case 0x260F:
-        return "INVALID DATA-OUT BUFFER INTEGRITY CHECK VALUE";
-      case 0x2610:
-        return "DATA DECRYPTION KEY FAIL LIMIT REACHED";
-      case 0x2611:
-        return "INCOMPLETE KEY-ASSOCIATED DATA SET";
-      case 0x2612:
-        return "VENDOR SPECIFIC KEY REFERENCE NOT FOUND";
-      case 0x2613:
-        return "APPLICATION TAG MODE PAGE IS INVALID";
-      case 0x2700:
-        return "WRITE PROTECTED";
-      case 0x2701:
-        return "HARDWARE WRITE PROTECTED";
-      case 0x2702:
-        return "LOGICAL UNIT SOFTWARE WRITE PROTECTED";
-      case 0x2703:
-        return "ASSOCIATED WRITE PROTECT";
-      case 0x2704:
-        return "PERSISTENT WRITE PROTECT";
-      case 0x2705:
-        return "PERMANENT WRITE PROTECT";
-      case 0x2706:
-        return "CONDITIONAL WRITE PROTECT";
-      case 0x2707:
-        return "SPACE ALLOCATION FAILED WRITE PROTECT";
-      case 0x2708:
-        return "ZONE IS READ ONLY";
-      case 0x2800:
-        return "NOT READY TO READY CHANGE, MEDIUM MAY HAVE CHANGED";
-      case 0x2801:
-        return "IMPORT OR EXPORT ELEMENT ACCESSED";
-      case 0x2802:
-        return "FORMAT-LAYER MAY HAVE CHANGED";
-      case 0x2803:
-        return "IMPORT/EXPORT ELEMENT ACCESSED, MEDIUM CHANGED";
-      case 0x2900:
-        return "POWER ON, RESET, OR BUS DEVICE RESET OCCURRED";
-      case 0x2901:
-        return "POWER ON OCCURRED";
-      case 0x2902:
-        return "SCSI BUS RESET OCCURRED";
-      case 0x2903:
-        return "BUS DEVICE RESET FUNCTION OCCURRED";
-      case 0x2904:
-        return "DEVICE INTERNAL RESET";
-      case 0x2905:
-        return "TRANSCEIVER MODE CHANGED TO SINGLE-ENDED";
-      case 0x2906:
-        return "TRANSCEIVER MODE CHANGED TO LVD";
-      case 0x2907:
-        return "I_T NEXUS LOSS OCCURRED";
-      case 0x2A00:
-        return "PARAMETERS CHANGED";
-      case 0x2A01:
-        return "MODE PARAMETERS CHANGED";
-      case 0x2A02:
-        return "LOG PARAMETERS CHANGED";
-      case 0x2A03:
-        return "RESERVATIONS PREEMPTED";
-      case 0x2A04:
-        return "RESERVATIONS RELEASED";
-      case 0x2A05:
-        return "REGISTRATIONS PREEMPTED";
-      case 0x2A06:
-        return "ASYMMETRIC ACCESS STATE CHANGED";
-      case 0x2A07:
-        return "IMPLICIT ASYMMETRIC ACCESS STATE TRANSITION FAILED";
-      case 0x2A08:
-        return "PRIORITY CHANGED";
-      case 0x2A09:
-        return "CAPACITY DATA HAS CHANGED";
-      case 0x2A0A:
-        return "ERROR HISTORY I_T NEXUS CLEARED";
-      case 0x2A0B:
-        return "ERROR HISTORY SNAPSHOT RELEASED";
-      case 0x2A0C:
-        return "ERROR RECOVERY ATTRIBUTES HAVE CHANGED";
-      case 0x2A0D:
-        return "DATA ENCRYPTION CAPABILITIES CHANGED";
-      case 0x2A10:
-        return "TIMESTAMP CHANGED";
-      case 0x2A11:
-        return "DATA ENCRYPTION PARAMETERS CHANGED BY ANOTHER I_T NEXUS";
-      case 0x2A12:
-        return "DATA ENCRYPTION PARAMETERS CHANGED BY VENDOR SPECIFIC EVENT";
-      case 0x2A13:
-        return "DATA ENCRYPTION KEY INSTANCE COUNTER HAS CHANGED";
-      case 0x2A14:
-        return "SA CREATION CAPABILITIES DATA HAS CHANGED";
-      case 0x2A15:
-        return "MEDIUM REMOVAL PREVENTION PREEMPTED";
-      case 0x2A16:
-        return "ZONE RESET WRITE POINTER RECOMMENDED";
-      case 0x2B00:
-        return "COPY CANNOT EXECUTE SINCE HOST CANNOT DISCONNECT";
-      case 0x2C00:
-        return "COMMAND SEQUENCE ERROR";
-      case 0x2C01:
-        return "TOO MANY WINDOWS SPECIFIED";
-      case 0x2C02:
-        return "INVALID COMBINATION OF WINDOWS SPECIFIED";
-      case 0x2C03:
-        return "CURRENT PROGRAM AREA IS NOT EMPTY";
-      case 0x2C04:
-        return "CURRENT PROGRAM AREA IS EMPTY";
-      case 0x2C05:
-        return "ILLEGAL POWER CONDITION REQUEST";
-      case 0x2C06:
-        return "PERSISTENT PREVENT CONFLICT";
-      case 0x2C07:
-        return "PREVIOUS BUSY STATUS";
-      case 0x2C08:
-        return "PREVIOUS TASK SET FULL STATUS";
-      case 0x2C09:
-        return "PREVIOUS RESERVATION CONFLICT STATUS";
-      case 0x2C0A:
-        return "PARTITION OR COLLECTION CONTAINS USER OBJECTS";
-      case 0x2C0B:
-        return "NOT RESERVED";
-      case 0x2C0C:
-        return "ORWRITE GENERATION DOES NOT MATCH";
-      case 0x2C0D:
-        return "RESET WRITE POINTER NOT ALLOWED";
-      case 0x2C0E:
-        return "ZONE IS OFFLINE";
-      case 0x2C0F:
-        return "STREAM NOT OPEN";
-      case 0x2C10:
-        return "UNWRITTEN DATA IN ZONE";
-      case 0x2C11:
-        return "DESCRIPTOR FORMAT SENSE DATA REQUIRED";
-      case 0x2D00:
-        return "OVERWRITE ERROR ON UPDATE IN PLACE";
-      case 0x2E00:
-        return "INSUFFICIENT TIME FOR OPERATION";
-      case 0x2E01:
-        return "COMMAND TIMEOUT BEFORE PROCESSING";
-      case 0x2E02:
-        return "COMMAND TIMEOUT DURING PROCESSING";
-      case 0x2E03:
-        return "COMMAND TIMEOUT DURING PROCESSING DUE TO ERROR RECOVERY";
-      case 0x2F00:
-        return "COMMANDS CLEARED BY ANOTHER INITIATOR";
-      case 0x2F01:
-        return "COMMANDS CLEARED BY POWER LOSS NOTIFICATION";
-      case 0x2F02:
-        return "COMMANDS CLEARED BY DEVICE SERVER";
-      case 0x2F03:
-        return "SOME COMMANDS CLEARED BY QUEUING LAYER EVENT";
-      case 0x3000:
-        return "INCOMPATIBLE MEDIUM INSTALLED";
-      case 0x3001:
-        return "CANNOT READ MEDIUM - UNKNOWN FORMAT";
-      case 0x3002:
-        return "CANNOT READ MEDIUM - INCOMPATIBLE FORMAT";
-      case 0x3003:
-        return "CLEANING CARTRIDGE INSTALLED";
-      case 0x3004:
-        return "CANNOT WRITE MEDIUM - UNKNOWN FORMAT";
-      case 0x3005:
-        return "CANNOT WRITE MEDIUM - INCOMPATIBLE FORMAT";
-      case 0x3006:
-        return "CANNOT FORMAT MEDIUM - INCOMPATIBLE MEDIUM";
-      case 0x3007:
-        return "CLEANING FAILURE";
-      case 0x3008:
-        return "CANNOT WRITE - APPLICATION CODE MISMATCH";
-      case 0x3009:
-        return "CURRENT SESSION NOT FIXATED FOR APPEND";
-      case 0x300A:
-        return "CLEANING REQUEST REJECTED";
-      case 0x300C:
-        return "WORM MEDIUM - OVERWRITE ATTEMPTED";
-      case 0x300D:
-        return "WORM MEDIUM - INTEGRITY CHECK";
-      case 0x3010:
-        return "MEDIUM NOT FORMATTED";
-      case 0x3011:
-        return "INCOMPATIBLE VOLUME TYPE";
-      case 0x3012:
-        return "INCOMPATIBLE VOLUME QUALIFIER";
-      case 0x3013:
-        return "CLEANING VOLUME EXPIRED";
-      case 0x3100:
-        return "MEDIUM FORMAT CORRUPTED";
-      case 0x3101:
-        return "FORMAT COMMAND FAILED";
-      case 0x3102:
-        return "ZONED FORMATTING FAILED DUE TO SPARE LINKING";
-      case 0x3103:
-        return "SANITIZE COMMAND FAILED";
-      case 0x3200:
-        return "NO DEFECT SPARE LOCATION AVAILABLE";
-      case 0x3201:
-        return "DEFECT LIST UPDATE FAILURE";
-      case 0x3300:
-        return "TAPE LENGTH ERROR";
-      case 0x3400:
-        return "ENCLOSURE FAILURE";
-      case 0x3500:
-        return "ENCLOSURE SERVICES FAILURE";
-      case 0x3501:
-        return "UNSUPPORTED ENCLOSURE FUNCTION";
-      case 0x3502:
-        return "ENCLOSURE SERVICES UNAVAILABLE";
-      case 0x3503:
-        return "ENCLOSURE SERVICES TRANSFER FAILURE";
-      case 0x3504:
-        return "ENCLOSURE SERVICES TRANSFER REFUSED";
-      case 0x3505:
-        return "ENCLOSURE SERVICES CHECKSUM ERROR";
-      case 0x3600:
-        return "RIBBON, INK, OR TONER FAILURE";
-      case 0x3700:
-        return "ROUNDED PARAMETER";
-      case 0x3800:
-        return "EVENT STATUS NOTIFICATION";
-      case 0x3802:
-        return "ESN - POWER MANAGEMENT CLASS EVENT";
-      case 0x3804:
-        return "ESN - MEDIA CLASS EVENT";
-      case 0x3806:
-        return "ESN - DEVICE BUSY CLASS EVENT";
-      case 0x3807:
-        return "THIN PROVISIONING SOFT THRESHOLD REACHED";
-      case 0x3900:
-        return "SAVING PARAMETERS NOT SUPPORTED";
-      case 0x3A00:
-        return "MEDIUM NOT PRESENT";
-      case 0x3A01:
-        return "MEDIUM NOT PRESENT - TRAY CLOSED";
-      case 0x3A02:
-        return "MEDIUM NOT PRESENT - TRAY OPEN";
-      case 0x3A03:
-        return "MEDIUM NOT PRESENT - LOADABLE";
-      case 0x3A04:
-        return "MEDIUM NOT PRESENT - MEDIUM AUXILIARY MEMORY ACCESSIBLE";
-      case 0x3B00:
-        return "SEQUENTIAL POSITIONING ERROR";
-      case 0x3B01:
-        return "TAPE POSITION ERROR AT BEGINNING-OF-MEDIUM";
-      case 0x3B02:
-        return "TAPE POSITION ERROR AT END-OF-MEDIUM";
-      case 0x3B03:
-        return "TAPE OR ELECTRONIC VERTICAL FORMS UNIT NOT READY";
-      case 0x3B04:
-        return "SLEW FAILURE";
-      case 0x3B05:
-        return "PAPER JAM";
-      case 0x3B06:
-        return "FAILED TO SENSE TOP-OF-FORM";
-      case 0x3B07:
-        return "FAILED TO SENSE BOTTOM-OF-FORM";
-      case 0x3B08:
-        return "REPOSITION ERROR";
-      case 0x3B09:
-        return "READ PAST END OF MEDIUM";
-      case 0x3B0A:
-        return "READ PAST BEGINNING OF MEDIUM";
-      case 0x3B0B:
-        return "POSITION PAST END OF MEDIUM";
-      case 0x3B0C:
-        return "POSITION PAST BEGINNING OF MEDIUM";
-      case 0x3B0D:
-        return "MEDIUM DESTINATION ELEMENT FULL";
-      case 0x3B0E:
-        return "MEDIUM SOURCE ELEMENT EMPTY";
-      case 0x3B0F:
-        return "END OF MEDIUM REACHED";
-      case 0x3B11:
-        return "MEDIUM MAGAZINE NOT ACCESSIBLE";
-      case 0x3B12:
-        return "MEDIUM MAGAZINE REMOVED";
-      case 0x3B13:
-        return "MEDIUM MAGAZINE INSERTED";
-      case 0x3B14:
-        return "MEDIUM MAGAZINE LOCKED";
-      case 0x3B15:
-        return "MEDIUM MAGAZINE UNLOCKED";
-      case 0x3B16:
-        return "MECHANICAL POSITIONING OR CHANGER ERROR";
-      case 0x3B17:
-        return "READ PAST END OF USER OBJECT";
-      case 0x3B18:
-        return "ELEMENT DISABLED";
-      case 0x3B19:
-        return "ELEMENT ENABLED";
-      case 0x3B1A:
-        return "DATA TRANSFER DEVICE REMOVED";
-      case 0x3B1B:
-        return "DATA TRANSFER DEVICE INSERTED";
-      case 0x3B1C:
-        return "TOO MANY LOGICAL OBJECTS ON PARTITION TO SUPPORT OPERATION";
-      case 0x3C00:
-        return "3Dh 00h INVALID BITS IN IDENTIFY MESSAGE";
-      case 0x3E00:
-        return "LOGICAL UNIT HAS NOT SELF-CONFIGURED YET";
-      case 0x3E01:
-        return "LOGICAL UNIT FAILURE";
-      case 0x3E02:
-        return "TIMEOUT ON LOGICAL UNIT";
-      case 0x3E03:
-        return "LOGICAL UNIT FAILED SELF-TEST";
-      case 0x3E04:
-        return "LOGICAL UNIT UNABLE TO UPDATE SELF-TEST LOG";
-      case 0x3F00:
-        return "TARGET OPERATING CONDITIONS HAVE CHANGED";
-      case 0x3F01:
-        return "MICROCODE HAS BEEN CHANGED";
-      case 0x3F02:
-        return "CHANGED OPERATING DEFINITION";
-      case 0x3F03:
-        return "INQUIRY DATA HAS CHANGED";
-      case 0x3F04:
-        return "COMPONENT DEVICE ATTACHED";
-      case 0x3F05:
-        return "DEVICE IDENTIFIER CHANGED";
-      case 0x3F06:
-        return "REDUNDANCY GROUP CREATED OR MODIFIED";
-      case 0x3F07:
-        return "REDUNDANCY GROUP DELETED";
-      case 0x3F08:
-        return "SPARE CREATED OR MODIFIED";
-      case 0x3F09:
-        return "SPARE DELETED";
-      case 0x3F0A:
-        return "VOLUME SET CREATED OR MODIFIED";
-      case 0x3F0B:
-        return "VOLUME SET DELETED";
-      case 0x3F0C:
-        return "VOLUME SET DEASSIGNED";
-      case 0x3F0D:
-        return "VOLUME SET REASSIGNED";
-      case 0x3F0E:
-        return "REPORTED LUNS DATA HAS CHANGED";
-      case 0x3F0F:
-        return "ECHO BUFFER OVERWRITTEN";
-      case 0x3F10:
-        return "MEDIUM LOADABLE";
-      case 0x3F11:
-        return "MEDIUM AUXILIARY MEMORY ACCESSIBLE";
-      case 0x3F12:
-        return "iSCSI IP ADDRESS ADDED";
-      case 0x3F13:
-        return "iSCSI IP ADDRESS REMOVED";
-      case 0x3F14:
-        return "iSCSI IP ADDRESS CHANGED";
-      case 0x3F15:
-        return "INSPECT REFERRALS SENSE DESCRIPTORS";
-      case 0x3F16:
-        return "MICROCODE HAS BEEN CHANGED WITHOUT RESET";
-      case 0x3F17:
-        return "ZONE TRANSITION TO FULL";
-      case 0x3F18:
-        return "BIND COMPLETED";
-      case 0x3F19:
-        return "BIND REDIRECTED";
-      case 0x3F1A:
-        return "SUBSIDIARY BINDING CHANGED";
-      case 0x4000:
-        return "RAM FAILURE (SHOULD USE 40 NN)";
-      case 0x4100:
-        return "DATA PATH FAILURE (SHOULD USE 40 NN)";
-      case 0x4200:
-        return "POWER-ON OR SELF-TEST FAILURE (SHOULD USE 40 NN)";
-      case 0x4300:
-        return "MESSAGE ERROR";
-      case 0x4400:
-        return "INTERNAL TARGET FAILURE";
-      case 0x4401:
-        return "PERSISTENT RESERVATION INFORMATION LOST";
-      case 0x4471:
-        return "ATA DEVICE FAILED SET FEATURES";
-      case 0x4500:
-        return "SELECT OR RESELECT FAILURE";
-      case 0x4600:
-        return "UNSUCCESSFUL SOFT RESET";
-      case 0x4700:
-        return "SCSI PARITY ERROR";
-      case 0x4701:
-        return "DATA PHASE CRC ERROR DETECTED";
-      case 0x4702:
-        return "SCSI PARITY ERROR DETECTED DURING ST DATA PHASE";
-      case 0x4703:
-        return "INFORMATION UNIT iuCRC ERROR DETECTED";
-      case 0x4704:
-        return "ASYNCHRONOUS INFORMATION PROTECTION ERROR DETECTED";
-      case 0x4705:
-        return "PROTOCOL SERVICE CRC ERROR";
-      case 0x4706:
-        return "PHY TEST FUNCTION IN PROGRESS";
-      case 0x477F:
-        return "SOME COMMANDS CLEARED BY ISCSI PROTOCOL EVENT";
-      case 0x4800:
-        return "INITIATOR DETECTED ERROR MESSAGE RECEIVED";
-      case 0x4900:
-        return "INVALID MESSAGE ERROR";
-      case 0x4A00:
-        return "COMMAND PHASE ERROR";
-      case 0x4B00:
-        return "DATA PHASE ERROR";
-      case 0x4B01:
-        return "INVALID TARGET PORT TRANSFER TAG RECEIVED";
-      case 0x4B02:
-        return "TOO MUCH WRITE DATA";
-      case 0x4B03:
-        return "ACK/NAK TIMEOUT";
-      case 0x4B04:
-        return "NAK RECEIVED";
-      case 0x4B05:
-        return "DATA OFFSET ERROR";
-      case 0x4B06:
-        return "INITIATOR RESPONSE TIMEOUT";
-      case 0x4B07:
-        return "CONNECTION LOST";
-      case 0x4B08:
-        return "DATA-IN BUFFER OVERFLOW - DATA BUFFER SIZE";
-      case 0x4B09:
-        return "DATA-IN BUFFER OVERFLOW - DATA BUFFER DESCRIPTOR AREA";
-      case 0x4B0A:
-        return "DATA-IN BUFFER ERROR";
-      case 0x4B0B:
-        return "DATA-OUT BUFFER OVERFLOW - DATA BUFFER SIZE";
-      case 0x4B0C:
-        return "DATA-OUT BUFFER OVERFLOW - DATA BUFFER DESCRIPTOR AREA";
-      case 0x4B0D:
-        return "DATA-OUT BUFFER ERROR";
-      case 0x4B0E:
-        return "PCIE FABRIC ERROR";
-      case 0x4B0F:
-        return "PCIE COMPLETION TIMEOUT";
-      case 0x4B10:
-        return "PCIE COMPLETER ABORT";
-      case 0x4B11:
-        return "PCIE POISONED TLP RECEIVED";
-      case 0x4B12:
-        return "PCIE ECRC CHECK FAILED";
-      case 0x4B13:
-        return "PCIE UNSUPPORTED REQUEST";
-      case 0x4B14:
-        return "PCIE ACS VIOLATION";
-      case 0x4B15:
-        return "PCIE TLP PREFIX BLOCKED";
-      case 0x4C00:
-        return "LOGICAL UNIT FAILED SELF-CONFIGURATION";
-      case 0x4E00:
-        return "OVERLAPPED COMMANDS ATTEMPTED";
-      case 0x4F00:
-        return "50h 00h WRITE APPEND ERROR";
-      case 0x5001:
-        return "WRITE APPEND POSITION ERROR";
-      case 0x5002:
-        return "POSITION ERROR RELATED TO TIMING";
-      case 0x5100:
-        return "ERASE FAILURE";
-      case 0x5101:
-        return "ERASE FAILURE - INCOMPLETE ERASE OPERATION DETECTED";
-      case 0x5200:
-        return "CARTRIDGE FAULT";
-      case 0x5300:
-        return "MEDIA LOAD OR EJECT FAILED";
-      case 0x5301:
-        return "UNLOAD TAPE FAILURE";
-      case 0x5302:
-        return "MEDIUM REMOVAL PREVENTED";
-      case 0x5303:
-        return "MEDIUM REMOVAL PREVENTED BY DATA TRANSFER ELEMENT";
-      case 0x5304:
-        return "MEDIUM THREAD OR UNTHREAD FAILURE";
-      case 0x5305:
-        return "VOLUME IDENTIFIER INVALID";
-      case 0x5306:
-        return "VOLUME IDENTIFIER MISSING";
-      case 0x5307:
-        return "DUPLICATE VOLUME IDENTIFIER";
-      case 0x5308:
-        return "ELEMENT STATUS UNKNOWN";
-      case 0x5309:
-        return "DATA TRANSFER DEVICE ERROR - LOAD FAILED";
-      case 0x530A:
-        return "DATA TRANSFER DEVICE ERROR - UNLOAD FAILED";
-      case 0x530B:
-        return "DATA TRANSFER DEVICE ERROR - UNLOAD MISSING";
-      case 0x530C:
-        return "DATA TRANSFER DEVICE ERROR - EJECT FAILED";
-      case 0x530D:
-        return "DATA TRANSFER DEVICE ERROR - LIBRARY COMMUNICATION FAILED";
-      case 0x5400:
-        return "SCSI TO HOST SYSTEM INTERFACE FAILURE";
-      case 0x5500:
-        return "SYSTEM RESOURCE FAILURE";
-      case 0x5501:
-        return "SYSTEM BUFFER FULL";
-      case 0x5502:
-        return "INSUFFICIENT RESERVATION RESOURCES";
-      case 0x5503:
-        return "INSUFFICIENT RESOURCES";
-      case 0x5504:
-        return "INSUFFICIENT REGISTRATION RESOURCES";
-      case 0x5505:
-        return "INSUFFICIENT ACCESS CONTROL RESOURCES";
-      case 0x5506:
-        return "AUXILIARY MEMORY OUT OF SPACE";
-      case 0x5507:
-        return "QUOTA ERROR";
-      case 0x5508:
-        return "MAXIMUM NUMBER OF SUPPLEMENTAL DECRYPTION KEYS EXCEEDED";
-      case 0x5509:
-        return "MEDIUM AUXILIARY MEMORY NOT ACCESSIBLE";
-      case 0x550A:
-        return "DATA CURRENTLY UNAVAILABLE";
-      case 0x550B:
-        return "INSUFFICIENT POWER FOR OPERATION";
-      case 0x550C:
-        return "INSUFFICIENT RESOURCES TO CREATE ROD";
-      case 0x550D:
-        return "INSUFFICIENT RESOURCES TO CREATE ROD TOKEN";
-      case 0x550E:
-        return "INSUFFICIENT ZONE RESOURCES";
-      case 0x550F:
-        return "INSUFFICIENT ZONE RESOURCES TO COMPLETE WRITE";
-      case 0x5510:
-        return "MAXIMUM NUMBER OF STREAMS OPEN";
-      case 0x5511:
-        return "INSUFFICIENT RESOURCES TO BIND";
-      case 0x5600:
-        return "57h 00h UNABLE TO RECOVER TABLE-OF-CONTENTS";
-      case 0x5800:
-        return "GENERATION DOES NOT EXIST";
-      case 0x5900:
-        return "UPDATED BLOCK READ";
-      case 0x5A00:
-        return "OPERATOR REQUEST OR STATE CHANGE INPUT";
-      case 0x5A01:
-        return "OPERATOR MEDIUM REMOVAL REQUEST";
-      case 0x5A02:
-        return "OPERATOR SELECTED WRITE PROTECT";
-      case 0x5A03:
-        return "OPERATOR SELECTED WRITE PERMIT";
-      case 0x5B00:
-        return "LOG EXCEPTION";
-      case 0x5B01:
-        return "THRESHOLD CONDITION MET";
-      case 0x5B02:
-        return "LOG COUNTER AT MAXIMUM";
-      case 0x5B03:
-        return "LOG LIST CODES EXHAUSTED";
-      case 0x5C00:
-        return "RPL STATUS CHANGE";
-      case 0x5C01:
-        return "SPINDLES SYNCHRONIZED";
-      case 0x5C02:
-        return "SPINDLES NOT SYNCHRONIZED";
-      case 0x5D00:
-        return "FAILURE PREDICTION THRESHOLD EXCEEDED";
-      case 0x5D01:
-        return "MEDIA FAILURE PREDICTION THRESHOLD EXCEEDED";
-      case 0x5D02:
-        return "LOGICAL UNIT FAILURE PREDICTION THRESHOLD EXCEEDED";
-      case 0x5D03:
-        return "SPARE AREA EXHAUSTION PREDICTION THRESHOLD EXCEEDED";
-      case 0x5D10:
-        return "HARDWARE IMPENDING FAILURE GENERAL HARD DRIVE FAILURE";
-      case 0x5D11:
-        return "HARDWARE IMPENDING FAILURE DRIVE ERROR RATE TOO HIGH";
-      case 0x5D12:
-        return "HARDWARE IMPENDING FAILURE DATA ERROR RATE TOO HIGH";
-      case 0x5D13:
-        return "HARDWARE IMPENDING FAILURE SEEK ERROR RATE TOO HIGH";
-      case 0x5D14:
-        return "HARDWARE IMPENDING FAILURE TOO MANY BLOCK REASSIGNS";
-      case 0x5D15:
-        return "HARDWARE IMPENDING FAILURE ACCESS TIMES TOO HIGH";
-      case 0x5D16:
-        return "HARDWARE IMPENDING FAILURE START UNIT TIMES TOO HIGH";
-      case 0x5D17:
-        return "HARDWARE IMPENDING FAILURE CHANNEL PARAMETRICS";
-      case 0x5D18:
-        return "HARDWARE IMPENDING FAILURE CONTROLLER DETECTED";
-      case 0x5D19:
-        return "HARDWARE IMPENDING FAILURE THROUGHPUT PERFORMANCE";
-      case 0x5D1A:
-        return "HARDWARE IMPENDING FAILURE SEEK TIME PERFORMANCE";
-      case 0x5D1B:
-        return "HARDWARE IMPENDING FAILURE SPIN-UP RETRY COUNT";
-      case 0x5D1C:
-        return "HARDWARE IMPENDING FAILURE DRIVE CALIBRATION RETRY COUNT";
-      case 0x5D20:
-        return "CONTROLLER IMPENDING FAILURE GENERAL HARD DRIVE FAILURE";
-      case 0x5D21:
-        return "CONTROLLER IMPENDING FAILURE DRIVE ERROR RATE TOO HIGH";
-      case 0x5D22:
-        return "CONTROLLER IMPENDING FAILURE DATA ERROR RATE TOO HIGH";
-      case 0x5D23:
-        return "CONTROLLER IMPENDING FAILURE SEEK ERROR RATE TOO HIGH";
-      case 0x5D24:
-        return "CONTROLLER IMPENDING FAILURE TOO MANY BLOCK REASSIGNS";
-      case 0x5D25:
-        return "CONTROLLER IMPENDING FAILURE ACCESS TIMES TOO HIGH";
-      case 0x5D26:
-        return "CONTROLLER IMPENDING FAILURE START UNIT TIMES TOO HIGH";
-      case 0x5D27:
-        return "CONTROLLER IMPENDING FAILURE CHANNEL PARAMETRICS";
-      case 0x5D28:
-        return "CONTROLLER IMPENDING FAILURE CONTROLLER DETECTED";
-      case 0x5D29:
-        return "CONTROLLER IMPENDING FAILURE THROUGHPUT PERFORMANCE";
-      case 0x5D2A:
-        return "CONTROLLER IMPENDING FAILURE SEEK TIME PERFORMANCE";
-      case 0x5D2B:
-        return "CONTROLLER IMPENDING FAILURE SPIN-UP RETRY COUNT";
-      case 0x5D2C:
-        return "CONTROLLER IMPENDING FAILURE DRIVE CALIBRATION RETRY COUNT";
-      case 0x5D30:
-        return "DATA CHANNEL IMPENDING FAILURE GENERAL HARD DRIVE FAILURE";
-      case 0x5D31:
-        return "DATA CHANNEL IMPENDING FAILURE DRIVE ERROR RATE TOO HIGH";
-      case 0x5D32:
-        return "DATA CHANNEL IMPENDING FAILURE DATA ERROR RATE TOO HIGH";
-      case 0x5D33:
-        return "DATA CHANNEL IMPENDING FAILURE SEEK ERROR RATE TOO HIGH";
-      case 0x5D34:
-        return "DATA CHANNEL IMPENDING FAILURE TOO MANY BLOCK REASSIGNS";
-      case 0x5D35:
-        return "DATA CHANNEL IMPENDING FAILURE ACCESS TIMES TOO HIGH";
-      case 0x5D36:
-        return "DATA CHANNEL IMPENDING FAILURE START UNIT TIMES TOO HIGH";
-      case 0x5D37:
-        return "DATA CHANNEL IMPENDING FAILURE CHANNEL PARAMETRICS";
-      case 0x5D38:
-        return "DATA CHANNEL IMPENDING FAILURE CONTROLLER DETECTED";
-      case 0x5D39:
-        return "DATA CHANNEL IMPENDING FAILURE THROUGHPUT PERFORMANCE";
-      case 0x5D3A:
-        return "DATA CHANNEL IMPENDING FAILURE SEEK TIME PERFORMANCE";
-      case 0x5D3B:
-        return "DATA CHANNEL IMPENDING FAILURE SPIN-UP RETRY COUNT";
-      case 0x5D3C:
-        return "DATA CHANNEL IMPENDING FAILURE DRIVE CALIBRATION RETRY COUNT";
-      case 0x5D40:
-        return "SERVO IMPENDING FAILURE GENERAL HARD DRIVE FAILURE";
-      case 0x5D41:
-        return "SERVO IMPENDING FAILURE DRIVE ERROR RATE TOO HIGH";
-      case 0x5D42:
-        return "SERVO IMPENDING FAILURE DATA ERROR RATE TOO HIGH";
-      case 0x5D43:
-        return "SERVO IMPENDING FAILURE SEEK ERROR RATE TOO HIGH";
-      case 0x5D44:
-        return "SERVO IMPENDING FAILURE TOO MANY BLOCK REASSIGNS";
-      case 0x5D45:
-        return "SERVO IMPENDING FAILURE ACCESS TIMES TOO HIGH";
-      case 0x5D46:
-        return "SERVO IMPENDING FAILURE START UNIT TIMES TOO HIGH";
-      case 0x5D47:
-        return "SERVO IMPENDING FAILURE CHANNEL PARAMETRICS";
-      case 0x5D48:
-        return "SERVO IMPENDING FAILURE CONTROLLER DETECTED";
-      case 0x5D49:
-        return "SERVO IMPENDING FAILURE THROUGHPUT PERFORMANCE";
-      case 0x5D4A:
-        return "SERVO IMPENDING FAILURE SEEK TIME PERFORMANCE";
-      case 0x5D4B:
-        return "SERVO IMPENDING FAILURE SPIN-UP RETRY COUNT";
-      case 0x5D4C:
-        return "SERVO IMPENDING FAILURE DRIVE CALIBRATION RETRY COUNT";
-      case 0x5D50:
-        return "SPINDLE IMPENDING FAILURE GENERAL HARD DRIVE FAILURE";
-      case 0x5D51:
-        return "SPINDLE IMPENDING FAILURE DRIVE ERROR RATE TOO HIGH";
-      case 0x5D52:
-        return "SPINDLE IMPENDING FAILURE DATA ERROR RATE TOO HIGH";
-      case 0x5D53:
-        return "SPINDLE IMPENDING FAILURE SEEK ERROR RATE TOO HIGH";
-      case 0x5D54:
-        return "SPINDLE IMPENDING FAILURE TOO MANY BLOCK REASSIGNS";
-      case 0x5D55:
-        return "SPINDLE IMPENDING FAILURE ACCESS TIMES TOO HIGH";
-      case 0x5D56:
-        return "SPINDLE IMPENDING FAILURE START UNIT TIMES TOO HIGH";
-      case 0x5D57:
-        return "SPINDLE IMPENDING FAILURE CHANNEL PARAMETRICS";
-      case 0x5D58:
-        return "SPINDLE IMPENDING FAILURE CONTROLLER DETECTED";
-      case 0x5D59:
-        return "SPINDLE IMPENDING FAILURE THROUGHPUT PERFORMANCE";
-      case 0x5D5A:
-        return "SPINDLE IMPENDING FAILURE SEEK TIME PERFORMANCE";
-      case 0x5D5B:
-        return "SPINDLE IMPENDING FAILURE SPIN-UP RETRY COUNT";
-      case 0x5D5C:
-        return "SPINDLE IMPENDING FAILURE DRIVE CALIBRATION RETRY COUNT";
-      case 0x5D60:
-        return "FIRMWARE IMPENDING FAILURE GENERAL HARD DRIVE FAILURE";
-      case 0x5D61:
-        return "FIRMWARE IMPENDING FAILURE DRIVE ERROR RATE TOO HIGH";
-      case 0x5D62:
-        return "FIRMWARE IMPENDING FAILURE DATA ERROR RATE TOO HIGH";
-      case 0x5D63:
-        return "FIRMWARE IMPENDING FAILURE SEEK ERROR RATE TOO HIGH";
-      case 0x5D64:
-        return "FIRMWARE IMPENDING FAILURE TOO MANY BLOCK REASSIGNS";
-      case 0x5D65:
-        return "FIRMWARE IMPENDING FAILURE ACCESS TIMES TOO HIGH";
-      case 0x5D66:
-        return "FIRMWARE IMPENDING FAILURE START UNIT TIMES TOO HIGH";
-      case 0x5D67:
-        return "FIRMWARE IMPENDING FAILURE CHANNEL PARAMETRICS";
-      case 0x5D68:
-        return "FIRMWARE IMPENDING FAILURE CONTROLLER DETECTED";
-      case 0x5D69:
-        return "FIRMWARE IMPENDING FAILURE THROUGHPUT PERFORMANCE";
-      case 0x5D6A:
-        return "FIRMWARE IMPENDING FAILURE SEEK TIME PERFORMANCE";
-      case 0x5D6B:
-        return "FIRMWARE IMPENDING FAILURE SPIN-UP RETRY COUNT";
-      case 0x5D6C:
-        return "FIRMWARE IMPENDING FAILURE DRIVE CALIBRATION RETRY COUNT";
-      case 0x5DFF:
-        return "FAILURE PREDICTION THRESHOLD EXCEEDED (FALSE)";
-      case 0x5E00:
-        return "LOW POWER CONDITION ON";
-      case 0x5E01:
-        return "IDLE CONDITION ACTIVATED BY TIMER";
-      case 0x5E02:
-        return "STANDBY CONDITION ACTIVATED BY TIMER";
-      case 0x5E03:
-        return "IDLE CONDITION ACTIVATED BY COMMAND";
-      case 0x5E04:
-        return "STANDBY CONDITION ACTIVATED BY COMMAND";
-      case 0x5E05:
-        return "IDLE_B CONDITION ACTIVATED BY TIMER";
-      case 0x5E06:
-        return "IDLE_B CONDITION ACTIVATED BY COMMAND";
-      case 0x5E07:
-        return "IDLE_C CONDITION ACTIVATED BY TIMER";
-      case 0x5E08:
-        return "IDLE_C CONDITION ACTIVATED BY COMMAND";
-      case 0x5E09:
-        return "STANDBY_Y CONDITION ACTIVATED BY TIMER";
-      case 0x5E0A:
-        return "STANDBY_Y CONDITION ACTIVATED BY COMMAND";
-      case 0x5E41:
-        return "POWER STATE CHANGE TO ACTIVE";
-      case 0x5E42:
-        return "POWER STATE CHANGE TO IDLE";
-      case 0x5E43:
-        return "POWER STATE CHANGE TO STANDBY";
-      case 0x5E45:
-        return "POWER STATE CHANGE TO SLEEP";
-      case 0x5E47:
-        return "POWER STATE CHANGE TO DEVICE CONTROL";
-      case 0x5F00:
-        return "60h 00h LAMP FAILURE";
-      case 0x6100:
-        return "VIDEO ACQUISITION ERROR";
-      case 0x6101:
-        return "UNABLE TO ACQUIRE VIDEO";
-      case 0x6102:
-        return "OUT OF FOCUS";
-      case 0x6200:
-        return "SCAN HEAD POSITIONING ERROR";
-      case 0x6300:
-        return "END OF USER AREA ENCOUNTERED ON THIS TRACK";
-      case 0x6301:
-        return "PACKET DOES NOT FIT IN AVAILABLE SPACE";
-      case 0x6400:
-        return "ILLEGAL MODE FOR THIS TRACK";
-      case 0x6401:
-        return "INVALID PACKET SIZE";
-      case 0x6500:
-        return "VOLTAGE FAULT";
-      case 0x6600:
-        return "AUTOMATIC DOCUMENT FEEDER COVER UP";
-      case 0x6601:
-        return "AUTOMATIC DOCUMENT FEEDER LIFT UP";
-      case 0x6602:
-        return "DOCUMENT JAM IN AUTOMATIC DOCUMENT FEEDER";
-      case 0x6603:
-        return "DOCUMENT MISS FEED AUTOMATIC IN DOCUMENT FEEDER";
-      case 0x6700:
-        return "CONFIGURATION FAILURE";
-      case 0x6701:
-        return "CONFIGURATION OF INCAPABLE LOGICAL UNITS FAILED";
-      case 0x6702:
-        return "ADD LOGICAL UNIT FAILED";
-      case 0x6703:
-        return "MODIFICATION OF LOGICAL UNIT FAILED";
-      case 0x6704:
-        return "EXCHANGE OF LOGICAL UNIT FAILED";
-      case 0x6705:
-        return "REMOVE OF LOGICAL UNIT FAILED";
-      case 0x6706:
-        return "ATTACHMENT OF LOGICAL UNIT FAILED";
-      case 0x6707:
-        return "CREATION OF LOGICAL UNIT FAILED";
-      case 0x6708:
-        return "ASSIGN FAILURE OCCURRED";
-      case 0x6709:
-        return "MULTIPLY ASSIGNED LOGICAL UNIT";
-      case 0x670A:
-        return "SET TARGET PORT GROUPS COMMAND FAILED";
-      case 0x670B:
-        return "ATA DEVICE FEATURE NOT ENABLED";
-      case 0x670C:
-        return "COMMAND REJECTED";
-      case 0x670D:
-        return "EXPLICIT BIND NOT ALLOWED";
-      case 0x6800:
-        return "LOGICAL UNIT NOT CONFIGURED";
-      case 0x6801:
-        return "SUBSIDIARY LOGICAL UNIT NOT CONFIGURED";
-      case 0x6900:
-        return "DATA LOSS ON LOGICAL UNIT";
-      case 0x6901:
-        return "MULTIPLE LOGICAL UNIT FAILURES";
-      case 0x6902:
-        return "PARITY/DATA MISMATCH";
-      case 0x6A00:
-        return "INFORMATIONAL, REFER TO LOG";
-      case 0x6B00:
-        return "STATE CHANGE HAS OCCURRED";
-      case 0x6B01:
-        return "REDUNDANCY LEVEL GOT BETTER";
-      case 0x6B02:
-        return "REDUNDANCY LEVEL GOT WORSE";
-      case 0x6C00:
-        return "REBUILD FAILURE OCCURRED";
-      case 0x6D00:
-        return "RECALCULATE FAILURE OCCURRED";
-      case 0x6E00:
-        return "COMMAND TO LOGICAL UNIT FAILED";
-      case 0x6F00:
-        return "COPY PROTECTION KEY EXCHANGE FAILURE - AUTHENTICATION FAILURE";
-      case 0x6F01:
-        return "COPY PROTECTION KEY EXCHANGE FAILURE - KEY NOT PRESENT";
-      case 0x6F02:
-        return "COPY PROTECTION KEY EXCHANGE FAILURE - KEY NOT ESTABLISHED";
-      case 0x6F03:
-        return "READ OF SCRAMBLED SECTOR WITHOUT AUTHENTICATION";
-      case 0x6F04:
-        return "MEDIA REGION CODE IS MISMATCHED TO LOGICAL UNIT REGION";
-      case 0x6F05:
-        return "DRIVE REGION MUST BE PERMANENT/REGION RESET COUNT ERROR";
-      case 0x6F06:
-        return "INSUFFICIENT BLOCK COUNT FOR BINDING NONCE RECORDING";
-      case 0x6F07:
-        return "CONFLICT IN BINDING NONCE RECORDING";
-      case 0x6F08:
-        return "INSUFFICIENT PERMISSION";
-      case 0x6F09:
-        return "INVALID DRIVE-HOST PAIRING SERVER";
-      case 0x6F0A:
-        return "DRIVE-HOST PAIRING SUSPENDED";
-      case 0x7100:
-        return "DECOMPRESSION EXCEPTION LONG ALGORITHM ID";
-      case 0x7200:
-        return "SESSION FIXATION ERROR";
-      case 0x7201:
-        return "SESSION FIXATION ERROR WRITING LEAD-IN";
-      case 0x7202:
-        return "SESSION FIXATION ERROR WRITING LEAD-OUT";
-      case 0x7203:
-        return "SESSION FIXATION ERROR - INCOMPLETE TRACK IN SESSION";
-      case 0x7204:
-        return "EMPTY OR PARTIALLY WRITTEN RESERVED TRACK";
-      case 0x7205:
-        return "NO MORE TRACK RESERVATIONS ALLOWED";
-      case 0x7206:
-        return "RMZ EXTENSION IS NOT ALLOWED";
-      case 0x7207:
-        return "NO MORE TEST ZONE EXTENSIONS ARE ALLOWED";
-      case 0x7300:
-        return "CD CONTROL ERROR";
-      case 0x7301:
-        return "POWER CALIBRATION AREA ALMOST FULL";
-      case 0x7302:
-        return "POWER CALIBRATION AREA IS FULL";
-      case 0x7303:
-        return "POWER CALIBRATION AREA ERROR";
-      case 0x7304:
-        return "PROGRAM MEMORY AREA UPDATE FAILURE";
-      case 0x7305:
-        return "PROGRAM MEMORY AREA IS FULL";
-      case 0x7306:
-        return "RMA/PMA IS ALMOST FULL";
-      case 0x7310:
-        return "CURRENT POWER CALIBRATION AREA ALMOST FULL";
-      case 0x7311:
-        return "CURRENT POWER CALIBRATION AREA IS FULL";
-      case 0x7317:
-        return "RDZ IS FULL";
-      case 0x7400:
-        return "SECURITY ERROR";
-      case 0x7401:
-        return "UNABLE TO DECRYPT DATA";
-      case 0x7402:
-        return "UNENCRYPTED DATA ENCOUNTERED WHILE DECRYPTING";
-      case 0x7403:
-        return "INCORRECT DATA ENCRYPTION KEY";
-      case 0x7404:
-        return "CRYPTOGRAPHIC INTEGRITY VALIDATION FAILED";
-      case 0x7405:
-        return "ERROR DECRYPTING DATA";
-      case 0x7406:
-        return "UNKNOWN SIGNATURE VERIFICATION KEY";
-      case 0x7407:
-        return "ENCRYPTION PARAMETERS NOT USEABLE";
-      case 0x7408:
-        return "DIGITAL SIGNATURE VALIDATION FAILURE";
-      case 0x7409:
-        return "ENCRYPTION MODE MISMATCH ON READ";
-      case 0x740A:
-        return "ENCRYPTED BLOCK NOT RAW READ ENABLED";
-      case 0x740B:
-        return "INCORRECT ENCRYPTION PARAMETERS";
-      case 0x740C:
-        return "UNABLE TO DECRYPT PARAMETER LIST";
-      case 0x740D:
-        return "ENCRYPTION ALGORITHM DISABLED";
-      case 0x7410:
-        return "SA CREATION PARAMETER VALUE INVALID";
-      case 0x7411:
-        return "SA CREATION PARAMETER VALUE REJECTED";
-      case 0x7412:
-        return "INVALID SA USAGE";
-      case 0x7421:
-        return "DATA ENCRYPTION CONFIGURATION PREVENTED";
-      case 0x7430:
-        return "SA CREATION PARAMETER NOT SUPPORTED";
-      case 0x7440:
-        return "AUTHENTICATION FAILED";
-      case 0x7461:
-        return "EXTERNAL DATA ENCRYPTION KEY MANAGER ACCESS ERROR";
-      case 0x7462:
-        return "EXTERNAL DATA ENCRYPTION KEY MANAGER ERROR";
-      case 0x7463:
-        return "EXTERNAL DATA ENCRYPTION KEY NOT FOUND";
-      case 0x7464:
-        return "EXTERNAL DATA ENCRYPTION REQUEST NOT AUTHORIZED";
-      case 0x746E:
-        return "EXTERNAL DATA ENCRYPTION CONTROL TIMEOUT";
-      case 0x746F:
-        return "EXTERNAL DATA ENCRYPTION CONTROL ERROR";
-      case 0x7471:
-        return "LOGICAL UNIT ACCESS NOT AUTHORIZED";
-      case 0x7479:
-        return "SECURITY CONFLICT IN TRANSLATED DEVICE";
-      // Other Values
-      default:
-        if (asc == 0x40) {
-          return $"DIAGNOSTIC FAILURE ON COMPONENT {ascq:X2}h";
-        }
-        if (asc == 0x4D) {
-          return $"TAGGED OVERLAPPED COMMANDS (TAG: {ascq:X2}h)";
-        }
-        if (asc == 0x70) {
-          return $"DECOMPRESSION EXCEPTION (SHORT ALGORITHM ID: {ascq:X2}h)";
-        }
-        if (asc >= 0x80) {
-          return $"VENDOR-SPECIFIC CODE (ASC: {asc:X2}h, ASCQ: {ascq:X2}h)";
-        }
-        if (ascq >= 0x80) {
-          return $"VENDOR-SPECIFIC QUALIFIER (ASC: {asc:X2}h, ASCQ: {ascq:X2}h)";
-        }
-        return $"RESERVED (ASC: {asc:X2}h, ASCQ: {ascq:X2}h)";
-    }
-  }
+  public static string AdditionalSenseDescription(byte asc, byte ascq) => (ushort) ((asc << 8) | ascq) switch {
+    0x0000 => "NO ADDITIONAL SENSE INFORMATION",
+    0x0001 => "FILEMARK DETECTED",
+    0x0002 => "END-OF-PARTITION/MEDIUM DETECTED",
+    0x0003 => "SETMARK DETECTED",
+    0x0004 => "BEGINNING-OF-PARTITION/MEDIUM DETECTED",
+    0x0005 => "END-OF-DATA DETECTED",
+    0x0006 => "I/O PROCESS TERMINATED",
+    0x0007 => "PROGRAMMABLE EARLY WARNING DETECTED",
+    0x0011 => "AUDIO PLAY OPERATION IN PROGRESS",
+    0x0012 => "AUDIO PLAY OPERATION PAUSED",
+    0x0013 => "AUDIO PLAY OPERATION SUCCESSFULLY COMPLETED",
+    0x0014 => "AUDIO PLAY OPERATION STOPPED DUE TO ERROR",
+    0x0015 => "NO CURRENT AUDIO STATUS TO RETURN",
+    0x0016 => "OPERATION IN PROGRESS",
+    0x0017 => "CLEANING REQUESTED",
+    0x0018 => "ERASE OPERATION IN PROGRESS",
+    0x0019 => "LOCATE OPERATION IN PROGRESS",
+    0x001A => "REWIND OPERATION IN PROGRESS",
+    0x001B => "SET CAPACITY OPERATION IN PROGRESS",
+    0x001C => "VERIFY OPERATION IN PROGRESS",
+    0x001D => "ATA PASS THROUGH INFORMATION AVAILABLE",
+    0x001E => "CONFLICTING SA CREATION REQUEST",
+    0x001F => "LOGICAL UNIT TRANSITIONING TO ANOTHER POWER CONDITION",
+    0x0020 => "EXTENDED COPY INFORMATION AVAILABLE",
+    0x0021 => "ATOMIC COMMAND ABORTED DUE TO ACA",
+    0x0100 => "NO INDEX/SECTOR SIGNAL",
+    0x0200 => "NO SEEK COMPLETE",
+    0x0300 => "PERIPHERAL DEVICE WRITE FAULT",
+    0x0301 => "NO WRITE CURRENT",
+    0x0302 => "EXCESSIVE WRITE ERRORS",
+    0x0400 => "LOGICAL UNIT NOT READY, CAUSE NOT REPORTABLE",
+    0x0401 => "LOGICAL UNIT IS IN PROCESS OF BECOMING READY",
+    0x0402 => "LOGICAL UNIT NOT READY, INITIALIZING COMMAND REQUIRED",
+    0x0403 => "LOGICAL UNIT NOT READY, MANUAL INTERVENTION REQUIRED",
+    0x0404 => "LOGICAL UNIT NOT READY, FORMAT IN PROGRESS",
+    0x0405 => "LOGICAL UNIT NOT READY, REBUILD IN PROGRESS",
+    0x0406 => "LOGICAL UNIT NOT READY, RECALCULATION IN PROGRESS",
+    0x0407 => "LOGICAL UNIT NOT READY, OPERATION IN PROGRESS",
+    0x0408 => "LOGICAL UNIT NOT READY, LONG WRITE IN PROGRESS",
+    0x0409 => "LOGICAL UNIT NOT READY, SELF-TEST IN PROGRESS",
+    0x040A => "LOGICAL UNIT NOT ACCESSIBLE, ASYMMETRIC ACCESS STATE TRANSITION",
+    0x040B => "LOGICAL UNIT NOT ACCESSIBLE, TARGET PORT IN STANDBY STATE",
+    0x040C => "LOGICAL UNIT NOT ACCESSIBLE, TARGET PORT IN UNAVAILABLE STATE",
+    0x040D => "LOGICAL UNIT NOT READY, STRUCTURE CHECK REQUIRED",
+    0x040E => "LOGICAL UNIT NOT READY, SECURITY SESSION IN PROGRESS",
+    0x0410 => "LOGICAL UNIT NOT READY, AUXILIARY MEMORY NOT ACCESSIBLE",
+    0x0411 => "LOGICAL UNIT NOT READY, NOTIFY (ENABLE SPINUP) REQUIRED",
+    0x0412 => "LOGICAL UNIT NOT READY, OFFLINE",
+    0x0413 => "LOGICAL UNIT NOT READY, SA CREATION IN PROGRESS",
+    0x0414 => "LOGICAL UNIT NOT READY, SPACE ALLOCATION IN PROGRESS",
+    0x0415 => "LOGICAL UNIT NOT READY, ROBOTICS DISABLED",
+    0x0416 => "LOGICAL UNIT NOT READY, CONFIGURATION REQUIRED",
+    0x0417 => "LOGICAL UNIT NOT READY, CALIBRATION REQUIRED",
+    0x0418 => "LOGICAL UNIT NOT READY, A DOOR IS OPEN",
+    0x0419 => "LOGICAL UNIT NOT READY, OPERATING IN SEQUENTIAL MODE",
+    0x041A => "LOGICAL UNIT NOT READY, START STOP UNIT COMMAND IN PROGRESS",
+    0x041B => "LOGICAL UNIT NOT READY, SANITIZE IN PROGRESS",
+    0x041C => "LOGICAL UNIT NOT READY, ADDITIONAL POWER USE NOT YET GRANTED",
+    0x041D => "LOGICAL UNIT NOT READY, CONFIGURATION IN PROGRESS",
+    0x041E => "LOGICAL UNIT NOT READY, MICROCODE ACTIVATION REQUIRED",
+    0x041F => "LOGICAL UNIT NOT READY, MICROCODE DOWNLOAD REQUIRED",
+    0x0420 => "LOGICAL UNIT NOT READY, LOGICAL UNIT RESET REQUIRED",
+    0x0421 => "LOGICAL UNIT NOT READY, HARD RESET REQUIRED",
+    0x0422 => "LOGICAL UNIT NOT READY, POWER CYCLE REQUIRED",
+    0x0423 => "LOGICAL UNIT NOT READY, AFFILIATION REQUIRED",
+    0x0500 => "LOGICAL UNIT DOES NOT RESPOND TO SELECTION",
+    0x0600 => "NO REFERENCE POSITION FOUND",
+    0x0700 => "MULTIPLE PERIPHERAL DEVICES SELECTED",
+    0x0800 => "LOGICAL UNIT COMMUNICATION FAILURE",
+    0x0801 => "LOGICAL UNIT COMMUNICATION TIME-OUT",
+    0x0802 => "LOGICAL UNIT COMMUNICATION PARITY ERROR",
+    0x0803 => "LOGICAL UNIT COMMUNICATION CRC ERROR (ULTRA-DMA/32)",
+    0x0804 => "UNREACHABLE COPY TARGET",
+    0x0900 => "TRACK FOLLOWING ERROR",
+    0x0901 => "TRACKING SERVO FAILURE",
+    0x0902 => "FOCUS SERVO FAILURE",
+    0x0903 => "SPINDLE SERVO FAILURE",
+    0x0904 => "HEAD SELECT FAULT",
+    0x0905 => "VIBRATION INDUCED TRACKING ERROR",
+    0x0A00 => "ERROR LOG OVERFLOW",
+    0x0B00 => "WARNING",
+    0x0B01 => "WARNING - SPECIFIED TEMPERATURE EXCEEDED",
+    0x0B02 => "WARNING - ENCLOSURE DEGRADED",
+    0x0B03 => "WARNING - BACKGROUND SELF-TEST FAILED",
+    0x0B04 => "WARNING - BACKGROUND PRE-SCAN DETECTED MEDIUM ERROR",
+    0x0B05 => "WARNING - BACKGROUND MEDIUM SCAN DETECTED MEDIUM ERROR",
+    0x0B06 => "WARNING - NON-VOLATILE CACHE NOW VOLATILE",
+    0x0B07 => "WARNING - DEGRADED POWER TO NON-VOLATILE CACHE",
+    0x0B08 => "WARNING - POWER LOSS EXPECTED",
+    0x0B09 => "WARNING - DEVICE STATISTICS NOTIFICATION ACTIVE",
+    0x0B0A => "WARNING - HIGH CRITICAL TEMPERATURE LIMIT EXCEEDED",
+    0x0B0B => "WARNING - LOW CRITICAL TEMPERATURE LIMIT EXCEEDED",
+    0x0B0C => "WARNING - HIGH OPERATING TEMPERATURE LIMIT EXCEEDED",
+    0x0B0D => "WARNING - LOW OPERATING TEMPERATURE LIMIT EXCEEDED",
+    0x0B0E => "WARNING - HIGH CRITICAL HUMIDITY LIMIT EXCEEDED",
+    0x0B0F => "WARNING - LOW CRITICAL HUMIDITY LIMIT EXCEEDED",
+    0x0B10 => "WARNING - HIGH OPERATING HUMIDITY LIMIT EXCEEDED",
+    0x0B11 => "WARNING - LOW OPERATING HUMIDITY LIMIT EXCEEDED",
+    0x0C00 => "WRITE ERROR",
+    0x0C01 => "WRITE ERROR - RECOVERED WITH AUTO REALLOCATION",
+    0x0C02 => "WRITE ERROR - AUTO REALLOCATION FAILED",
+    0x0C03 => "WRITE ERROR - RECOMMEND REASSIGNMENT",
+    0x0C04 => "COMPRESSION CHECK MISCOMPARE ERROR",
+    0x0C05 => "DATA EXPANSION OCCURRED DURING COMPRESSION",
+    0x0C06 => "BLOCK NOT COMPRESSIBLE",
+    0x0C07 => "WRITE ERROR - RECOVERY NEEDED",
+    0x0C08 => "WRITE ERROR - RECOVERY FAILED",
+    0x0C09 => "WRITE ERROR - LOSS OF STREAMING",
+    0x0C0A => "WRITE ERROR - PADDING BLOCKS ADDED",
+    0x0C0B => "AUXILIARY MEMORY WRITE ERROR",
+    0x0C0C => "WRITE ERROR - UNEXPECTED UNSOLICITED DATA",
+    0x0C0D => "WRITE ERROR - NOT ENOUGH UNSOLICITED DATA",
+    0x0C0E => "MULTIPLE WRITE ERRORS",
+    0x0C0F => "DEFECTS IN ERROR WINDOW",
+    0x0C10 => "INCOMPLETE MULTIPLE ATOMIC WRITE OPERATIONS",
+    0x0C11 => "WRITE ERROR - RECOVERY SCAN NEEDED",
+    0x0C12 => "WRITE ERROR - INSUFFICIENT ZONE RESOURCES",
+    0x0D00 => "ERROR DETECTED BY THIRD PARTY TEMPORARY INITIATOR",
+    0x0D01 => "THIRD PARTY DEVICE FAILURE",
+    0x0D02 => "COPY TARGET DEVICE NOT REACHABLE",
+    0x0D03 => "INCORRECT COPY TARGET DEVICE TYPE",
+    0x0D04 => "COPY TARGET DEVICE DATA UNDERRUN",
+    0x0D05 => "COPY TARGET DEVICE DATA OVERRUN",
+    0x0E00 => "INVALID INFORMATION UNIT",
+    0x0E01 => "INFORMATION UNIT TOO SHORT",
+    0x0E02 => "INFORMATION UNIT TOO LONG",
+    0x0E03 => "INVALID FIELD IN COMMAND INFORMATION UNIT",
+    0x0F00 => "10h 00h ID CRC OR ECC ERROR",
+    0x1001 => "LOGICAL BLOCK GUARD CHECK FAILED",
+    0x1002 => "LOGICAL BLOCK APPLICATION TAG CHECK FAILED",
+    0x1003 => "LOGICAL BLOCK REFERENCE TAG CHECK FAILED",
+    0x1004 => "LOGICAL BLOCK PROTECTION ERROR ON RECOVER BUFFERED DATA",
+    0x1005 => "LOGICAL BLOCK PROTECTION METHOD ERROR",
+    0x1100 => "UNRECOVERED READ ERROR",
+    0x1101 => "READ RETRIES EXHAUSTED",
+    0x1102 => "ERROR TOO LONG TO CORRECT",
+    0x1103 => "MULTIPLE READ ERRORS",
+    0x1104 => "UNRECOVERED READ ERROR - AUTO REALLOCATE FAILED",
+    0x1105 => "L-EC UNCORRECTABLE ERROR",
+    0x1106 => "CIRC UNRECOVERED ERROR",
+    0x1107 => "DATA RE-SYNCHRONIZATION ERROR",
+    0x1108 => "INCOMPLETE BLOCK READ",
+    0x1109 => "NO GAP FOUND",
+    0x110A => "MISCORRECTED ERROR",
+    0x110B => "UNRECOVERED READ ERROR - RECOMMEND REASSIGNMENT",
+    0x110C => "UNRECOVERED READ ERROR - RECOMMEND REWRITE THE DATA",
+    0x110D => "DE-COMPRESSION CRC ERROR",
+    0x110E => "CANNOT DECOMPRESS USING DECLARED ALGORITHM",
+    0x110F => "ERROR READING UPC/EAN NUMBER",
+    0x1110 => "ERROR READING ISRC NUMBER",
+    0x1111 => "READ ERROR - LOSS OF STREAMING",
+    0x1112 => "AUXILIARY MEMORY READ ERROR",
+    0x1113 => "READ ERROR - FAILED RETRANSMISSION REQUEST",
+    0x1114 => "READ ERROR - LBA MARKED BAD BY APPLICATION CLIENT",
+    0x1115 => "WRITE AFTER SANITIZE REQUIRED",
+    0x1200 => "ADDRESS MARK NOT FOUND FOR ID FIELD",
+    0x1300 => "ADDRESS MARK NOT FOUND FOR DATA FIELD",
+    0x1400 => "RECORDED ENTITY NOT FOUND",
+    0x1401 => "RECORD NOT FOUND",
+    0x1402 => "FILEMARK OR SETMARK NOT FOUND",
+    0x1403 => "END-OF-DATA NOT FOUND",
+    0x1404 => "BLOCK SEQUENCE ERROR",
+    0x1405 => "RECORD NOT FOUND - RECOMMEND REASSIGNMENT",
+    0x1406 => "RECORD NOT FOUND - DATA AUTO-REALLOCATED",
+    0x1407 => "LOCATE OPERATION FAILURE",
+    0x1500 => "RANDOM POSITIONING ERROR",
+    0x1501 => "MECHANICAL POSITIONING ERROR",
+    0x1502 => "POSITIONING ERROR DETECTED BY READ OF MEDIUM",
+    0x1600 => "DATA SYNCHRONIZATION MARK ERROR",
+    0x1601 => "DATA SYNC ERROR - DATA REWRITTEN",
+    0x1602 => "DATA SYNC ERROR - RECOMMEND REWRITE",
+    0x1603 => "DATA SYNC ERROR - DATA AUTO-REALLOCATED",
+    0x1604 => "DATA SYNC ERROR - RECOMMEND REASSIGNMENT",
+    0x1700 => "RECOVERED DATA WITH NO ERROR CORRECTION APPLIED",
+    0x1701 => "RECOVERED DATA WITH RETRIES",
+    0x1702 => "RECOVERED DATA WITH POSITIVE HEAD OFFSET",
+    0x1703 => "RECOVERED DATA WITH NEGATIVE HEAD OFFSET",
+    0x1704 => "RECOVERED DATA WITH RETRIES AND/OR CIRC APPLIED",
+    0x1705 => "RECOVERED DATA USING PREVIOUS SECTOR ID",
+    0x1706 => "RECOVERED DATA WITHOUT ECC - DATA AUTO-REALLOCATED",
+    0x1707 => "RECOVERED DATA WITHOUT ECC - RECOMMEND REASSIGNMENT",
+    0x1708 => "RECOVERED DATA WITHOUT ECC - RECOMMEND REWRITE",
+    0x1709 => "RECOVERED DATA WITHOUT ECC - DATA REWRITTEN",
+    0x1800 => "RECOVERED DATA WITH ERROR CORRECTION APPLIED",
+    0x1801 => "RECOVERED DATA WITH ERROR CORR. & RETRIES APPLIED",
+    0x1802 => "RECOVERED DATA - DATA AUTO-REALLOCATED",
+    0x1803 => "RECOVERED DATA WITH CIRC",
+    0x1804 => "RECOVERED DATA WITH L-EC",
+    0x1805 => "RECOVERED DATA - RECOMMEND REASSIGNMENT",
+    0x1806 => "RECOVERED DATA - RECOMMEND REWRITE",
+    0x1807 => "RECOVERED DATA WITH ECC - DATA REWRITTEN",
+    0x1808 => "RECOVERED DATA WITH LINKING",
+    0x1900 => "DEFECT LIST ERROR",
+    0x1901 => "DEFECT LIST NOT AVAILABLE",
+    0x1902 => "DEFECT LIST ERROR IN PRIMARY LIST",
+    0x1903 => "DEFECT LIST ERROR IN GROWN LIST",
+    0x1A00 => "PARAMETER LIST LENGTH ERROR",
+    0x1B00 => "SYNCHRONOUS DATA TRANSFER ERROR",
+    0x1C00 => "DEFECT LIST NOT FOUND",
+    0x1C01 => "PRIMARY DEFECT LIST NOT FOUND",
+    0x1C02 => "GROWN DEFECT LIST NOT FOUND",
+    0x1D00 => "MISCOMPARE DURING VERIFY OPERATION",
+    0x1D01 => "MISCOMPARE VERIFY OF UNMAPPED LBA",
+    0x1E00 => "RECOVERED ID WITH ECC CORRECTION",
+    0x1F00 => "PARTIAL DEFECT LIST TRANSFER",
+    0x2000 => "INVALID COMMAND OPERATION CODE",
+    0x2001 => "ACCESS DENIED - INITIATOR PENDING-ENROLLED",
+    0x2002 => "ACCESS DENIED - NO ACCESS RIGHTS",
+    0x2003 => "ACCESS DENIED - INVALID MGMT ID KEY",
+    0x2004 => "ILLEGAL COMMAND WHILE IN WRITE CAPABLE STATE",
+    0x2005 => "Obsolete",
+    0x2006 => "ILLEGAL COMMAND WHILE IN EXPLICIT ADDRESS MODE",
+    0x2007 => "ILLEGAL COMMAND WHILE IN IMPLICIT ADDRESS MODE",
+    0x2008 => "ACCESS DENIED - ENROLLMENT CONFLICT",
+    0x2009 => "ACCESS DENIED - INVALID LU IDENTIFIER",
+    0x200A => "ACCESS DENIED - INVALID PROXY TOKEN",
+    0x200B => "ACCESS DENIED - ACL LUN CONFLICT",
+    0x200C => "ILLEGAL COMMAND WHEN NOT IN APPEND-ONLY MODE",
+    0x200D => "NOT AN ADMINISTRATIVE LOGICAL UNIT",
+    0x200E => "NOT A SUBSIDIARY LOGICAL UNIT",
+    0x200F => "NOT A CONGLOMERATE LOGICAL UNIT",
+    0x2100 => "LOGICAL BLOCK ADDRESS OUT OF RANGE",
+    0x2101 => "INVALID ELEMENT ADDRESS",
+    0x2102 => "INVALID ADDRESS FOR WRITE",
+    0x2103 => "INVALID WRITE CROSSING LAYER JUMP",
+    0x2104 => "UNALIGNED WRITE COMMAND",
+    0x2105 => "WRITE BOUNDARY VIOLATION",
+    0x2106 => "ATTEMPT TO READ INVALID DATA",
+    0x2107 => "READ BOUNDARY VIOLATION",
+    0x2108 => "MISALIGNED WRITE COMMAND",
+    0x2200 => "ILLEGAL FUNCTION (USE 20 00, 24 00, OR 26 00)",
+    0x2300 => "INVALID TOKEN OPERATION, CAUSE NOT REPORTABLE",
+    0x2301 => "INVALID TOKEN OPERATION, UNSUPPORTED TOKEN TYPE",
+    0x2302 => "INVALID TOKEN OPERATION, REMOTE TOKEN USAGE NOT SUPPORTED",
+    0x2303 => "INVALID TOKEN OPERATION, REMOTE ROD TOKEN CREATION NOT SUPPORTED",
+    0x2304 => "INVALID TOKEN OPERATION, TOKEN UNKNOWN",
+    0x2305 => "INVALID TOKEN OPERATION, TOKEN CORRUPT",
+    0x2306 => "INVALID TOKEN OPERATION, TOKEN REVOKED",
+    0x2307 => "INVALID TOKEN OPERATION, TOKEN EXPIRED",
+    0x2308 => "INVALID TOKEN OPERATION, TOKEN CANCELLED",
+    0x2309 => "INVALID TOKEN OPERATION, TOKEN DELETED",
+    0x230A => "INVALID TOKEN OPERATION, INVALID TOKEN LENGTH",
+    0x2400 => "INVALID FIELD IN CDB",
+    0x2401 => "CDB DECRYPTION ERROR",
+    0x2402 or 0x2403 => "Obsolete",
+    0x2404 => "SECURITY AUDIT VALUE FROZEN",
+    0x2405 => "SECURITY WORKING KEY FROZEN",
+    0x2406 => "NONCE NOT UNIQUE",
+    0x2407 => "NONCE TIMESTAMP OUT OF RANGE",
+    0x2408 => "INVALID XCDB",
+    0x2500 => "LOGICAL UNIT NOT SUPPORTED",
+    0x2600 => "INVALID FIELD IN PARAMETER LIST",
+    0x2601 => "PARAMETER NOT SUPPORTED",
+    0x2602 => "PARAMETER VALUE INVALID",
+    0x2603 => "THRESHOLD PARAMETERS NOT SUPPORTED",
+    0x2604 => "INVALID RELEASE OF PERSISTENT RESERVATION",
+    0x2605 => "DATA DECRYPTION ERROR",
+    0x2606 => "TOO MANY TARGET DESCRIPTORS",
+    0x2607 => "UNSUPPORTED TARGET DESCRIPTOR TYPE CODE",
+    0x2608 => "TOO MANY SEGMENT DESCRIPTORS",
+    0x2609 => "UNSUPPORTED SEGMENT DESCRIPTOR TYPE CODE",
+    0x260A => "UNEXPECTED INEXACT SEGMENT",
+    0x260B => "INLINE DATA LENGTH EXCEEDED",
+    0x260C => "INVALID OPERATION FOR COPY SOURCE OR DESTINATION",
+    0x260D => "COPY SEGMENT GRANULARITY VIOLATION",
+    0x260E => "INVALID PARAMETER WHILE PORT IS ENABLED",
+    0x260F => "INVALID DATA-OUT BUFFER INTEGRITY CHECK VALUE",
+    0x2610 => "DATA DECRYPTION KEY FAIL LIMIT REACHED",
+    0x2611 => "INCOMPLETE KEY-ASSOCIATED DATA SET",
+    0x2612 => "VENDOR SPECIFIC KEY REFERENCE NOT FOUND",
+    0x2613 => "APPLICATION TAG MODE PAGE IS INVALID",
+    0x2700 => "WRITE PROTECTED",
+    0x2701 => "HARDWARE WRITE PROTECTED",
+    0x2702 => "LOGICAL UNIT SOFTWARE WRITE PROTECTED",
+    0x2703 => "ASSOCIATED WRITE PROTECT",
+    0x2704 => "PERSISTENT WRITE PROTECT",
+    0x2705 => "PERMANENT WRITE PROTECT",
+    0x2706 => "CONDITIONAL WRITE PROTECT",
+    0x2707 => "SPACE ALLOCATION FAILED WRITE PROTECT",
+    0x2708 => "ZONE IS READ ONLY",
+    0x2800 => "NOT READY TO READY CHANGE, MEDIUM MAY HAVE CHANGED",
+    0x2801 => "IMPORT OR EXPORT ELEMENT ACCESSED",
+    0x2802 => "FORMAT-LAYER MAY HAVE CHANGED",
+    0x2803 => "IMPORT/EXPORT ELEMENT ACCESSED, MEDIUM CHANGED",
+    0x2900 => "POWER ON, RESET, OR BUS DEVICE RESET OCCURRED",
+    0x2901 => "POWER ON OCCURRED",
+    0x2902 => "SCSI BUS RESET OCCURRED",
+    0x2903 => "BUS DEVICE RESET FUNCTION OCCURRED",
+    0x2904 => "DEVICE INTERNAL RESET",
+    0x2905 => "TRANSCEIVER MODE CHANGED TO SINGLE-ENDED",
+    0x2906 => "TRANSCEIVER MODE CHANGED TO LVD",
+    0x2907 => "I_T NEXUS LOSS OCCURRED",
+    0x2A00 => "PARAMETERS CHANGED",
+    0x2A01 => "MODE PARAMETERS CHANGED",
+    0x2A02 => "LOG PARAMETERS CHANGED",
+    0x2A03 => "RESERVATIONS PREEMPTED",
+    0x2A04 => "RESERVATIONS RELEASED",
+    0x2A05 => "REGISTRATIONS PREEMPTED",
+    0x2A06 => "ASYMMETRIC ACCESS STATE CHANGED",
+    0x2A07 => "IMPLICIT ASYMMETRIC ACCESS STATE TRANSITION FAILED",
+    0x2A08 => "PRIORITY CHANGED",
+    0x2A09 => "CAPACITY DATA HAS CHANGED",
+    0x2A0A => "ERROR HISTORY I_T NEXUS CLEARED",
+    0x2A0B => "ERROR HISTORY SNAPSHOT RELEASED",
+    0x2A0C => "ERROR RECOVERY ATTRIBUTES HAVE CHANGED",
+    0x2A0D => "DATA ENCRYPTION CAPABILITIES CHANGED",
+    0x2A10 => "TIMESTAMP CHANGED",
+    0x2A11 => "DATA ENCRYPTION PARAMETERS CHANGED BY ANOTHER I_T NEXUS",
+    0x2A12 => "DATA ENCRYPTION PARAMETERS CHANGED BY VENDOR SPECIFIC EVENT",
+    0x2A13 => "DATA ENCRYPTION KEY INSTANCE COUNTER HAS CHANGED",
+    0x2A14 => "SA CREATION CAPABILITIES DATA HAS CHANGED",
+    0x2A15 => "MEDIUM REMOVAL PREVENTION PREEMPTED",
+    0x2A16 => "ZONE RESET WRITE POINTER RECOMMENDED",
+    0x2B00 => "COPY CANNOT EXECUTE SINCE HOST CANNOT DISCONNECT",
+    0x2C00 => "COMMAND SEQUENCE ERROR",
+    0x2C01 => "TOO MANY WINDOWS SPECIFIED",
+    0x2C02 => "INVALID COMBINATION OF WINDOWS SPECIFIED",
+    0x2C03 => "CURRENT PROGRAM AREA IS NOT EMPTY",
+    0x2C04 => "CURRENT PROGRAM AREA IS EMPTY",
+    0x2C05 => "ILLEGAL POWER CONDITION REQUEST",
+    0x2C06 => "PERSISTENT PREVENT CONFLICT",
+    0x2C07 => "PREVIOUS BUSY STATUS",
+    0x2C08 => "PREVIOUS TASK SET FULL STATUS",
+    0x2C09 => "PREVIOUS RESERVATION CONFLICT STATUS",
+    0x2C0A => "PARTITION OR COLLECTION CONTAINS USER OBJECTS",
+    0x2C0B => "NOT RESERVED",
+    0x2C0C => "ORWRITE GENERATION DOES NOT MATCH",
+    0x2C0D => "RESET WRITE POINTER NOT ALLOWED",
+    0x2C0E => "ZONE IS OFFLINE",
+    0x2C0F => "STREAM NOT OPEN",
+    0x2C10 => "UNWRITTEN DATA IN ZONE",
+    0x2C11 => "DESCRIPTOR FORMAT SENSE DATA REQUIRED",
+    0x2D00 => "OVERWRITE ERROR ON UPDATE IN PLACE",
+    0x2E00 => "INSUFFICIENT TIME FOR OPERATION",
+    0x2E01 => "COMMAND TIMEOUT BEFORE PROCESSING",
+    0x2E02 => "COMMAND TIMEOUT DURING PROCESSING",
+    0x2E03 => "COMMAND TIMEOUT DURING PROCESSING DUE TO ERROR RECOVERY",
+    0x2F00 => "COMMANDS CLEARED BY ANOTHER INITIATOR",
+    0x2F01 => "COMMANDS CLEARED BY POWER LOSS NOTIFICATION",
+    0x2F02 => "COMMANDS CLEARED BY DEVICE SERVER",
+    0x2F03 => "SOME COMMANDS CLEARED BY QUEUING LAYER EVENT",
+    0x3000 => "INCOMPATIBLE MEDIUM INSTALLED",
+    0x3001 => "CANNOT READ MEDIUM - UNKNOWN FORMAT",
+    0x3002 => "CANNOT READ MEDIUM - INCOMPATIBLE FORMAT",
+    0x3003 => "CLEANING CARTRIDGE INSTALLED",
+    0x3004 => "CANNOT WRITE MEDIUM - UNKNOWN FORMAT",
+    0x3005 => "CANNOT WRITE MEDIUM - INCOMPATIBLE FORMAT",
+    0x3006 => "CANNOT FORMAT MEDIUM - INCOMPATIBLE MEDIUM",
+    0x3007 => "CLEANING FAILURE",
+    0x3008 => "CANNOT WRITE - APPLICATION CODE MISMATCH",
+    0x3009 => "CURRENT SESSION NOT FIXATED FOR APPEND",
+    0x300A => "CLEANING REQUEST REJECTED",
+    0x300C => "WORM MEDIUM - OVERWRITE ATTEMPTED",
+    0x300D => "WORM MEDIUM - INTEGRITY CHECK",
+    0x3010 => "MEDIUM NOT FORMATTED",
+    0x3011 => "INCOMPATIBLE VOLUME TYPE",
+    0x3012 => "INCOMPATIBLE VOLUME QUALIFIER",
+    0x3013 => "CLEANING VOLUME EXPIRED",
+    0x3100 => "MEDIUM FORMAT CORRUPTED",
+    0x3101 => "FORMAT COMMAND FAILED",
+    0x3102 => "ZONED FORMATTING FAILED DUE TO SPARE LINKING",
+    0x3103 => "SANITIZE COMMAND FAILED",
+    0x3200 => "NO DEFECT SPARE LOCATION AVAILABLE",
+    0x3201 => "DEFECT LIST UPDATE FAILURE",
+    0x3300 => "TAPE LENGTH ERROR",
+    0x3400 => "ENCLOSURE FAILURE",
+    0x3500 => "ENCLOSURE SERVICES FAILURE",
+    0x3501 => "UNSUPPORTED ENCLOSURE FUNCTION",
+    0x3502 => "ENCLOSURE SERVICES UNAVAILABLE",
+    0x3503 => "ENCLOSURE SERVICES TRANSFER FAILURE",
+    0x3504 => "ENCLOSURE SERVICES TRANSFER REFUSED",
+    0x3505 => "ENCLOSURE SERVICES CHECKSUM ERROR",
+    0x3600 => "RIBBON, INK, OR TONER FAILURE",
+    0x3700 => "ROUNDED PARAMETER",
+    0x3800 => "EVENT STATUS NOTIFICATION",
+    0x3802 => "ESN - POWER MANAGEMENT CLASS EVENT",
+    0x3804 => "ESN - MEDIA CLASS EVENT",
+    0x3806 => "ESN - DEVICE BUSY CLASS EVENT",
+    0x3807 => "THIN PROVISIONING SOFT THRESHOLD REACHED",
+    0x3900 => "SAVING PARAMETERS NOT SUPPORTED",
+    0x3A00 => "MEDIUM NOT PRESENT",
+    0x3A01 => "MEDIUM NOT PRESENT - TRAY CLOSED",
+    0x3A02 => "MEDIUM NOT PRESENT - TRAY OPEN",
+    0x3A03 => "MEDIUM NOT PRESENT - LOADABLE",
+    0x3A04 => "MEDIUM NOT PRESENT - MEDIUM AUXILIARY MEMORY ACCESSIBLE",
+    0x3B00 => "SEQUENTIAL POSITIONING ERROR",
+    0x3B01 => "TAPE POSITION ERROR AT BEGINNING-OF-MEDIUM",
+    0x3B02 => "TAPE POSITION ERROR AT END-OF-MEDIUM",
+    0x3B03 => "TAPE OR ELECTRONIC VERTICAL FORMS UNIT NOT READY",
+    0x3B04 => "SLEW FAILURE",
+    0x3B05 => "PAPER JAM",
+    0x3B06 => "FAILED TO SENSE TOP-OF-FORM",
+    0x3B07 => "FAILED TO SENSE BOTTOM-OF-FORM",
+    0x3B08 => "REPOSITION ERROR",
+    0x3B09 => "READ PAST END OF MEDIUM",
+    0x3B0A => "READ PAST BEGINNING OF MEDIUM",
+    0x3B0B => "POSITION PAST END OF MEDIUM",
+    0x3B0C => "POSITION PAST BEGINNING OF MEDIUM",
+    0x3B0D => "MEDIUM DESTINATION ELEMENT FULL",
+    0x3B0E => "MEDIUM SOURCE ELEMENT EMPTY",
+    0x3B0F => "END OF MEDIUM REACHED",
+    0x3B11 => "MEDIUM MAGAZINE NOT ACCESSIBLE",
+    0x3B12 => "MEDIUM MAGAZINE REMOVED",
+    0x3B13 => "MEDIUM MAGAZINE INSERTED",
+    0x3B14 => "MEDIUM MAGAZINE LOCKED",
+    0x3B15 => "MEDIUM MAGAZINE UNLOCKED",
+    0x3B16 => "MECHANICAL POSITIONING OR CHANGER ERROR",
+    0x3B17 => "READ PAST END OF USER OBJECT",
+    0x3B18 => "ELEMENT DISABLED",
+    0x3B19 => "ELEMENT ENABLED",
+    0x3B1A => "DATA TRANSFER DEVICE REMOVED",
+    0x3B1B => "DATA TRANSFER DEVICE INSERTED",
+    0x3B1C => "TOO MANY LOGICAL OBJECTS ON PARTITION TO SUPPORT OPERATION",
+    0x3C00 => "3Dh 00h INVALID BITS IN IDENTIFY MESSAGE",
+    0x3E00 => "LOGICAL UNIT HAS NOT SELF-CONFIGURED YET",
+    0x3E01 => "LOGICAL UNIT FAILURE",
+    0x3E02 => "TIMEOUT ON LOGICAL UNIT",
+    0x3E03 => "LOGICAL UNIT FAILED SELF-TEST",
+    0x3E04 => "LOGICAL UNIT UNABLE TO UPDATE SELF-TEST LOG",
+    0x3F00 => "TARGET OPERATING CONDITIONS HAVE CHANGED",
+    0x3F01 => "MICROCODE HAS BEEN CHANGED",
+    0x3F02 => "CHANGED OPERATING DEFINITION",
+    0x3F03 => "INQUIRY DATA HAS CHANGED",
+    0x3F04 => "COMPONENT DEVICE ATTACHED",
+    0x3F05 => "DEVICE IDENTIFIER CHANGED",
+    0x3F06 => "REDUNDANCY GROUP CREATED OR MODIFIED",
+    0x3F07 => "REDUNDANCY GROUP DELETED",
+    0x3F08 => "SPARE CREATED OR MODIFIED",
+    0x3F09 => "SPARE DELETED",
+    0x3F0A => "VOLUME SET CREATED OR MODIFIED",
+    0x3F0B => "VOLUME SET DELETED",
+    0x3F0C => "VOLUME SET DEASSIGNED",
+    0x3F0D => "VOLUME SET REASSIGNED",
+    0x3F0E => "REPORTED LUNS DATA HAS CHANGED",
+    0x3F0F => "ECHO BUFFER OVERWRITTEN",
+    0x3F10 => "MEDIUM LOADABLE",
+    0x3F11 => "MEDIUM AUXILIARY MEMORY ACCESSIBLE",
+    0x3F12 => "iSCSI IP ADDRESS ADDED",
+    0x3F13 => "iSCSI IP ADDRESS REMOVED",
+    0x3F14 => "iSCSI IP ADDRESS CHANGED",
+    0x3F15 => "INSPECT REFERRALS SENSE DESCRIPTORS",
+    0x3F16 => "MICROCODE HAS BEEN CHANGED WITHOUT RESET",
+    0x3F17 => "ZONE TRANSITION TO FULL",
+    0x3F18 => "BIND COMPLETED",
+    0x3F19 => "BIND REDIRECTED",
+    0x3F1A => "SUBSIDIARY BINDING CHANGED",
+    0x4000 => "RAM FAILURE (SHOULD USE 40 NN)",
+    > 0x4000 and <= 0x40FF => $"DIAGNOSTIC FAILURE ON COMPONENT {ascq:X2}h",
+    0x4100 => "DATA PATH FAILURE (SHOULD USE 40 NN)",
+    0x4200 => "POWER-ON OR SELF-TEST FAILURE (SHOULD USE 40 NN)",
+    0x4300 => "MESSAGE ERROR",
+    0x4400 => "INTERNAL TARGET FAILURE",
+    0x4401 => "PERSISTENT RESERVATION INFORMATION LOST",
+    0x4471 => "ATA DEVICE FAILED SET FEATURES",
+    0x4500 => "SELECT OR RESELECT FAILURE",
+    0x4600 => "UNSUCCESSFUL SOFT RESET",
+    0x4700 => "SCSI PARITY ERROR",
+    0x4701 => "DATA PHASE CRC ERROR DETECTED",
+    0x4702 => "SCSI PARITY ERROR DETECTED DURING ST DATA PHASE",
+    0x4703 => "INFORMATION UNIT iuCRC ERROR DETECTED",
+    0x4704 => "ASYNCHRONOUS INFORMATION PROTECTION ERROR DETECTED",
+    0x4705 => "PROTOCOL SERVICE CRC ERROR",
+    0x4706 => "PHY TEST FUNCTION IN PROGRESS",
+    0x477F => "SOME COMMANDS CLEARED BY ISCSI PROTOCOL EVENT",
+    0x4800 => "INITIATOR DETECTED ERROR MESSAGE RECEIVED",
+    0x4900 => "INVALID MESSAGE ERROR",
+    0x4A00 => "COMMAND PHASE ERROR",
+    0x4B00 => "DATA PHASE ERROR",
+    0x4B01 => "INVALID TARGET PORT TRANSFER TAG RECEIVED",
+    0x4B02 => "TOO MUCH WRITE DATA",
+    0x4B03 => "ACK/NAK TIMEOUT",
+    0x4B04 => "NAK RECEIVED",
+    0x4B05 => "DATA OFFSET ERROR",
+    0x4B06 => "INITIATOR RESPONSE TIMEOUT",
+    0x4B07 => "CONNECTION LOST",
+    0x4B08 => "DATA-IN BUFFER OVERFLOW - DATA BUFFER SIZE",
+    0x4B09 => "DATA-IN BUFFER OVERFLOW - DATA BUFFER DESCRIPTOR AREA",
+    0x4B0A => "DATA-IN BUFFER ERROR",
+    0x4B0B => "DATA-OUT BUFFER OVERFLOW - DATA BUFFER SIZE",
+    0x4B0C => "DATA-OUT BUFFER OVERFLOW - DATA BUFFER DESCRIPTOR AREA",
+    0x4B0D => "DATA-OUT BUFFER ERROR",
+    0x4B0E => "PCIE FABRIC ERROR",
+    0x4B0F => "PCIE COMPLETION TIMEOUT",
+    0x4B10 => "PCIE COMPLETER ABORT",
+    0x4B11 => "PCIE POISONED TLP RECEIVED",
+    0x4B12 => "PCIE ECRC CHECK FAILED",
+    0x4B13 => "PCIE UNSUPPORTED REQUEST",
+    0x4B14 => "PCIE ACS VIOLATION",
+    0x4B15 => "PCIE TLP PREFIX BLOCKED",
+    0x4C00 => "LOGICAL UNIT FAILED SELF-CONFIGURATION",
+    >= 0x4D00 and <= 0x4DFF => $"TAGGED OVERLAPPED COMMANDS (TAG: {ascq:X2}h)",
+    0x4E00 => "OVERLAPPED COMMANDS ATTEMPTED",
+    0x4F00 => "50h 00h WRITE APPEND ERROR",
+    0x5001 => "WRITE APPEND POSITION ERROR",
+    0x5002 => "POSITION ERROR RELATED TO TIMING",
+    0x5100 => "ERASE FAILURE",
+    0x5101 => "ERASE FAILURE - INCOMPLETE ERASE OPERATION DETECTED",
+    0x5200 => "CARTRIDGE FAULT",
+    0x5300 => "MEDIA LOAD OR EJECT FAILED",
+    0x5301 => "UNLOAD TAPE FAILURE",
+    0x5302 => "MEDIUM REMOVAL PREVENTED",
+    0x5303 => "MEDIUM REMOVAL PREVENTED BY DATA TRANSFER ELEMENT",
+    0x5304 => "MEDIUM THREAD OR UNTHREAD FAILURE",
+    0x5305 => "VOLUME IDENTIFIER INVALID",
+    0x5306 => "VOLUME IDENTIFIER MISSING",
+    0x5307 => "DUPLICATE VOLUME IDENTIFIER",
+    0x5308 => "ELEMENT STATUS UNKNOWN",
+    0x5309 => "DATA TRANSFER DEVICE ERROR - LOAD FAILED",
+    0x530A => "DATA TRANSFER DEVICE ERROR - UNLOAD FAILED",
+    0x530B => "DATA TRANSFER DEVICE ERROR - UNLOAD MISSING",
+    0x530C => "DATA TRANSFER DEVICE ERROR - EJECT FAILED",
+    0x530D => "DATA TRANSFER DEVICE ERROR - LIBRARY COMMUNICATION FAILED",
+    0x5400 => "SCSI TO HOST SYSTEM INTERFACE FAILURE",
+    0x5500 => "SYSTEM RESOURCE FAILURE",
+    0x5501 => "SYSTEM BUFFER FULL",
+    0x5502 => "INSUFFICIENT RESERVATION RESOURCES",
+    0x5503 => "INSUFFICIENT RESOURCES",
+    0x5504 => "INSUFFICIENT REGISTRATION RESOURCES",
+    0x5505 => "INSUFFICIENT ACCESS CONTROL RESOURCES",
+    0x5506 => "AUXILIARY MEMORY OUT OF SPACE",
+    0x5507 => "QUOTA ERROR",
+    0x5508 => "MAXIMUM NUMBER OF SUPPLEMENTAL DECRYPTION KEYS EXCEEDED",
+    0x5509 => "MEDIUM AUXILIARY MEMORY NOT ACCESSIBLE",
+    0x550A => "DATA CURRENTLY UNAVAILABLE",
+    0x550B => "INSUFFICIENT POWER FOR OPERATION",
+    0x550C => "INSUFFICIENT RESOURCES TO CREATE ROD",
+    0x550D => "INSUFFICIENT RESOURCES TO CREATE ROD TOKEN",
+    0x550E => "INSUFFICIENT ZONE RESOURCES",
+    0x550F => "INSUFFICIENT ZONE RESOURCES TO COMPLETE WRITE",
+    0x5510 => "MAXIMUM NUMBER OF STREAMS OPEN",
+    0x5511 => "INSUFFICIENT RESOURCES TO BIND",
+    0x5600 => "57h 00h UNABLE TO RECOVER TABLE-OF-CONTENTS",
+    0x5800 => "GENERATION DOES NOT EXIST",
+    0x5900 => "UPDATED BLOCK READ",
+    0x5A00 => "OPERATOR REQUEST OR STATE CHANGE INPUT",
+    0x5A01 => "OPERATOR MEDIUM REMOVAL REQUEST",
+    0x5A02 => "OPERATOR SELECTED WRITE PROTECT",
+    0x5A03 => "OPERATOR SELECTED WRITE PERMIT",
+    0x5B00 => "LOG EXCEPTION",
+    0x5B01 => "THRESHOLD CONDITION MET",
+    0x5B02 => "LOG COUNTER AT MAXIMUM",
+    0x5B03 => "LOG LIST CODES EXHAUSTED",
+    0x5C00 => "RPL STATUS CHANGE",
+    0x5C01 => "SPINDLES SYNCHRONIZED",
+    0x5C02 => "SPINDLES NOT SYNCHRONIZED",
+    0x5D00 => "FAILURE PREDICTION THRESHOLD EXCEEDED",
+    0x5D01 => "MEDIA FAILURE PREDICTION THRESHOLD EXCEEDED",
+    0x5D02 => "LOGICAL UNIT FAILURE PREDICTION THRESHOLD EXCEEDED",
+    0x5D03 => "SPARE AREA EXHAUSTION PREDICTION THRESHOLD EXCEEDED",
+    0x5D10 => "HARDWARE IMPENDING FAILURE GENERAL HARD DRIVE FAILURE",
+    0x5D11 => "HARDWARE IMPENDING FAILURE DRIVE ERROR RATE TOO HIGH",
+    0x5D12 => "HARDWARE IMPENDING FAILURE DATA ERROR RATE TOO HIGH",
+    0x5D13 => "HARDWARE IMPENDING FAILURE SEEK ERROR RATE TOO HIGH",
+    0x5D14 => "HARDWARE IMPENDING FAILURE TOO MANY BLOCK REASSIGNS",
+    0x5D15 => "HARDWARE IMPENDING FAILURE ACCESS TIMES TOO HIGH",
+    0x5D16 => "HARDWARE IMPENDING FAILURE START UNIT TIMES TOO HIGH",
+    0x5D17 => "HARDWARE IMPENDING FAILURE CHANNEL PARAMETRICS",
+    0x5D18 => "HARDWARE IMPENDING FAILURE CONTROLLER DETECTED",
+    0x5D19 => "HARDWARE IMPENDING FAILURE THROUGHPUT PERFORMANCE",
+    0x5D1A => "HARDWARE IMPENDING FAILURE SEEK TIME PERFORMANCE",
+    0x5D1B => "HARDWARE IMPENDING FAILURE SPIN-UP RETRY COUNT",
+    0x5D1C => "HARDWARE IMPENDING FAILURE DRIVE CALIBRATION RETRY COUNT",
+    0x5D20 => "CONTROLLER IMPENDING FAILURE GENERAL HARD DRIVE FAILURE",
+    0x5D21 => "CONTROLLER IMPENDING FAILURE DRIVE ERROR RATE TOO HIGH",
+    0x5D22 => "CONTROLLER IMPENDING FAILURE DATA ERROR RATE TOO HIGH",
+    0x5D23 => "CONTROLLER IMPENDING FAILURE SEEK ERROR RATE TOO HIGH",
+    0x5D24 => "CONTROLLER IMPENDING FAILURE TOO MANY BLOCK REASSIGNS",
+    0x5D25 => "CONTROLLER IMPENDING FAILURE ACCESS TIMES TOO HIGH",
+    0x5D26 => "CONTROLLER IMPENDING FAILURE START UNIT TIMES TOO HIGH",
+    0x5D27 => "CONTROLLER IMPENDING FAILURE CHANNEL PARAMETRICS",
+    0x5D28 => "CONTROLLER IMPENDING FAILURE CONTROLLER DETECTED",
+    0x5D29 => "CONTROLLER IMPENDING FAILURE THROUGHPUT PERFORMANCE",
+    0x5D2A => "CONTROLLER IMPENDING FAILURE SEEK TIME PERFORMANCE",
+    0x5D2B => "CONTROLLER IMPENDING FAILURE SPIN-UP RETRY COUNT",
+    0x5D2C => "CONTROLLER IMPENDING FAILURE DRIVE CALIBRATION RETRY COUNT",
+    0x5D30 => "DATA CHANNEL IMPENDING FAILURE GENERAL HARD DRIVE FAILURE",
+    0x5D31 => "DATA CHANNEL IMPENDING FAILURE DRIVE ERROR RATE TOO HIGH",
+    0x5D32 => "DATA CHANNEL IMPENDING FAILURE DATA ERROR RATE TOO HIGH",
+    0x5D33 => "DATA CHANNEL IMPENDING FAILURE SEEK ERROR RATE TOO HIGH",
+    0x5D34 => "DATA CHANNEL IMPENDING FAILURE TOO MANY BLOCK REASSIGNS",
+    0x5D35 => "DATA CHANNEL IMPENDING FAILURE ACCESS TIMES TOO HIGH",
+    0x5D36 => "DATA CHANNEL IMPENDING FAILURE START UNIT TIMES TOO HIGH",
+    0x5D37 => "DATA CHANNEL IMPENDING FAILURE CHANNEL PARAMETRICS",
+    0x5D38 => "DATA CHANNEL IMPENDING FAILURE CONTROLLER DETECTED",
+    0x5D39 => "DATA CHANNEL IMPENDING FAILURE THROUGHPUT PERFORMANCE",
+    0x5D3A => "DATA CHANNEL IMPENDING FAILURE SEEK TIME PERFORMANCE",
+    0x5D3B => "DATA CHANNEL IMPENDING FAILURE SPIN-UP RETRY COUNT",
+    0x5D3C => "DATA CHANNEL IMPENDING FAILURE DRIVE CALIBRATION RETRY COUNT",
+    0x5D40 => "SERVO IMPENDING FAILURE GENERAL HARD DRIVE FAILURE",
+    0x5D41 => "SERVO IMPENDING FAILURE DRIVE ERROR RATE TOO HIGH",
+    0x5D42 => "SERVO IMPENDING FAILURE DATA ERROR RATE TOO HIGH",
+    0x5D43 => "SERVO IMPENDING FAILURE SEEK ERROR RATE TOO HIGH",
+    0x5D44 => "SERVO IMPENDING FAILURE TOO MANY BLOCK REASSIGNS",
+    0x5D45 => "SERVO IMPENDING FAILURE ACCESS TIMES TOO HIGH",
+    0x5D46 => "SERVO IMPENDING FAILURE START UNIT TIMES TOO HIGH",
+    0x5D47 => "SERVO IMPENDING FAILURE CHANNEL PARAMETRICS",
+    0x5D48 => "SERVO IMPENDING FAILURE CONTROLLER DETECTED",
+    0x5D49 => "SERVO IMPENDING FAILURE THROUGHPUT PERFORMANCE",
+    0x5D4A => "SERVO IMPENDING FAILURE SEEK TIME PERFORMANCE",
+    0x5D4B => "SERVO IMPENDING FAILURE SPIN-UP RETRY COUNT",
+    0x5D4C => "SERVO IMPENDING FAILURE DRIVE CALIBRATION RETRY COUNT",
+    0x5D50 => "SPINDLE IMPENDING FAILURE GENERAL HARD DRIVE FAILURE",
+    0x5D51 => "SPINDLE IMPENDING FAILURE DRIVE ERROR RATE TOO HIGH",
+    0x5D52 => "SPINDLE IMPENDING FAILURE DATA ERROR RATE TOO HIGH",
+    0x5D53 => "SPINDLE IMPENDING FAILURE SEEK ERROR RATE TOO HIGH",
+    0x5D54 => "SPINDLE IMPENDING FAILURE TOO MANY BLOCK REASSIGNS",
+    0x5D55 => "SPINDLE IMPENDING FAILURE ACCESS TIMES TOO HIGH",
+    0x5D56 => "SPINDLE IMPENDING FAILURE START UNIT TIMES TOO HIGH",
+    0x5D57 => "SPINDLE IMPENDING FAILURE CHANNEL PARAMETRICS",
+    0x5D58 => "SPINDLE IMPENDING FAILURE CONTROLLER DETECTED",
+    0x5D59 => "SPINDLE IMPENDING FAILURE THROUGHPUT PERFORMANCE",
+    0x5D5A => "SPINDLE IMPENDING FAILURE SEEK TIME PERFORMANCE",
+    0x5D5B => "SPINDLE IMPENDING FAILURE SPIN-UP RETRY COUNT",
+    0x5D5C => "SPINDLE IMPENDING FAILURE DRIVE CALIBRATION RETRY COUNT",
+    0x5D60 => "FIRMWARE IMPENDING FAILURE GENERAL HARD DRIVE FAILURE",
+    0x5D61 => "FIRMWARE IMPENDING FAILURE DRIVE ERROR RATE TOO HIGH",
+    0x5D62 => "FIRMWARE IMPENDING FAILURE DATA ERROR RATE TOO HIGH",
+    0x5D63 => "FIRMWARE IMPENDING FAILURE SEEK ERROR RATE TOO HIGH",
+    0x5D64 => "FIRMWARE IMPENDING FAILURE TOO MANY BLOCK REASSIGNS",
+    0x5D65 => "FIRMWARE IMPENDING FAILURE ACCESS TIMES TOO HIGH",
+    0x5D66 => "FIRMWARE IMPENDING FAILURE START UNIT TIMES TOO HIGH",
+    0x5D67 => "FIRMWARE IMPENDING FAILURE CHANNEL PARAMETRICS",
+    0x5D68 => "FIRMWARE IMPENDING FAILURE CONTROLLER DETECTED",
+    0x5D69 => "FIRMWARE IMPENDING FAILURE THROUGHPUT PERFORMANCE",
+    0x5D6A => "FIRMWARE IMPENDING FAILURE SEEK TIME PERFORMANCE",
+    0x5D6B => "FIRMWARE IMPENDING FAILURE SPIN-UP RETRY COUNT",
+    0x5D6C => "FIRMWARE IMPENDING FAILURE DRIVE CALIBRATION RETRY COUNT",
+    0x5DFF => "FAILURE PREDICTION THRESHOLD EXCEEDED (FALSE)",
+    0x5E00 => "LOW POWER CONDITION ON",
+    0x5E01 => "IDLE CONDITION ACTIVATED BY TIMER",
+    0x5E02 => "STANDBY CONDITION ACTIVATED BY TIMER",
+    0x5E03 => "IDLE CONDITION ACTIVATED BY COMMAND",
+    0x5E04 => "STANDBY CONDITION ACTIVATED BY COMMAND",
+    0x5E05 => "IDLE_B CONDITION ACTIVATED BY TIMER",
+    0x5E06 => "IDLE_B CONDITION ACTIVATED BY COMMAND",
+    0x5E07 => "IDLE_C CONDITION ACTIVATED BY TIMER",
+    0x5E08 => "IDLE_C CONDITION ACTIVATED BY COMMAND",
+    0x5E09 => "STANDBY_Y CONDITION ACTIVATED BY TIMER",
+    0x5E0A => "STANDBY_Y CONDITION ACTIVATED BY COMMAND",
+    0x5E41 => "POWER STATE CHANGE TO ACTIVE",
+    0x5E42 => "POWER STATE CHANGE TO IDLE",
+    0x5E43 => "POWER STATE CHANGE TO STANDBY",
+    0x5E45 => "POWER STATE CHANGE TO SLEEP",
+    0x5E47 => "POWER STATE CHANGE TO DEVICE CONTROL",
+    0x5F00 => "60h 00h LAMP FAILURE",
+    0x6100 => "VIDEO ACQUISITION ERROR",
+    0x6101 => "UNABLE TO ACQUIRE VIDEO",
+    0x6102 => "OUT OF FOCUS",
+    0x6200 => "SCAN HEAD POSITIONING ERROR",
+    0x6300 => "END OF USER AREA ENCOUNTERED ON THIS TRACK",
+    0x6301 => "PACKET DOES NOT FIT IN AVAILABLE SPACE",
+    0x6400 => "ILLEGAL MODE FOR THIS TRACK",
+    0x6401 => "INVALID PACKET SIZE",
+    0x6500 => "VOLTAGE FAULT",
+    0x6600 => "AUTOMATIC DOCUMENT FEEDER COVER UP",
+    0x6601 => "AUTOMATIC DOCUMENT FEEDER LIFT UP",
+    0x6602 => "DOCUMENT JAM IN AUTOMATIC DOCUMENT FEEDER",
+    0x6603 => "DOCUMENT MISS FEED AUTOMATIC IN DOCUMENT FEEDER",
+    0x6700 => "CONFIGURATION FAILURE",
+    0x6701 => "CONFIGURATION OF INCAPABLE LOGICAL UNITS FAILED",
+    0x6702 => "ADD LOGICAL UNIT FAILED",
+    0x6703 => "MODIFICATION OF LOGICAL UNIT FAILED",
+    0x6704 => "EXCHANGE OF LOGICAL UNIT FAILED",
+    0x6705 => "REMOVE OF LOGICAL UNIT FAILED",
+    0x6706 => "ATTACHMENT OF LOGICAL UNIT FAILED",
+    0x6707 => "CREATION OF LOGICAL UNIT FAILED",
+    0x6708 => "ASSIGN FAILURE OCCURRED",
+    0x6709 => "MULTIPLY ASSIGNED LOGICAL UNIT",
+    0x670A => "SET TARGET PORT GROUPS COMMAND FAILED",
+    0x670B => "ATA DEVICE FEATURE NOT ENABLED",
+    0x670C => "COMMAND REJECTED",
+    0x670D => "EXPLICIT BIND NOT ALLOWED",
+    0x6800 => "LOGICAL UNIT NOT CONFIGURED",
+    0x6801 => "SUBSIDIARY LOGICAL UNIT NOT CONFIGURED",
+    0x6900 => "DATA LOSS ON LOGICAL UNIT",
+    0x6901 => "MULTIPLE LOGICAL UNIT FAILURES",
+    0x6902 => "PARITY/DATA MISMATCH",
+    0x6A00 => "INFORMATIONAL, REFER TO LOG",
+    0x6B00 => "STATE CHANGE HAS OCCURRED",
+    0x6B01 => "REDUNDANCY LEVEL GOT BETTER",
+    0x6B02 => "REDUNDANCY LEVEL GOT WORSE",
+    0x6C00 => "REBUILD FAILURE OCCURRED",
+    0x6D00 => "RECALCULATE FAILURE OCCURRED",
+    0x6E00 => "COMMAND TO LOGICAL UNIT FAILED",
+    0x6F00 => "COPY PROTECTION KEY EXCHANGE FAILURE - AUTHENTICATION FAILURE",
+    0x6F01 => "COPY PROTECTION KEY EXCHANGE FAILURE - KEY NOT PRESENT",
+    0x6F02 => "COPY PROTECTION KEY EXCHANGE FAILURE - KEY NOT ESTABLISHED",
+    0x6F03 => "READ OF SCRAMBLED SECTOR WITHOUT AUTHENTICATION",
+    0x6F04 => "MEDIA REGION CODE IS MISMATCHED TO LOGICAL UNIT REGION",
+    0x6F05 => "DRIVE REGION MUST BE PERMANENT/REGION RESET COUNT ERROR",
+    0x6F06 => "INSUFFICIENT BLOCK COUNT FOR BINDING NONCE RECORDING",
+    0x6F07 => "CONFLICT IN BINDING NONCE RECORDING",
+    0x6F08 => "INSUFFICIENT PERMISSION",
+    0x6F09 => "INVALID DRIVE-HOST PAIRING SERVER",
+    0x6F0A => "DRIVE-HOST PAIRING SUSPENDED",
+    >= 0x7000 and <= 0x70FF => $"DECOMPRESSION EXCEPTION (SHORT ALGORITHM ID: {ascq:X2}h)",
+    0x7100 => "DECOMPRESSION EXCEPTION LONG ALGORITHM ID",
+    0x7200 => "SESSION FIXATION ERROR",
+    0x7201 => "SESSION FIXATION ERROR WRITING LEAD-IN",
+    0x7202 => "SESSION FIXATION ERROR WRITING LEAD-OUT",
+    0x7203 => "SESSION FIXATION ERROR - INCOMPLETE TRACK IN SESSION",
+    0x7204 => "EMPTY OR PARTIALLY WRITTEN RESERVED TRACK",
+    0x7205 => "NO MORE TRACK RESERVATIONS ALLOWED",
+    0x7206 => "RMZ EXTENSION IS NOT ALLOWED",
+    0x7207 => "NO MORE TEST ZONE EXTENSIONS ARE ALLOWED",
+    0x7300 => "CD CONTROL ERROR",
+    0x7301 => "POWER CALIBRATION AREA ALMOST FULL",
+    0x7302 => "POWER CALIBRATION AREA IS FULL",
+    0x7303 => "POWER CALIBRATION AREA ERROR",
+    0x7304 => "PROGRAM MEMORY AREA UPDATE FAILURE",
+    0x7305 => "PROGRAM MEMORY AREA IS FULL",
+    0x7306 => "RMA/PMA IS ALMOST FULL",
+    0x7310 => "CURRENT POWER CALIBRATION AREA ALMOST FULL",
+    0x7311 => "CURRENT POWER CALIBRATION AREA IS FULL",
+    0x7317 => "RDZ IS FULL",
+    0x7400 => "SECURITY ERROR",
+    0x7401 => "UNABLE TO DECRYPT DATA",
+    0x7402 => "UNENCRYPTED DATA ENCOUNTERED WHILE DECRYPTING",
+    0x7403 => "INCORRECT DATA ENCRYPTION KEY",
+    0x7404 => "CRYPTOGRAPHIC INTEGRITY VALIDATION FAILED",
+    0x7405 => "ERROR DECRYPTING DATA",
+    0x7406 => "UNKNOWN SIGNATURE VERIFICATION KEY",
+    0x7407 => "ENCRYPTION PARAMETERS NOT USEABLE",
+    0x7408 => "DIGITAL SIGNATURE VALIDATION FAILURE",
+    0x7409 => "ENCRYPTION MODE MISMATCH ON READ",
+    0x740A => "ENCRYPTED BLOCK NOT RAW READ ENABLED",
+    0x740B => "INCORRECT ENCRYPTION PARAMETERS",
+    0x740C => "UNABLE TO DECRYPT PARAMETER LIST",
+    0x740D => "ENCRYPTION ALGORITHM DISABLED",
+    0x7410 => "SA CREATION PARAMETER VALUE INVALID",
+    0x7411 => "SA CREATION PARAMETER VALUE REJECTED",
+    0x7412 => "INVALID SA USAGE",
+    0x7421 => "DATA ENCRYPTION CONFIGURATION PREVENTED",
+    0x7430 => "SA CREATION PARAMETER NOT SUPPORTED",
+    0x7440 => "AUTHENTICATION FAILED",
+    0x7461 => "EXTERNAL DATA ENCRYPTION KEY MANAGER ACCESS ERROR",
+    0x7462 => "EXTERNAL DATA ENCRYPTION KEY MANAGER ERROR",
+    0x7463 => "EXTERNAL DATA ENCRYPTION KEY NOT FOUND",
+    0x7464 => "EXTERNAL DATA ENCRYPTION REQUEST NOT AUTHORIZED",
+    0x746E => "EXTERNAL DATA ENCRYPTION CONTROL TIMEOUT",
+    0x746F => "EXTERNAL DATA ENCRYPTION CONTROL ERROR",
+    0x7471 => "LOGICAL UNIT ACCESS NOT AUTHORIZED",
+    0x7479 => "SECURITY CONFLICT IN TRANSLATED DEVICE",
+    >= 0x8000 => $"VENDOR-SPECIFIC CODE (ASC: {asc:X2}h, ASCQ: {ascq:X2}h)",
+    _ when ascq >= 0x80 => $"VENDOR-SPECIFIC QUALIFIER (ASC: {asc:X2}h, ASCQ: {ascq:X2}h)",
+    _ =>  $"RESERVED (ASC: {asc:X2}h, ASCQ: {ascq:X2}h)"
+  };
 
   #endregion
 
