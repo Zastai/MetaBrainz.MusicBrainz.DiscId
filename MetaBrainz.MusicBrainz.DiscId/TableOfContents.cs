@@ -57,14 +57,17 @@ public sealed class TableOfContents {
   /// </summary>
   public static string DefaultWebSite { get; set; } = "musicbrainz.org";
 
-  /// <summary>Determines whether the specified feature(s) are supported for use with <see cref="ReadDisc"/>.</summary>
-  /// <param name="feature">The feature(s) to test.</param>
-  /// <returns><see langword="true"/> if all specified features are supported; <see langword="false"/> otherwise.</returns>
-  public static bool HasReadFeature(DiscReadFeature feature) => TableOfContents.Platform.HasFeature(feature);
+  /// <summary>The trace source (named 'MetaBrainz.MusicBrainz.DiscId') used by this class.</summary>
+  public static readonly TraceSource TraceSource = new("MetaBrainz.MusicBrainz.DiscId", SourceLevels.Off);
 
   #endregion
 
   #region Static Methods
+
+  /// <summary>Determines whether the specified feature(s) are supported for use with <see cref="ReadDisc"/>.</summary>
+  /// <param name="feature">The feature(s) to test.</param>
+  /// <returns><see langword="true"/> if all specified features are supported; <see langword="false"/> otherwise.</returns>
+  public static bool HasReadFeature(DiscReadFeature feature) => TableOfContents.Platform.HasFeature(feature);
 
   /// <summary>
   /// Reads the table of contents for the current disc in the specified device, getting the requested information.
@@ -154,8 +157,8 @@ public sealed class TableOfContents {
 
   /// <summary>Returns a string representing the TOC.</summary>
   /// <returns>
-  ///   A string consisting of the following values, separated by a space: the first track number, the last track number,
-  ///   the total length of the disc in sectors, and the offsets of all tracks.
+  /// A string consisting of the following values, separated by a space: the first track number, the last track number, the total
+  /// length of the disc in sectors, and the offsets of all tracks.
   /// </returns>
   public override string ToString() {
     if (this._stringForm is not null) {
@@ -211,8 +214,8 @@ public sealed class TableOfContents {
     public TimeSpan StartTime { get; }
 
     /// <summary>
-    ///   The track-level CD-TEXT data.
-    ///   If no such data is available, this is null; otherwise, it will have as many entries as <see cref="TextLanguages"/>.
+    /// The track-level CD-TEXT data. If no such data is available, this is <see langword="null"/>; otherwise, it will have as many
+    /// entries as <see cref="TextLanguages"/>.
     /// </summary>
     public IReadOnlyList<TrackText>? TextInfo { get; }
 
@@ -769,9 +772,9 @@ public sealed class TableOfContents {
     var uri = new UriBuilder(this.UrlScheme, this.WebSite, this.Port, "cdtoc/attach", null);
     var query = new StringBuilder();
     query.Append("id=").Append(Uri.EscapeDataString(this.DiscId));
+    // Avoids having to explicitly run Uri.EscapeDataString on all the integers
     var culture = Thread.CurrentThread.CurrentCulture;
-    Thread.CurrentThread.CurrentCulture =
-      CultureInfo.InvariantCulture; // Avoids having to explicitly run Uri.EscapeDataString on all the integers
+    Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
     try {
       query.Append("&tracks=").Append(1 + this.LastTrack - this.FirstTrack).Append("&toc=");
       this.AppendTocString(query, '+');
