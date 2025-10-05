@@ -76,17 +76,26 @@ internal sealed class Windows() : Platform(Windows.Features) {
   }
 
   private static string GetTrackIsrc(SafeFileHandle hDevice, byte track) {
-    Kernel32.ReadTrackISRC(hDevice, track, out var isrc, out var length);
-    var expected = isrc.Header.DataLength + Marshal.SizeOf(isrc.Header);
-    if (length != expected) {
-      Tracing.Warning(1100, "The ISRC reports a total data size of {0} bytes, but only {1} bytes were read.", expected, length);
+    const int maxRetries = 2;
+    for (var i = 0; i <= maxRetries; ++i) {
+      Kernel32.ReadTrackISRC(hDevice, track, out var isrc, out var length);
+      var expected = isrc.Header.DataLength + Marshal.SizeOf(isrc.Header);
+      if (length != expected) {
+        Tracing.Warning(1100, "The ISRC for track {0} reports a total data size of {1} bytes, but only {2} bytes were read.", track,
+                        expected, length);
+      }
+      if (length < expected) {
+        throw new IOException($"ISRC Retrieval (track {track}): incomplete data read ({length} of {expected} bytes).");
+      }
+      if (!isrc.Status.IsValid) {
+        Tracing.Verbose(1102, "Read invalid ISRC for track {0}. Will retry (attempts remaining: {1}).", track, maxRetries - i);
+        continue;
+      }
+      var result = Encoding.ASCII.GetString(isrc.ISRC);
+      Tracing.Verbose(1104, "ISRC for track {0} read successfully: [{1}].", track, result);
+      return result;
     }
-    if (length < expected) {
-      throw new IOException($"ISRC Retrieval: incomplete data read ({length} of {expected} bytes).");
-    }
-    var result = isrc.Status.IsValid ? Encoding.ASCII.GetString(isrc.ISRC) : string.Empty;
-    Tracing.Verbose(1101, "ISRC read successfully: [{0}].", result);
-    return result;
+    return "";
   }
 
   protected override TableOfContents ReadTableOfContents(string device, DiscReadFeature features) {
