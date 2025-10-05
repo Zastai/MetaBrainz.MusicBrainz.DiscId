@@ -14,11 +14,13 @@ using Microsoft.Win32.SafeHandles;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Platforms;
 
-internal sealed class Windows : Platform {
+internal sealed class Windows() : Platform(Windows.Features) {
 
-  public Windows() : base(DiscReadFeature.TableOfContents | DiscReadFeature.MediaCatalogNumber | DiscReadFeature.TrackIsrc |
-                          DiscReadFeature.CdText) {
-  }
+  private const DiscReadFeature Features =
+    DiscReadFeature.TableOfContents |
+    DiscReadFeature.MediaCatalogNumber |
+    DiscReadFeature.TrackIsrc |
+    DiscReadFeature.CdText;
 
   public override IEnumerable<string> AvailableDevices {
     get {
@@ -56,7 +58,7 @@ internal sealed class Windows : Platform {
     RedBook.CDTextGroup? cdTextGroup = null;
     if ((features & DiscReadFeature.CdText) != 0) {
       NativeApi.GetCdTextInfo(hDevice, out var cdText);
-      if (cdText.Data.Packs != null) {
+      if (cdText.Data.Packs is not null) {
         cdTextGroup = cdText.Data;
       }
     }

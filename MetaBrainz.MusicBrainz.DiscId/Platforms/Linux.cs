@@ -20,24 +20,25 @@ internal sealed class Linux() : Unix(Linux.Features) {
 
   private const string GenericDevice = "/dev/cdrom";
 
+  private static readonly char[] InfoDelimiter = ['\t'];
+
   public override IEnumerable<string> AvailableDevices {
     get {
       string[]? devices = null;
       try {
         using var info = File.OpenText("/proc/sys/dev/cdrom/info");
-        string? line;
-        while ((line = info.ReadLine()) != null) {
+        while (info.ReadLine() is { } line) {
           if (!line.StartsWith("drive name:", StringComparison.Ordinal)) {
             continue;
           }
-          devices = line.Substring(11).Split(new[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
+          devices = line[11..].Split(Linux.InfoDelimiter, StringSplitOptions.RemoveEmptyEntries);
           break;
         }
       }
       catch {
         // ignore
       }
-      if (devices != null) {
+      if (devices is not null) {
         Array.Reverse(devices);
         foreach (var device in devices) {
           yield return string.Concat("/dev/", device);

@@ -16,7 +16,8 @@ internal abstract class Unix(DiscReadFeature features) : Platform(features) {
       if (NativeApi.UName(buf) == 0) {
         var endPos = Array.IndexOf<byte>(buf, 0);
         if (endPos >= 0) {
-          os = Encoding.ASCII.GetString(buf, 0, endPos); // FIXME: Or Encoding.Default?
+          // FIXME: Or determine a better encoding somehow?
+          os = Encoding.ASCII.GetString(buf, 0, endPos);
         }
       }
     }

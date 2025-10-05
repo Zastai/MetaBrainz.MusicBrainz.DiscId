@@ -52,12 +52,12 @@ public sealed class TableOfContents {
   public static string DefaultUrlScheme { get; set; } = "https";
 
   /// <summary>
-  ///   The default web site to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property).
-  ///   Must not include any URL scheme; that can be configured via <see cref="DefaultUrlScheme"/>.
+  /// The default website to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property).<br/>
+  /// This must not include any URL scheme; that can be configured via <see cref="DefaultUrlScheme"/>.
   /// </summary>
   public static string DefaultWebSite { get; set; } = "musicbrainz.org";
 
-  /// <summary>Determines whether or not the specified feature(s) are supported for use with <see cref="ReadDisc"/>.</summary>
+  /// <summary>Determines whether the specified feature(s) are supported for use with <see cref="ReadDisc"/>.</summary>
   /// <param name="feature">The feature(s) to test.</param>
   /// <returns><see langword="true"/> if all specified features are supported; <see langword="false"/> otherwise.</returns>
   public static bool HasReadFeature(DiscReadFeature feature) => TableOfContents.Platform.HasFeature(feature);
@@ -145,7 +145,7 @@ public sealed class TableOfContents {
   /// <summary>The URL scheme to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property).</summary>
   public string UrlScheme { get; set; }
 
-  /// <summary>The web site to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property).</summary>
+  /// <summary>The website to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property).</summary>
   public string WebSite { get; set; }
 
   #endregion
@@ -158,7 +158,7 @@ public sealed class TableOfContents {
   ///   the total length of the disc in sectors, and the offsets of all tracks.
   /// </returns>
   public override string ToString() {
-    if (this._stringForm != null) {
+    if (this._stringForm is not null) {
       return this._stringForm;
     }
     var sb = new StringBuilder();
@@ -183,7 +183,7 @@ public sealed class TableOfContents {
       this.Number = number;
       this.Offset = address;
       this.StartTime = new TimeSpan(0, 0, 0, 0, address * 1000 / 75);
-      if (toc._trackText == null) {
+      if (toc._trackText is null) {
         return;
       }
       var idx = number - toc.FirstTrack;
@@ -229,7 +229,6 @@ public sealed class TableOfContents {
     private readonly TableOfContents _toc;
 
     /// <summary>Gets the number of tracks in the <see cref="AudioTrackCollection"/>.</summary>
-    /// <returns>The number of number of tracks in the <see cref="AudioTrackCollection"/>.</returns>
     public int Count => 1 + this._toc.LastTrack - this._toc.FirstTrack;
 
     /// <summary>The first valid track number for the collection.</summary>
@@ -251,24 +250,18 @@ public sealed class TableOfContents {
     /// </exception>
     public AudioTrack this[int number] {
       get {
-        if (number < this.FirstTrack || number > this.LastTrack) {
-          var msg = $"Invalid track number (valid track numbers range from {this.FirstTrack} to {this.LastTrack}).";
-          throw new ArgumentOutOfRangeException(nameof(number), number, msg);
+        if (number >= this.FirstTrack && number <= this.LastTrack) {
+          return new AudioTrack(this._toc, (byte) number);
         }
-        return new AudioTrack(this._toc, (byte) number);
+        var msg = $"Invalid track number (valid track numbers range from {this.FirstTrack} to {this.LastTrack}).";
+        throw new ArgumentOutOfRangeException(nameof(number), number, msg);
       }
       set => throw new NotSupportedException();
     }
 
     #region Enumerator
 
-    private sealed class Enumerator : IEnumerator<AudioTrack> {
-
-      public Enumerator(AudioTrackCollection collection) {
-        this._collection = collection;
-      }
-
-      private readonly AudioTrackCollection _collection;
+    private sealed class Enumerator(AudioTrackCollection collection) : IEnumerator<AudioTrack> {
 
       private byte _index;
 
@@ -284,24 +277,22 @@ public sealed class TableOfContents {
       /// </returns>
       public bool MoveNext() {
         if (this._index == 0) {
-          this._index = this._collection.FirstTrack;
+          this._index = collection.FirstTrack;
           return true;
         }
-        if (this._index > this._collection.LastTrack) {
+        if (this._index > collection.LastTrack) {
           return false;
         }
         ++this._index;
-        return this._index <= this._collection.LastTrack;
+        return this._index <= collection.LastTrack;
       }
 
       /// <summary>Sets the enumerator to its initial position, which is before the first element in the collection.</summary>
-      public void Reset() {
-        this._index = 0;
-      }
+      public void Reset() => this._index = 0;
 
       /// <summary>Gets the element in the collection at the current position of the enumerator.</summary>
       /// <returns>The element in the collection at the current position of the enumerator.</returns>
-      public AudioTrack Current => this._collection[this._index];
+      public AudioTrack Current => collection[this._index];
 
       /// <summary>Gets the element in the collection at the current position of the enumerator.</summary>
       /// <returns>The element in the collection at the current position of the enumerator.</returns>
@@ -440,12 +431,12 @@ public sealed class TableOfContents {
       return;
     }
     var packs = cdTextGroup.Value.Packs;
-    if (packs == null || packs.Length == 0) {
+    if (packs is null || packs.Length == 0) {
       Trace.WriteLine("No CD-TEXT information (no packs found).", "CD-TEXT");
       return;
     }
     // Assumption: Valid CD-TEXT blocks must have a SizeInfo entry.
-    if (packs.Length < 3 || packs[packs.Length - 1].Type != RedBook.CDTextContentType.SizeInfo) {
+    if (packs.Length < 3 || packs[^1].Type != RedBook.CDTextContentType.SizeInfo) {
       Trace.WriteLine("No CD-TEXT information (packs do not end with SizeInfo data).", "CD-TEXT");
       return;
     }
@@ -674,13 +665,20 @@ public sealed class TableOfContents {
         ident = latin1.GetString(identBytes.ToArray()).TrimEnd('\0');
       }
       var tracks = si.LastTrack - si.FirstTrack + 1;
-      var titles = TableOfContents.TextValue(RedBook.CDTextContentType.Title, titleBytes, encoding, tracks + (albumTitle ? 1 : 0));
-      var performers = TableOfContents.TextValue(RedBook.CDTextContentType.Performer, performerBytes, encoding, tracks + (albumPerformer ? 1 : 0));
-      var lyricists = TableOfContents.TextValue(RedBook.CDTextContentType.Lyricist, lyricistBytes, encoding, tracks + (albumLyricist ? 1 : 0));
-      var composers = TableOfContents.TextValue(RedBook.CDTextContentType.Composer, composerBytes, encoding, tracks + (albumComposer ? 1 : 0));
-      var arrangers = TableOfContents.TextValue(RedBook.CDTextContentType.Arranger, arrangerBytes, encoding, tracks + (albumArranger ? 1 : 0));
-      var messages = TableOfContents.TextValue(RedBook.CDTextContentType.Messages, messageBytes, encoding, tracks + (albumMessage ? 1 : 0));
-      var codes = TableOfContents.TextValue(RedBook.CDTextContentType.Code, codeBytes, latin1, tracks + (albumCode ? 1 : 0));
+      var titleCount = tracks + (albumTitle ? 1 : 0);
+      var titles = TableOfContents.TextValue(RedBook.CDTextContentType.Title, titleBytes, encoding, titleCount);
+      var performerCount = tracks + (albumPerformer ? 1 : 0);
+      var performers = TableOfContents.TextValue(RedBook.CDTextContentType.Performer, performerBytes, encoding, performerCount);
+      var lyricistCount = tracks + (albumLyricist ? 1 : 0);
+      var lyricists = TableOfContents.TextValue(RedBook.CDTextContentType.Lyricist, lyricistBytes, encoding, lyricistCount);
+      var composerCount = tracks + (albumComposer ? 1 : 0);
+      var composers = TableOfContents.TextValue(RedBook.CDTextContentType.Composer, composerBytes, encoding, composerCount);
+      var arrangerCount = tracks + (albumArranger ? 1 : 0);
+      var arrangers = TableOfContents.TextValue(RedBook.CDTextContentType.Arranger, arrangerBytes, encoding, arrangerCount);
+      var messageCount = tracks + (albumMessage ? 1 : 0);
+      var messages = TableOfContents.TextValue(RedBook.CDTextContentType.Messages, messageBytes, encoding, messageCount);
+      var codeCount = tracks + (albumCode ? 1 : 0);
+      var codes = TableOfContents.TextValue(RedBook.CDTextContentType.Code, codeBytes, latin1, codeCount);
       {
         var title = (albumTitle && titles?.Length > 0) ? titles[0] : null;
         var performer = (albumPerformer && performers?.Length > 0) ? performers[0] : null;
@@ -689,8 +687,8 @@ public sealed class TableOfContents {
         var arranger = (albumArranger && arrangers?.Length > 0) ? arrangers[0] : null;
         var message = (albumMessage && messages?.Length > 0) ? messages[0] : null;
         var code = (albumCode && codes?.Length > 0) ? codes[0] : null;
-        if (genre.HasValue || ident != null || title != null || performer != null || lyricist != null || composer != null ||
-            arranger != null || message != null || code != null) {
+        if (genre.HasValue || ident is not null || title is not null || performer is not null || lyricist is not null ||
+            composer is not null || arranger is not null || message is not null || code is not null) {
           albumText[b] = new AlbumText {
             Genre = genre,
             GenreDescription = genreDescription,
@@ -727,8 +725,8 @@ public sealed class TableOfContents {
         var message = (messages?.Length > idx) ? messages[idx] : null;
         idx = t + (albumCode ? 1 : 0);
         var code = (codes?.Length > idx) ? codes[idx] : null;
-        if (title != null || performer != null || lyricist != null || composer != null || arranger != null || message != null ||
-            code != null) {
+        if (title is not null || performer is not null || lyricist is not null || composer is not null || arranger is not null ||
+            message is not null || code is not null) {
           trackText[t][b] = new TrackText {
             Title = title,
             Performer = performer,
@@ -751,8 +749,7 @@ public sealed class TableOfContents {
       sb.Append(i <= this.LastTrack ? this._tracks[i].Address.ToString("X8") : "00000000");
     }
     var textBytes = Encoding.ASCII.GetBytes(sb.ToString());
-    using var sha1 = SHA1.Create();
-    return Convert.ToBase64String(sha1.ComputeHash(textBytes)).Replace('/', '_').Replace('+', '.').Replace('=', '-');
+    return Convert.ToBase64String(SHA1.HashData(textBytes)).Replace('/', '_').Replace('+', '.').Replace('=', '-');
   }
 
   private string CalculateFreeDbId() {
@@ -786,11 +783,13 @@ public sealed class TableOfContents {
     return uri.Uri;
   }
 
+  private static readonly char[] TextPackSeparator = [ '\0' ];
+
   private static string[]? TextValue(RedBook.CDTextContentType type, List<byte> data, Encoding encoding, int items) {
     if (data.Count == 0) {
       return null;
     }
-    var parts = encoding.GetString(data.ToArray()).Split(new[] { '\0' }, items);
+    var parts = encoding.GetString(data.ToArray()).Split(TableOfContents.TextPackSeparator, items);
     if (parts.Length == items) {
       parts[items - 1] = parts[items - 1].TrimEnd('\0');
     }
@@ -798,13 +797,15 @@ public sealed class TableOfContents {
       Trace.WriteLine($"Not enough values provided in the {type} packs (expected {items}, got {parts.Length}).", "CD-TEXT");
     }
     for (var i = 0; i < parts.Length; ++i) {
-      if (parts[i] == "\t") { // TAB means "same as preceding value"
-        if (i == 0) {
-          Trace.WriteLine($"Found a TAB in the first value of the {type} packs.", "CD-TEXT");
-        }
-        else {
-          parts[i] = parts[i - 1];
-        }
+      if (parts[i] != "\t") {
+        continue;
+      }
+      // TAB means "same as preceding value"
+      if (i == 0) {
+        Trace.WriteLine($"Found a TAB in the first value of the {type} packs.", "CD-TEXT");
+      }
+      else {
+        parts[i] = parts[i - 1];
       }
     }
     return parts;
