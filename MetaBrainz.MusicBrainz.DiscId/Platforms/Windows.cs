@@ -1,12 +1,8 @@
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-
-using JetBrains.Annotations;
 
 using MetaBrainz.MusicBrainz.DiscId.Platforms.NativeApi;
 using MetaBrainz.MusicBrainz.DiscId.Standards;
@@ -40,47 +36,66 @@ internal sealed class Windows() : Platform(Windows.Features) {
     Kernel32.ReadCdText(hDevice, out var cdText, out var length);
     var expected = cdText.DataLength + Marshal.SizeOf(cdText.DataLength);
     if (length != expected) {
-      Debug.Print($"I/O: CD-TEXT descriptor has data length as {expected} but only {length} bytes were read.");
+      Tracing.Warning(1300, "The CD TEXT data reports a total size of {0} bytes, but only {1} bytes were read.", expected, length);
     }
     if (length < expected) {
-      throw new IOException($"CD-TEXT Retrieval: the structure says its size is {expected} but only {length} bytes were read.");
+      throw new IOException($"CD-TEXT Retrieval: incomplete data read ({length} of {expected} bytes).");
     }
-    return cdText.Data.Packs is not null ? cdText.Data : null;
+    if (cdText.Data.Packs is not null) {
+      Tracing.Verbose(1301, "CD-TEXT info read successfully (packs: {0}).", cdText.Data.Packs.Length);
+      return cdText.Data;
+    }
+    Tracing.Verbose(1302, "CD-TEXT info read successfully, but it is empty.");
+    return null;
   }
 
   private static string GetMediaCatalogNumber(SafeFileHandle hDevice) {
     Kernel32.ReadMediaCatalogNumber(hDevice, out var mcn, out var length);
     var expected = mcn.Header.DataLength + Marshal.SizeOf(mcn.Header);
     if (length != expected) {
-      Debug.Print($"I/O: MCN has data length as {expected} but {length} bytes were read.");
+      Tracing.Warning(1200, "The MCN reports a total data size of {0} bytes, but only {1} bytes were read.", expected, length);
     }
     if (length < expected) {
-      throw new IOException($"MCN Retrieval: the structure says its size is {expected} but only {length} bytes were read.");
+      throw new IOException($"MCN Retrieval: incomplete data read ({length} of {expected} bytes).");
     }
-    return mcn.Status.IsValid ? Encoding.ASCII.GetString(mcn.MCN) : string.Empty;
+    var result = mcn.Status.IsValid ? Encoding.ASCII.GetString(mcn.MCN) : string.Empty;
+    Tracing.Verbose(1201, "MCN read successfully: [{0}].", result);
+    return result;
   }
 
   private static void GetTableOfContents(SafeFileHandle hDevice, out MMC.TOCDescriptor toc) {
     Kernel32.ReadTOC(hDevice, out toc, out var length);
     var expected = toc.DataLength + Marshal.SizeOf(toc.DataLength);
     if (length != expected) {
-      Debug.Print($"I/O: TOC descriptor has data length as {expected} but only {length} bytes were read.");
+      Tracing.Warning(1000, "The TOC reports a total data size of {0} bytes, but only {1} bytes were read.", expected, length);
     }
     if (length < expected) {
-      throw new IOException($"TOC Retrieval: the structure says its size is {expected} but only {length} bytes were read.");
+      throw new IOException($"TOC Retrieval: incomplete data read ({length} of {expected} bytes).");
     }
+    Tracing.Verbose(1001, "TOC read successfully (tracks: {0} -> {1}).", toc.FirstTrack, toc.LastTrack);
   }
 
   private static string GetTrackIsrc(SafeFileHandle hDevice, byte track) {
-    Kernel32.ReadTrackISRC(hDevice, track, out var isrc, out var len);
-    var expected = isrc.Header.DataLength + Marshal.SizeOf(isrc.Header);
-    if (len != expected) {
-      Debug.Print($"I/O: ISRC has data length as {expected} but {len} bytes were read.");
+    const int maxRetries = 2;
+    for (var i = 0; i <= maxRetries; ++i) {
+      Kernel32.ReadTrackISRC(hDevice, track, out var isrc, out var length);
+      var expected = isrc.Header.DataLength + Marshal.SizeOf(isrc.Header);
+      if (length != expected) {
+        Tracing.Warning(1100, "The ISRC for track {0} reports a total data size of {1} bytes, but only {2} bytes were read.", track,
+                        expected, length);
+      }
+      if (length < expected) {
+        throw new IOException($"ISRC Retrieval (track {track}): incomplete data read ({length} of {expected} bytes).");
+      }
+      if (!isrc.Status.IsValid) {
+        Tracing.Verbose(1102, "Read invalid ISRC for track {0}. Will retry (attempts remaining: {1}).", track, maxRetries - i);
+        continue;
+      }
+      var result = Encoding.ASCII.GetString(isrc.ISRC);
+      Tracing.Verbose(1104, "ISRC for track {0} read successfully: [{1}].", track, result);
+      return result;
     }
-    if (len < expected) {
-      throw new IOException($"ISRC Retrieval: the structure says its size is {expected} but only {len} bytes were read.");
-    }
-    return isrc.Status.IsValid ? Encoding.ASCII.GetString(isrc.ISRC) : string.Empty;
+    return "";
   }
 
   protected override TableOfContents ReadTableOfContents(string device, DiscReadFeature features) {
@@ -97,11 +112,26 @@ internal sealed class Windows() : Platform(Windows.Features) {
         tracks = Track.Import(first, last, toc.Tracks, t => Windows.GetTrackIsrc(hDevice, t));
       }
       else {
+        Tracing.Verbose(1199, "ISRC retrieval not requested or not available.");
         tracks = Track.Import(first, last, toc.Tracks, null);
       }
     }
-    var mcn = features.HasFlag(DiscReadFeature.MediaCatalogNumber) ? Windows.GetMediaCatalogNumber(hDevice) : null;
-    var cdTextInfo = features.HasFlag(DiscReadFeature.CdText) ? Windows.GetCdTextInfo(hDevice) : null;
+    string? mcn;
+    if (features.HasFlag(DiscReadFeature.MediaCatalogNumber)) {
+      mcn = Windows.GetMediaCatalogNumber(hDevice);
+    }
+    else {
+      Tracing.Verbose(1299, "MCN retrieval not requested or not available.");
+      mcn = null;
+    }
+    RedBook.CDTextGroup? cdTextInfo;
+    if (features.HasFlag(DiscReadFeature.CdText)) {
+      cdTextInfo = Windows.GetCdTextInfo(hDevice);
+    }
+    else {
+      Tracing.Verbose(1399, "CD-TEXT retrieval not requested or not available.");
+      cdTextInfo = null;
+    }
     return new TableOfContents(device, first, last, tracks, mcn, cdTextInfo);
   }
 

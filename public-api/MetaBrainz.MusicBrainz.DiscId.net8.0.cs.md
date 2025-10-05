@@ -113,6 +113,8 @@ public sealed class TableOfContents {
 
   public const int MaxSectors = 449999;
 
+  public static readonly System.Diagnostics.TraceSource TraceSource;
+
   public const int XAInterval = 11400;
 
   System.Collections.Generic.IEnumerable<string> AvailableDevices {
