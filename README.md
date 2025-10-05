@@ -1,19 +1,17 @@
 # MetaBrainz.MusicBrainz.DiscId [![Build Status][CI-S]][CI-L] [![NuGet Version][NuGet-S]][NuGet-L]
 
-This is a .NET implementation of libdiscid.
+This is a .NET implementation of [libdiscid][libdiscid].
+
 The main point of divergence at this point is that fewer platforms are
 supported (see below), and that this library supports retrieval of
 CD-TEXT information.
 
 It uses PInvoke to access devices so is platform-dependent; currently,
-Windows, Linux and BSD (FreeBSD, NetBSD and OpenBSD) are supported.
-However, things should work regardless of the host implementation
-(.NET Framework, .NET Core, .NET or Mono).
+Windows, Linux and FreeBSD are supported.
 
-Support for Solaris is unlikely, because there does not seem to be any
-easy way to get Mono to work on it.
-Support for OSX is similarly unlikely, because I have no access to a
-system.
+Support for macOS is unlikely, because I have no access to a system.
+
+[libdiscid]: https://github.com/metabrainz/libdiscid
 
 [CI-S]: https://github.com/Zastai/MetaBrainz.MusicBrainz.DiscId/actions/workflows/build.yml/badge.svg
 [CI-L]: https://github.com/Zastai/MetaBrainz.MusicBrainz.DiscId/actions/workflows/build.yml

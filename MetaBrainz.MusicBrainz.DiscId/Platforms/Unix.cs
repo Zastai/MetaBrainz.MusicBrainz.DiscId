@@ -5,9 +5,7 @@ using System.Text;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Platforms;
 
-internal abstract class Unix : Platform {
-
-  protected Unix(DiscReadFeature features = DiscReadFeature.TableOfContents) : base(features) { }
+internal abstract class Unix(DiscReadFeature features) : Platform(features) {
 
   public new static IPlatform Create() {
     var os = string.Empty;
@@ -26,11 +24,8 @@ internal abstract class Unix : Platform {
     catch (EntryPointNotFoundException) { }
     return os switch {
       "FreeBSD" => new FreeBsd(),
-      "NetBSD" => new NetBsd(),
-      "OpenBSD" => new OpenBsd(),
       "Linux" => new Linux(),
-      "Darwin" => new Darwin(),
-      "SunOS" => new Solaris(),
+      "Darwin" => new MacOS(),
       _ => new Unsupported(),
     };
   }

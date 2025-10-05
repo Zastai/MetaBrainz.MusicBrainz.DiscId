@@ -10,9 +10,7 @@ using MetaBrainz.MusicBrainz.DiscId.Standards;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Platforms;
 
-internal sealed class Linux : Unix {
-
-  public Linux() : base(Linux.Features) { }
+internal sealed class Linux() : Unix(Linux.Features) {
 
   private const DiscReadFeature Features =
     DiscReadFeature.TableOfContents |
