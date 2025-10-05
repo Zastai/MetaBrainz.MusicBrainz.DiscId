@@ -6,7 +6,10 @@
   <PropertyGroup>
     <Authors>Zastai</Authors>
     <Title>MusicBrainz DiscID Library</Title>
-    <Description>This package provides classes for accessing information about a CD (its MusicBrainz Disc ID, EAN/ISRC values, CD-TEXT info, ...).</Description>
+    <Description>
+      This package provides classes for accessing information about a CD (its MusicBrainz Disc ID, EAN/ISRC values,
+      CD-TEXT info, ...).
+    </Description>
     <PackageCopyrightOwners>Tim Van Holder</PackageCopyrightOwners>
     <PackageCopyrightYears>2016-2025</PackageCopyrightYears>
     <PackageRepositoryName>MetaBrainz.MusicBrainz.DiscId</PackageRepositoryName>
