@@ -3,9 +3,7 @@ using System.Collections.Generic;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Platforms;
 
-internal class Unsupported : Platform {
-
-  public Unsupported() : base(DiscReadFeature.None) { }
+internal class Unsupported() : Platform(DiscReadFeature.None) {
 
   public override IEnumerable<string> AvailableDevices { get { yield break; } }
 

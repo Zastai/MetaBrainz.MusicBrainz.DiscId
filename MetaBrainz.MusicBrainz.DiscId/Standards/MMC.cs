@@ -173,13 +173,11 @@ internal static class MMC {
 
     ReservedAudio = 0x08,
 
-    // The third bit indicates whether or not a digital copy is permitted.
+    // The third bit indicates whether a digital copy is permitted.
     DigitalCopyPermitted = 0x02,
 
     // The last bit specifies a modifier for the content type: pre-emphasis for audio, incremental recording for data.
-    PreEmphasis = 0x01,
-
-    Incremental = 0x01,
+    PreEmphasisOrIncrementalRecording = 0x01,
 
   }
 
@@ -365,7 +363,7 @@ internal static class MMC {
       }
 
       /// <summary>Creates a new <c>READ TOC/PMA/ATIP</c> command, to read the disc's table of contents.</summary>
-      /// <param name="msf">Indicates whether or not time codes should be returned in MSF format.</param>
+      /// <param name="msf">Indicates whether time codes should be returned in MSF format.</param>
       /// <returns>A new <c>READ TOC/PMA/ATIP</c> command, to read the disc's table of contents.</returns>
       /// <remarks>The returned command will return a <see cref="TOCDescriptor"/> structure.</remarks>
       public static ReadTocPmaAtip TOC(bool msf = false) => new(TOCRequestFormat.TOC, msf: msf);
@@ -435,7 +433,7 @@ internal static class MMC {
   }
 
   /// <summary>
-  /// Convenience struct to represent the byte containing the MCVAL/TCVAL bit in the READ SUB-CHANNEL result structures.
+  /// Convenience struct to represent the byte containing the MCVAL/TCVAL bit in the <c>READ SUB-CHANNEL</c> result structures.
   /// </summary>
   [StructLayout(LayoutKind.Sequential, Pack = 1)]
   [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
