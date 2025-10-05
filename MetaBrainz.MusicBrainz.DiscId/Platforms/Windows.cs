@@ -36,19 +36,16 @@ internal sealed class Windows() : Platform(Windows.Features) {
     Kernel32.ReadCdText(hDevice, out var cdText, out var length);
     var expected = cdText.DataLength + Marshal.SizeOf(cdText.DataLength);
     if (length != expected) {
-      TableOfContents.TraceSource.TraceEvent(TraceEventType.Warning, 1300,
-                                             "The CD TEXT data reports a total size of {0} bytes, but only {1} bytes were read.",
-                                             expected, length);
+      Tracing.Warning(1300, "The CD TEXT data reports a total size of {0} bytes, but only {1} bytes were read.", expected, length);
     }
     if (length < expected) {
       throw new IOException($"CD-TEXT Retrieval: incomplete data read ({length} of {expected} bytes).");
     }
     if (cdText.Data.Packs is not null) {
-      TableOfContents.TraceSource.TraceEvent(TraceEventType.Verbose, 1301, "CD-TEXT info read successfully (packs: {0}).",
-                                             cdText.Data.Packs.Length);
+      Tracing.Verbose(1301, "CD-TEXT info read successfully (packs: {0}).", cdText.Data.Packs.Length);
       return cdText.Data;
     }
-    TableOfContents.TraceSource.TraceEvent(TraceEventType.Verbose, 1302, "CD-TEXT info read successfully, but it is empty.");
+    Tracing.Verbose(1302, "CD-TEXT info read successfully, but it is empty.");
     return null;
   }
 
@@ -56,15 +53,13 @@ internal sealed class Windows() : Platform(Windows.Features) {
     Kernel32.ReadMediaCatalogNumber(hDevice, out var mcn, out var length);
     var expected = mcn.Header.DataLength + Marshal.SizeOf(mcn.Header);
     if (length != expected) {
-      TableOfContents.TraceSource.TraceEvent(TraceEventType.Warning, 1200,
-                                             "The MCN reports a total data size of {0} bytes, but only {1} bytes were read.",
-                                             expected, length);
+      Tracing.Warning(1200, "The MCN reports a total data size of {0} bytes, but only {1} bytes were read.", expected, length);
     }
     if (length < expected) {
       throw new IOException($"MCN Retrieval: incomplete data read ({length} of {expected} bytes).");
     }
     var result = mcn.Status.IsValid ? Encoding.ASCII.GetString(mcn.MCN) : string.Empty;
-    TableOfContents.TraceSource.TraceEvent(TraceEventType.Verbose, 1201, "MCN read successfully: [{0}].", result);
+    Tracing.Verbose(1201, "MCN read successfully: [{0}].", result);
     return result;
   }
 
@@ -72,30 +67,25 @@ internal sealed class Windows() : Platform(Windows.Features) {
     Kernel32.ReadTOC(hDevice, out toc, out var length);
     var expected = toc.DataLength + Marshal.SizeOf(toc.DataLength);
     if (length != expected) {
-      TableOfContents.TraceSource.TraceEvent(TraceEventType.Warning, 1000,
-                                             "The TOC reports a total data size of {0} bytes, but only {1} bytes were read.",
-                                             expected, length);
+      Tracing.Warning(1000, "The TOC reports a total data size of {0} bytes, but only {1} bytes were read.", expected, length);
     }
     if (length < expected) {
       throw new IOException($"TOC Retrieval: incomplete data read ({length} of {expected} bytes).");
     }
-    TableOfContents.TraceSource.TraceEvent(TraceEventType.Verbose, 1001, "TOC read successfully (tracks: {0} -> {1}).",
-                                           toc.FirstTrack, toc.LastTrack);
+    Tracing.Verbose(1001, "TOC read successfully (tracks: {0} -> {1}).", toc.FirstTrack, toc.LastTrack);
   }
 
   private static string GetTrackIsrc(SafeFileHandle hDevice, byte track) {
     Kernel32.ReadTrackISRC(hDevice, track, out var isrc, out var length);
     var expected = isrc.Header.DataLength + Marshal.SizeOf(isrc.Header);
     if (length != expected) {
-      TableOfContents.TraceSource.TraceEvent(TraceEventType.Warning, 1100,
-                                             "The ISRC reports a total data size of {0} bytes, but only {1} bytes were read.",
-                                             expected, length);
+      Tracing.Warning(1100, "The ISRC reports a total data size of {0} bytes, but only {1} bytes were read.", expected, length);
     }
     if (length < expected) {
       throw new IOException($"ISRC Retrieval: incomplete data read ({length} of {expected} bytes).");
     }
     var result = isrc.Status.IsValid ? Encoding.ASCII.GetString(isrc.ISRC) : string.Empty;
-    TableOfContents.TraceSource.TraceEvent(TraceEventType.Verbose, 1101, "ISRC read successfully: [{0}].", result);
+    Tracing.Verbose(1101, "ISRC read successfully: [{0}].", result);
     return result;
   }
 
@@ -113,7 +103,7 @@ internal sealed class Windows() : Platform(Windows.Features) {
         tracks = Track.Import(first, last, toc.Tracks, t => Windows.GetTrackIsrc(hDevice, t));
       }
       else {
-        TableOfContents.TraceSource.TraceEvent(TraceEventType.Verbose, 1199, "ISRC retrieval not requested or not available.");
+        Tracing.Verbose(1199, "ISRC retrieval not requested or not available.");
         tracks = Track.Import(first, last, toc.Tracks, null);
       }
     }
@@ -122,7 +112,7 @@ internal sealed class Windows() : Platform(Windows.Features) {
       mcn = Windows.GetMediaCatalogNumber(hDevice);
     }
     else {
-      TableOfContents.TraceSource.TraceEvent(TraceEventType.Verbose, 1299, "MCN retrieval not requested or not available.");
+      Tracing.Verbose(1299, "MCN retrieval not requested or not available.");
       mcn = null;
     }
     RedBook.CDTextGroup? cdTextInfo;
@@ -130,7 +120,7 @@ internal sealed class Windows() : Platform(Windows.Features) {
       cdTextInfo = Windows.GetCdTextInfo(hDevice);
     }
     else {
-      TableOfContents.TraceSource.TraceEvent(TraceEventType.Verbose, 1399, "CD-TEXT retrieval not requested or not available.");
+      Tracing.Verbose(1399, "CD-TEXT retrieval not requested or not available.");
       cdTextInfo = null;
     }
     return new TableOfContents(device, first, last, tracks, mcn, cdTextInfo);

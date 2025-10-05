@@ -58,7 +58,7 @@ public sealed class TableOfContents {
   public static string DefaultWebSite { get; set; } = "musicbrainz.org";
 
   /// <summary>The trace source (named 'MetaBrainz.MusicBrainz.DiscId') used by this class.</summary>
-  public static readonly TraceSource TraceSource = new("MetaBrainz.MusicBrainz.DiscId", SourceLevels.Off);
+  public static readonly TraceSource TraceSource = Tracing.Source;
 
   #endregion
 
