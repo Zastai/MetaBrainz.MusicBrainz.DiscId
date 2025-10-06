@@ -1,9 +1,6 @@
 using System;
 using System.IO;
 
-using JetBrains.Annotations;
-
-using MetaBrainz.MusicBrainz.DiscId.Platforms;
 using MetaBrainz.MusicBrainz.DiscId.Standards;
 
 namespace MetaBrainz.MusicBrainz.DiscId;

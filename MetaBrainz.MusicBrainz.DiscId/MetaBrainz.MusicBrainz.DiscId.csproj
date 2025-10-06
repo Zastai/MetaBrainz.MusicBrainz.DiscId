@@ -12,7 +12,7 @@
     <PackageCopyrightYears>2016-2025</PackageCopyrightYears>
     <PackageRepositoryName>MetaBrainz.MusicBrainz.DiscId</PackageRepositoryName>
     <PackageTags>MusicBrainz discid audio cd cd-text isrc upc ean libdiscid</PackageTags>
-    <Version>5.2.0-pre</Version>
+    <Version>5.2.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
