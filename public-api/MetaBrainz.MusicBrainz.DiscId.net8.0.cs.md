@@ -18,6 +18,10 @@ public sealed class AlbumText {
     public get;
   }
 
+  string? ClosedInformation {
+    public get;
+  }
+
   string? Composer {
     public get;
   }
@@ -334,7 +338,7 @@ public static class BlueBook {
 
     AdultContemporary = 2,
     AlternativeRock = 3,
-    Childrens = 4,
+    ChildrensMusic = 4,
     Classical = 5,
     ContemporaryChristian = 6,
     Country = 7,

@@ -61,11 +61,15 @@ internal static class RedBook {
 
     Genre = 0x87,
 
-    TOCInfo = 0x88,
+    TOCInfo1 = 0x88,
 
     TOCInfo2 = 0x89,
 
-    // 0x8a, 0x8b, 0x8c: Reserved
+    Reserved1 = 0x8a,
+
+    Reserved2 = 0x8b,
+
+    Reserved3 = 0x8c,
 
     // Closed Information (for internal use by content provider)
     Internal = 0x8d,

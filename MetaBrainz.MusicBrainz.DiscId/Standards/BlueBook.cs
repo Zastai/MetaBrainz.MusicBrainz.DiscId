@@ -22,8 +22,8 @@ public static class BlueBook {
     /// <summary>Alternative Rock.</summary>
     AlternativeRock = 0x0003,
 
-    /// <summary>Childrens.</summary>
-    Childrens = 0x0004,
+    /// <summary>Childrens' Music.</summary>
+    ChildrensMusic = 0x0004,
 
     /// <summary>Classical.</summary>
     Classical = 0x0005,

@@ -476,23 +476,8 @@ public sealed class TableOfContents {
     var p = 0;
     for (var b = 0; b < blockCount; ++b) {
       var endPack = si.LastSequenceNumber[b];
-      var titleBytes = new List<byte>();
-      var performerBytes = new List<byte>();
-      var lyricistBytes = new List<byte>();
-      var composerBytes = new List<byte>();
-      var arrangerBytes = new List<byte>();
-      var messageBytes = new List<byte>();
-      var identBytes = new List<byte>();
-      var genreBytes = new List<byte>();
-      var codeBytes = new List<byte>();
-      var sizeInfoBytes = new List<byte>();
-      var albumTitle = false;
-      var albumPerformer = false;
-      var albumLyricist = false;
-      var albumComposer = false;
-      var albumArranger = false;
-      var albumMessage = false;
-      var albumCode = false;
+      var blockBytes = new Dictionary<RedBook.CDTextContentType, List<byte>>();
+      var albumInfo = new HashSet<RedBook.CDTextContentType>();
       Tracing.Verbose(103, "Processing CD-TEXT block #{0} (language: {1})...", b + 1, si.LanguageCode[b]);
       var dbcs = packs[p].IsUnicode;
       for (; p <= endPack; ++p) {
@@ -508,115 +493,71 @@ public sealed class TableOfContents {
         if (pack.IsUnicode != dbcs) {
           Tracing.Verbose(106, "CD-TEXT Pack #{0} (type: {1}) has a mismatched DBCS flag.", p + 1, pack.Type);
         }
-        switch (pack.Type) {
-          case RedBook.CDTextContentType.Arranger:
-            arrangerBytes.AddRange(pack.Data);
-            if (pack.ID2 == 0) {
-              albumArranger = true;
-            }
-            break;
-          case RedBook.CDTextContentType.Code:
-            codeBytes.AddRange(pack.Data);
-            if (pack.ID2 == 0) {
-              albumCode = true;
-            }
-            break;
-          case RedBook.CDTextContentType.Composer:
-            composerBytes.AddRange(pack.Data);
-            if (pack.ID2 == 0) {
-              albumComposer = true;
-            }
-            break;
-          case RedBook.CDTextContentType.DiscID:
-            identBytes.AddRange(pack.Data);
-            break;
-          case RedBook.CDTextContentType.Genre:
-            genreBytes.AddRange(pack.Data);
-            break;
-          case RedBook.CDTextContentType.Lyricist:
-            lyricistBytes.AddRange(pack.Data);
-            if (pack.ID2 == 0) {
-              albumLyricist = true;
-            }
-            break;
-          case RedBook.CDTextContentType.Messages:
-            messageBytes.AddRange(pack.Data);
-            if (pack.ID2 == 0) {
-              albumMessage = true;
-            }
-            break;
-          case RedBook.CDTextContentType.Performer:
-            performerBytes.AddRange(pack.Data);
-            if (pack.ID2 == 0) {
-              albumPerformer = true;
-            }
-            break;
-          case RedBook.CDTextContentType.SizeInfo:
-            sizeInfoBytes.AddRange(pack.Data);
-            break;
-          case RedBook.CDTextContentType.Title:
-            titleBytes.AddRange(pack.Data);
-            if (pack.ID2 == 0) {
-              albumTitle = true;
-            }
-            break;
-          default:
-            Tracing.Verbose(107, "Ignoring CD-TEXT pack #{0} because it is of ignored or unsupported type '{1}'.", p + 1,
-                            pack.Type);
-            break;
+        if (!blockBytes.TryGetValue(pack.Type, out var bytes)) {
+          blockBytes.Add(pack.Type, bytes = [ ]);
+        }
+        bytes.AddRange(pack.Data);
+        if (pack.ID2 == 0) {
+          albumInfo.Add(pack.Type);
         }
       }
-      if (sizeInfoBytes.Count == 36) {
+      if (blockBytes.TryGetValue(RedBook.CDTextContentType.SizeInfo, out var sizeInfoBytes) && sizeInfoBytes.Count == 36) {
         si = Util.MarshalBytesToStructure<RedBook.CDTextSizeInfo>(sizeInfoBytes.ToArray());
       }
       else {
-        Tracing.Verbose(108, "Ignoring CD-TEXT block because it does not include size info.");
+        Tracing.Verbose(107, "Ignoring CD-TEXT block because it does not include size info.");
         continue;
       }
-      // FIXME: Any skipped packs above will cause these checks to fail.
-      if (si.PacksWithType80 * 12 != titleBytes.Count) {
-        Tracing.Verbose(109, "Ignoring this CD-TEXT block because it fails validation (pack count, type 80).");
+      blockBytes.Remove(RedBook.CDTextContentType.SizeInfo);
+      if (!PackSizeIsValid(RedBook.CDTextContentType.Title, si.PacksWithType80)) {
         continue;
       }
-      if (si.PacksWithType81 * 12 != performerBytes.Count) {
-        Tracing.Verbose(110, "Ignoring this CD-TEXT block because it fails validation (pack count, type 81).");
+      if (!PackSizeIsValid(RedBook.CDTextContentType.Performer, si.PacksWithType81)) {
         continue;
       }
-      if (si.PacksWithType82 * 12 != lyricistBytes.Count) {
-        Tracing.Verbose(111, "Ignoring this CD-TEXT block because it fails validation (pack count, type 82).");
+      if (!PackSizeIsValid(RedBook.CDTextContentType.Lyricist, si.PacksWithType82)) {
         continue;
       }
-      if (si.PacksWithType83 * 12 != composerBytes.Count) {
-        Tracing.Verbose(112, "Ignoring this CD-TEXT block because it fails validation (pack count, type 83).");
+      if (!PackSizeIsValid(RedBook.CDTextContentType.Composer, si.PacksWithType83)) {
         continue;
       }
-      if (si.PacksWithType84 * 12 != arrangerBytes.Count) {
-        Tracing.Verbose(113, "Ignoring this CD-TEXT block because it fails validation (pack count, type 84).");
+      if (!PackSizeIsValid(RedBook.CDTextContentType.Arranger, si.PacksWithType84)) {
         continue;
       }
-      if (si.PacksWithType85 * 12 != messageBytes.Count) {
-        Tracing.Verbose(114, "Ignoring this CD-TEXT block because it fails validation (pack count, type 85).");
+      if (!PackSizeIsValid(RedBook.CDTextContentType.Messages, si.PacksWithType85)) {
         continue;
       }
-      if (si.PacksWithType86 * 12 != identBytes.Count) {
-        Tracing.Verbose(115, "Ignoring this CD-TEXT block because it fails validation (pack count, type 86).");
+      if (!PackSizeIsValid(RedBook.CDTextContentType.DiscID, si.PacksWithType86)) {
         continue;
       }
-      if (si.PacksWithType87 * 12 != genreBytes.Count) {
-        Tracing.Verbose(116, "Ignoring this CD-TEXT block because it fails validation (pack count, type 87).");
+      if (!PackSizeIsValid(RedBook.CDTextContentType.Genre, si.PacksWithType87)) {
         continue;
       }
-      if (si.PacksWithType8E * 12 != codeBytes.Count) {
-        Tracing.Verbose(117, "Ignoring this CD-TEXT block because it fails validation (pack count, type 8E).");
+      if (!PackSizeIsValid(RedBook.CDTextContentType.TOCInfo1, si.PacksWithType88)) {
         continue;
       }
-      if (si.PacksWithType8F * 12 != sizeInfoBytes.Count) {
-        Tracing.Verbose(118, "Ignoring this CD-TEXT block because it fails validation (pack count, type 8F).");
+      if (!PackSizeIsValid(RedBook.CDTextContentType.TOCInfo2, si.PacksWithType89)) {
         continue;
       }
+      if (!PackSizeIsValid(RedBook.CDTextContentType.Reserved1, si.PacksWithType8A)) {
+        continue;
+      }
+      if (!PackSizeIsValid(RedBook.CDTextContentType.Reserved2, si.PacksWithType8B)) {
+        continue;
+      }
+      if (!PackSizeIsValid(RedBook.CDTextContentType.Reserved3, si.PacksWithType8C)) {
+        continue;
+      }
+      if (!PackSizeIsValid(RedBook.CDTextContentType.Internal, si.PacksWithType8D)) {
+        continue;
+      }
+      if (!PackSizeIsValid(RedBook.CDTextContentType.Code, si.PacksWithType8E)) {
+        continue;
+      }
+      // While there is a PacksWithType8F too, that seems to always be 0 while the size info always spans 3 packs (36 bytes).
       Encoding encoding;
       if (dbcs) {
-        Tracing.Verbose(119, "This CD-TEXT block contains DBCS data; assuming this means UTF-16.");
+        Tracing.Verbose(108, "This CD-TEXT block contains DBCS data; assuming this means UTF-16.");
         encoding = Encoding.BigEndianUnicode;
       }
       else {
@@ -627,30 +568,30 @@ public sealed class TableOfContents {
           case RedBook.CDTextCharacterCode.ISO_8859_1:
             // FIXME: It's supposed to be a modified form of latin-1, but without the Blue Book, it's unclear what those
             //        modifications entail.
-            Tracing.Verbose(120, "Using plain ISO-8859-1 as CD-TEXT block encoding; some characters may not be correct.");
+            Tracing.Verbose(109, "Using plain ISO-8859-1 as CD-TEXT block encoding; some characters may not be correct.");
             encoding = Encoding.GetEncoding("iso-8859-1");
             break;
           case RedBook.CDTextCharacterCode.Korean:
-            Tracing.Verbose(121, "Assuming EUC-KR as Korean CD-TEXT block encoding.");
+            Tracing.Verbose(110, "Assuming EUC-KR as Korean CD-TEXT block encoding.");
             encoding = Encoding.GetEncoding("euc-kr");
             break;
           case RedBook.CDTextCharacterCode.MandarinChinese:
-            Tracing.Verbose(122, "Assuming GB2312 as Mandarin Chinese CD-TEXT block encoding.");
+            Tracing.Verbose(111, "Assuming GB2312 as Mandarin Chinese CD-TEXT block encoding.");
             encoding = Encoding.GetEncoding("gb2312");
             break;
           case RedBook.CDTextCharacterCode.MusicShiftJis:
             // FIXME: Without standard RIAJ RS506 it's unclear how this differs from plain Shift-JIS, but some comments online
             //        suggest it has a LOT of extra emoji.
-            Tracing.Verbose(123, "Using plain Shift-Jis as CD-TEXT block encoding; some characters may not be correct.");
+            Tracing.Verbose(112, "Using plain Shift-Jis as CD-TEXT block encoding; some characters may not be correct.");
             encoding = Encoding.GetEncoding("iso-2022-jp");
             break;
           default:
             if ((byte) si.CharacterCode >= 0x83) {
-              Tracing.Verbose(124, "Ignoring this CD-TEXT block because it specifies a reserved character set ({0}).",
+              Tracing.Verbose(113, "Ignoring this CD-TEXT block because it specifies a reserved character set ({0}).",
                               si.CharacterCode);
             }
             else {
-              Tracing.Verbose(125, "Ignoring this CD-TEXT block because it specifies an unknown character set ({0}).",
+              Tracing.Verbose(114, "Ignoring this CD-TEXT block because it specifies an unknown character set ({0}).",
                               si.CharacterCode);
             }
             continue;
@@ -659,42 +600,51 @@ public sealed class TableOfContents {
       var latin1 = Encoding.GetEncoding("iso-8859-1");
       BlueBook.Genre? genre = null;
       string? genreDescription = null;
-      if (genreBytes.Count > 0) {
+      if (blockBytes.TryGetValue(RedBook.CDTextContentType.Genre, out var genreBytes)) {
         var rawGenre = genreBytes.ToArray();
         var code = BitConverter.ToInt16(rawGenre, 0);
         if (BitConverter.IsLittleEndian) {
           code = IPAddress.NetworkToHostOrder(code);
         }
-        genre = (BlueBook.Genre) code;
-        genreDescription = latin1.GetString(rawGenre, 2, rawGenre.Length - 2).TrimEnd('\0');
-        if (genreDescription.Length == 0) {
-          Tracing.Verbose(126, "CD-TEXT: Genre set as {0:D} ({0}), with no description.", genre);
-          genreDescription = null;
+        if (code == 0 && genreBytes.Count == 2) {
+          Tracing.Verbose(115, "CD-TEXT: Ignoring genre information because it is set to zero.");
         }
         else {
-          Tracing.Verbose(127, "CD-TEXT: Genre set as {0:D} ({0}) [{1}].", genre, genreDescription);
+          genre = (BlueBook.Genre) code;
+          genreDescription = latin1.GetString(rawGenre, 2, rawGenre.Length - 2).TrimEnd('\0');
+          if (genreDescription.Length == 0) {
+            Tracing.Verbose(116, "CD-TEXT: Genre set as {0:D} ({0}), with no description.", genre);
+            genreDescription = null;
+          }
+          else {
+            Tracing.Verbose(117, "CD-TEXT: Genre set as {0:D} ({0}) [{1}].", genre, genreDescription);
+          }
         }
+        blockBytes.Remove(RedBook.CDTextContentType.Genre);
       }
-      string? ident = null;
-      if (identBytes.Count > 0) {
-        ident = latin1.GetString(identBytes.ToArray()).TrimEnd('\0');
-        Tracing.Verbose(128, "CD-TEXT: Disc identification set as [{0}].", ident);
+      var discId = DecodeSingleString(RedBook.CDTextContentType.DiscID);
+      if (discId is not null) {
+        Tracing.Verbose(118, "CD-TEXT: Disc identification set as [{0}].", discId);
+      }
+      var closedInfo = DecodeSingleString(RedBook.CDTextContentType.Internal);
+      if (closedInfo is not null) {
+        Tracing.Verbose(119, "CD-TEXT: Closed information set as [{0}].", closedInfo);
       }
       var tracks = si.LastTrack - si.FirstTrack + 1;
-      var titleCount = tracks + (albumTitle ? 1 : 0);
-      var titles = TableOfContents.TextValue(RedBook.CDTextContentType.Title, titleBytes, encoding, titleCount);
-      var performerCount = tracks + (albumPerformer ? 1 : 0);
-      var performers = TableOfContents.TextValue(RedBook.CDTextContentType.Performer, performerBytes, encoding, performerCount);
-      var lyricistCount = tracks + (albumLyricist ? 1 : 0);
-      var lyricists = TableOfContents.TextValue(RedBook.CDTextContentType.Lyricist, lyricistBytes, encoding, lyricistCount);
-      var composerCount = tracks + (albumComposer ? 1 : 0);
-      var composers = TableOfContents.TextValue(RedBook.CDTextContentType.Composer, composerBytes, encoding, composerCount);
-      var arrangerCount = tracks + (albumArranger ? 1 : 0);
-      var arrangers = TableOfContents.TextValue(RedBook.CDTextContentType.Arranger, arrangerBytes, encoding, arrangerCount);
-      var messageCount = tracks + (albumMessage ? 1 : 0);
-      var messages = TableOfContents.TextValue(RedBook.CDTextContentType.Messages, messageBytes, encoding, messageCount);
-      var codeCount = tracks + (albumCode ? 1 : 0);
-      var codes = TableOfContents.TextValue(RedBook.CDTextContentType.Code, codeBytes, latin1, codeCount);
+      var (titles, albumTitle) = DecodeText(RedBook.CDTextContentType.Title);
+      var (performers, albumPerformer) = DecodeText(RedBook.CDTextContentType.Performer);
+      var (lyricists, albumLyricist) = DecodeText(RedBook.CDTextContentType.Lyricist);
+      var (composers, albumComposer) = DecodeText(RedBook.CDTextContentType.Composer);
+      var (arrangers, albumArranger) = DecodeText(RedBook.CDTextContentType.Arranger);
+      var (messages, albumMessage) = DecodeText(RedBook.CDTextContentType.Messages);
+      var (codes, albumCode) = DecodeText(RedBook.CDTextContentType.Code);
+      if (Tracing.Source.Switch.ShouldTrace(TraceEventType.Verbose)) {
+        // The two TOC types are binary data, and not relevant to us.
+        blockBytes.Remove(RedBook.CDTextContentType.TOCInfo1);
+        blockBytes.Remove(RedBook.CDTextContentType.TOCInfo2);
+        ReportUnhandledText();
+        blockBytes.Clear();
+      }
       {
         var title = (albumTitle && titles?.Length > 0) ? titles[0] : null;
         var performer = (albumPerformer && performers?.Length > 0) ? performers[0] : null;
@@ -703,12 +653,13 @@ public sealed class TableOfContents {
         var arranger = (albumArranger && arrangers?.Length > 0) ? arrangers[0] : null;
         var message = (albumMessage && messages?.Length > 0) ? messages[0] : null;
         var code = (albumCode && codes?.Length > 0) ? codes[0] : null;
-        if (genre.HasValue || ident is not null || title is not null || performer is not null || lyricist is not null ||
-            composer is not null || arranger is not null || message is not null || code is not null) {
+        if (genre.HasValue || discId is not null || closedInfo is not null || title is not null || performer is not null ||
+            lyricist is not null || composer is not null || arranger is not null || message is not null || code is not null) {
           albumText[b] = new AlbumText {
+            ClosedInformation = closedInfo,
             Genre = genre,
             GenreDescription = genreDescription,
-            Identification = ident,
+            Identification = discId,
             Title = title,
             Performer = performer,
             Lyricist = lyricist,
@@ -752,6 +703,39 @@ public sealed class TableOfContents {
             Message = message,
             Isrc = code,
           };
+        }
+      }
+      continue;
+      string? DecodeSingleString(RedBook.CDTextContentType type) {
+        if (!blockBytes.TryGetValue(type, out var bytes)) {
+          return null;
+        }
+        blockBytes.Remove(type);
+        return latin1.GetString(bytes.ToArray()).TrimEnd('\0');
+      }
+      (string[]?, bool) DecodeText(RedBook.CDTextContentType type) {
+        var includesAlbumLevelValue = albumInfo.Contains(type);
+        var count = tracks + (includesAlbumLevelValue ? 1 : 0);
+        if (!blockBytes.TryGetValue(type, out var bytes)) {
+          return (null, false);
+        }
+        var values = TableOfContents.TextValue(type, bytes, encoding, count);
+        blockBytes.Remove(type);
+        return (values, includesAlbumLevelValue);
+      }
+      bool PackSizeIsValid(RedBook.CDTextContentType type, int count) {
+        var expectedBytes = 12 * count;
+        var actualBytes = blockBytes.TryGetValue(type, out var bytes) ? bytes.Count : 0;
+        if (actualBytes != expectedBytes) {
+          Tracing.Verbose(120, "Ignoring this CD-TEXT block: type {0:X} ({0}) pack size mismatch ({1} != {2}).", type, actualBytes,
+                          expectedBytes);
+        }
+        return actualBytes == expectedBytes;
+      }
+      void ReportUnhandledText() {
+        foreach (var item in blockBytes) {
+          var text = latin1.GetString(item.Value.ToArray()).TrimEnd('\0');
+          Tracing.Verbose(121, "CD-TEXT: Ignoring text data of type {0:X} ({0}): [{1}].", item.Key, text);
         }
       }
     }
