@@ -3,7 +3,7 @@
 
   <!-- Package Versions -->
   <ItemGroup>
-    <PackageVersion Include="JetBrains.Annotations" Version="2025.2.2" />
+    <PackageVersion Include="JetBrains.Annotations" Version="2025.2.4" />
   </ItemGroup>
 
 </Project>
