@@ -14,6 +14,6 @@ public class UnixException(int errno) : ExternalException(UnixException.GetError
   /// </summary>
   public UnixException() : this(Marshal.GetLastPInvokeError()) { }
 
-  private static string? GetErrorText(int errno) => Marshal.GetPInvokeErrorMessage(errno);
+  private static string GetErrorText(int errno) => Marshal.GetPInvokeErrorMessage(errno);
 
 }

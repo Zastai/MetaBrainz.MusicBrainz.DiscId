@@ -8,6 +8,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards;
 public static class BlueBook {
 
   /// <summary>Enumeration of the genres defined by the "Blue Book" standard (section III.3.2.5.3.8).</summary>
+  [PublicAPI]
   public enum Genre : short {
 
     /// <summary>No Genre Specified.</summary>

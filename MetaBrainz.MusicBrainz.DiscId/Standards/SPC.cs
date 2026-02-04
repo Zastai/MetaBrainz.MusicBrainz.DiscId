@@ -16,6 +16,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards;
 ///   <item><term>[SPC-5]</term> <description>Project T10/BSR INCITS 502 revision 10a</description></item>
 /// </list>
 /// </remarks>
+[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 internal static class SPC {
 
   #region Enumerations
@@ -143,7 +144,7 @@ internal static class SPC {
     0xe => "NO SENSE",
     0xf => "COMPLETED",
     // Not technically possible (value is only 4 bits)
-    _ => throw new ArgumentOutOfRangeException(nameof(senseKey), senseKey, "A SCSI sense key must be between 0 and 15.")
+    _ => throw new ArgumentOutOfRangeException(nameof(senseKey), senseKey, "A SCSI sense key must be between 0 and 15."),
   };
 
   /// <summary>Creates a string describing the specified SCSI additional sense information.</summary>
@@ -896,7 +897,7 @@ internal static class SPC {
     0x7479 => "SECURITY CONFLICT IN TRANSLATED DEVICE",
     >= 0x8000 => $"VENDOR-SPECIFIC CODE (ASC: {asc:X2}h, ASCQ: {ascq:X2}h)",
     _ when ascq >= 0x80 => $"VENDOR-SPECIFIC QUALIFIER (ASC: {asc:X2}h, ASCQ: {ascq:X2}h)",
-    _ =>  $"RESERVED (ASC: {asc:X2}h, ASCQ: {ascq:X2}h)"
+    _ =>  $"RESERVED (ASC: {asc:X2}h, ASCQ: {ascq:X2}h)",
   };
 
   #endregion

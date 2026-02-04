@@ -98,13 +98,13 @@ public sealed class TableOfContents {
   public string? DeviceName { get; }
 
   /// <summary>Returns the MusicBrainz Disc ID associated with this table of contents.</summary>
-  public string DiscId => this._discid ??= this.CalculateDiscId();
+  public string DiscId => field ??= this.CalculateDiscId();
 
   /// <summary>The first (audio) track on the disc.</summary>
   public byte FirstTrack { get; }
 
   /// <summary>Returns the FreeDB Disc ID associated with this table of contents.</summary>
-  public string FreeDbId => this._freeDbId ??= this.CalculateFreeDbId();
+  public string FreeDbId => field ??= this.CalculateFreeDbId();
 
   /// <summary>The last (audio) track on the disc.</summary>
   public byte LastTrack { get; }
@@ -143,7 +143,7 @@ public sealed class TableOfContents {
   public AudioTrackCollection Tracks => new(this);
 
   /// <summary>The URL to open to submit information about this table of contents to MusicBrainz.</summary>
-  public Uri SubmissionUrl => this._url ??= this.ConstructSubmissionUrl();
+  public Uri SubmissionUrl => field ??= this.ConstructSubmissionUrl();
 
   /// <summary>The URL scheme to use when constructing URLs (i.e. for the <see cref="SubmissionUrl"/> property).</summary>
   public string UrlScheme { get; set; }
@@ -398,10 +398,6 @@ public sealed class TableOfContents {
 
   private static readonly IPlatform Platform = MusicBrainz.DiscId.Platform.Create();
 
-  private string? _discid;
-
-  private string? _freeDbId;
-
   private string? _stringForm;
 
   private readonly Track[] _tracks;
@@ -411,8 +407,6 @@ public sealed class TableOfContents {
   private readonly AlbumText[]? _albumText;
 
   private readonly TrackText[][]? _trackText;
-
-  private Uri? _url;
 
   #endregion
 
@@ -707,11 +701,7 @@ public sealed class TableOfContents {
       }
       continue;
       string? DecodeSingleString(RedBook.CDTextContentType type) {
-        if (!blockBytes.TryGetValue(type, out var bytes)) {
-          return null;
-        }
-        blockBytes.Remove(type);
-        return latin1.GetString(bytes.ToArray()).TrimEnd('\0');
+        return blockBytes.Remove(type, out var bytes) ? latin1.GetString(bytes.ToArray()).TrimEnd('\0') : null;
       }
       (string[]?, bool) DecodeText(RedBook.CDTextContentType type) {
         var includesAlbumLevelValue = albumInfo.Contains(type);

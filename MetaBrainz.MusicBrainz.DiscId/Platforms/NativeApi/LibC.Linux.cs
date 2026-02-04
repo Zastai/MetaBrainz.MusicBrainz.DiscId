@@ -107,7 +107,8 @@ internal static partial class LibC {
 
       FROM_DEV = -3, // e.g. a SCSI READ command
 
-      TO_FROM_DEV = -4, // like SG_DXFER_FROM_DEV, but during indirect IO the user buffer is copied into the kernel buffers before the transfer
+      TO_FROM_DEV = -4, // like SG_DXFER_FROM_DEV, but during indirect IO the user buffer is copied into the kernel buffers before
+                        // the transfer
 
     }
 
@@ -239,7 +240,7 @@ internal static partial class LibC {
       var req = new SCSIRequest {
         interface_id = 'S',
         dxfer_direction = SCSITransferDirection.FROM_DEV,
-        timeout = LibC.Linux.DefaultSCSIRequestTimeOut,
+        timeout = Linux.DefaultSCSIRequestTimeOut,
         cmd_len = (byte) commandLength,
         mx_sb_len = 64,
         dxfer_len = (uint) Marshal.SizeOf<TData>(),
@@ -252,7 +253,7 @@ internal static partial class LibC {
         req.dxferp = req.sbp + req.mx_sb_len;
         Marshal.StructureToPtr(cmd, req.cmdp, false);
         try {
-          if (LibC.Linux.SendSCSIRequest(fd.Value, IOCTL.SG_IO, ref req) != 0) {
+          if (Linux.SendSCSIRequest(fd.Value, IOCTL.SG_IO, ref req) != 0) {
             throw new UnixException();
           }
           if (req.status == SAM.StatusCode.CHECK_CONDITION || req.driver_status == SCSIDriverStatus.DRIVER_SENSE) {
