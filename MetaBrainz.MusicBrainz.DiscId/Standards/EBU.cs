@@ -7,7 +7,11 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards;
 public static class EBU {
 
   /// <summary>Enumeration of EBU Language Codes.</summary>
-  /// <remarks>Originally defined in EBU Tech 3258-E. These are taken from 3264-E instead, because I could not find the original standard document.</remarks>
+  /// <remarks>
+  /// Originally defined in EBU Tech 3258-E. These are taken from 3264-E instead, because I could not find the original standard
+  /// document.
+  /// </remarks>
+  [PublicAPI]
   public enum LanguageCode : byte {
 
     /// <summary>Language not known or not specified.</summary>

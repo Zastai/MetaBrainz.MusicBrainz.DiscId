@@ -20,11 +20,13 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards;
 ///   <item><term>[MMC-6]</term><description>INCITS T10/1836D revision 2g</description></item>
 /// </list>
 /// </remarks>
+[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 internal static class MMC {
 
   #region Enumerations
 
   /// <summary>The current status of audio playback.</summary>
+  [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
   public enum AudioStatus : byte {
 
     NotSupported = 0x00,
@@ -42,6 +44,7 @@ internal static class MMC {
   }
 
   /// <summary>Possible operation codes for CD/DVD/... SCSI commands.</summary>
+  [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
   public enum OperationCode : byte {
 
     Blank = 0xA1,
@@ -126,10 +129,10 @@ internal static class MMC {
     SendDiscStructure = 0xBF,
 
     // [MMC-5] Dropped
-    SendDvdStructure = 0xBF,
+    SendDvdStructure = OperationCode.SendDiscStructure,
 
     // [MMC-4] Dropped
-    SendEvent = 0x5D,
+    SendEvent = OperationCode.SendCueSheet,
 
     SendKey = 0xA3,
 
@@ -162,6 +165,7 @@ internal static class MMC {
 
   /// <summary>Possible values for the control field (4 bits) in some structures.</summary>
   [Flags]
+  [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
   public enum SubChannelControl : byte {
 
     // The first two bits are "content type".
@@ -183,6 +187,7 @@ internal static class MMC {
 
   /// <summary>Possible values for the ADR field (typically 4 bits) in some structures.</summary>
   /// <remarks>All other values (<c>0x04</c>-<c>0xff</c>) are reserved.</remarks>
+  [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
   public enum SubChannelDataFormat : byte {
 
     NotSpecified = 0x00,
@@ -197,6 +202,7 @@ internal static class MMC {
 
   /// <summary>Values for the "sub-channel parameter list" in a READ SUB-CHANNEL command.</summary>
   /// <remarks>All other values (<c>0x00</c>, <c>0x04</c>-<c>0xef</c>) are reserved.</remarks>
+  [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
   public enum SubChannelRequestFormat : byte {
 
     Position = 0x01,
@@ -241,6 +247,7 @@ internal static class MMC {
 
   /// <summary>Values for the format in a READ TOC/PMA/ATIP command.</summary>
   /// <remarks>All other values (<c>0x06</c>-<c>0xff</c>) are reserved.</remarks>
+  [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
   public enum TOCRequestFormat : byte {
 
     TOC = 0x00,
@@ -267,6 +274,7 @@ internal static class MMC {
   /// Static class containing the command descriptor blocks; their names will match the corresponding <see cref="OperationCode"/>
   /// enumeration names.
   /// </summary>
+  [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
   public static class CDB {
 
     /// <summary>Command structure for READ SUB-CHANNEL.</summary>

@@ -16,6 +16,7 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards;
 ///   <item><term>[SAM-6]</term><description>Project T10/BSR INCITS 546 revision 2</description></item>
 /// </list>
 /// </remarks>
+[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 internal static class SAM {
 
   #region Enumerations

@@ -1,9 +1,12 @@
 using System;
 
+using JetBrains.Annotations;
+
 namespace MetaBrainz.MusicBrainz.DiscId;
 
 /// <summary>Enumeration of features the library may support on any given platform.</summary>
 [Flags]
+[PublicAPI]
 public enum DiscReadFeature {
 
   /// <summary>No functionality.</summary>
@@ -29,6 +32,6 @@ public enum DiscReadFeature {
   CdText = 8,
 
   /// <summary>All available features.</summary>
-  All = -1
+  All = -1,
 
 }

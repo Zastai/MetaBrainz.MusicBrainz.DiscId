@@ -9,11 +9,13 @@ namespace MetaBrainz.MusicBrainz.DiscId.Standards;
 
 /// <summary>Static class containing structures, enumerations and constants for the "Red Book" (CD-DA) standard.</summary>
 /// <remarks>Based on the IEC 60908:1999 standard document.</remarks>
+[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 internal static class RedBook {
 
   #region Enumerations
 
   /// <summary>Enumeration of possible encodings for CD-TEXT data (values other than 0 for ID1 0x80-0x85 only).</summary>
+  [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
   public enum CDTextCharacterCode : byte {
 
     // modified, see CD-EXTRA specification, appendix 1
@@ -40,6 +42,7 @@ internal static class RedBook {
   }
 
   /// <summary>The type of information stored in a CD-TEXT &quot;pack&quot; (<see cref="CDTextPack"/>).</summary>
+  [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
   public enum CDTextContentType : byte {
 
     Nothing = 0x00,
@@ -83,11 +86,13 @@ internal static class RedBook {
 
   /// <summary>The flag values for the CD-TEXT size info data.</summary>
   [Flags]
+  [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
   public enum CDTextSizeInfoFlags : byte {
 
     // The flags byte encodes the following information:
     //   1....... Mode 2 Flag (indicates the presence of mode-2 CD-TEXT data packets)
-    //   .1...... Program Area Copy Protection (indicates the presence of information in the program area about the copyright assertion of specific items)
+    //   .1...... Program Area Copy Protection (indicates the presence of information in the program area about the copyright
+    //            assertion of specific items)
     //            => Set to 0 if the mode-2 flag is 0. If not set, copyright should be assumed to be asserted for all CD-TEXT data.
     //   ..111... Reserved (0)
     //   .....1.. Copyright is asserted for messages (content type 0x85) in this block.
@@ -119,6 +124,7 @@ internal static class RedBook {
   #region Structures
 
   [StructLayout(LayoutKind.Sequential, Pack = 1)]
+  [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
   public struct CDTextGroup {
 
     // From the Red Book standard:

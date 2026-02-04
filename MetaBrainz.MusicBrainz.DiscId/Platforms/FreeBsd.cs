@@ -1,11 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 
-using MetaBrainz.MusicBrainz.DiscId.Standards;
 using MetaBrainz.MusicBrainz.DiscId.Platforms.NativeApi;
 
 namespace MetaBrainz.MusicBrainz.DiscId.Platforms;

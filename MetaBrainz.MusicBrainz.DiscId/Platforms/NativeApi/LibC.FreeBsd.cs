@@ -110,13 +110,13 @@ internal static partial class LibC {
     // TBD: Does LibraryImport work for this?
     #pragma warning disable SYSLIB1054
 
-    [DllImport(NativeApi.LibC.LibraryName, EntryPoint = "ioctl", SetLastError = true)]
+    [DllImport(LibC.LibraryName, EntryPoint = "ioctl", SetLastError = true)]
     private static extern int SendIORequest(int fd, IOCTL command, ref TOCHeaderRequest request);
 
-    [DllImport(NativeApi.LibC.LibraryName, EntryPoint = "ioctl", SetLastError = true)]
+    [DllImport(LibC.LibraryName, EntryPoint = "ioctl", SetLastError = true)]
     private static extern int SendIORequest(int fd, IOCTL command, ref TOCEntriesRequest request);
 
-    [DllImport(NativeApi.LibC.LibraryName, EntryPoint = "ioctl", SetLastError = true)]
+    [DllImport(LibC.LibraryName, EntryPoint = "ioctl", SetLastError = true)]
     private static extern int SendIORequest(int fd, IOCTL command, ref ReadSubChannelRequest request);
 
     #pragma warning restore SYSLIB1054
@@ -142,7 +142,7 @@ internal static partial class LibC {
       };
       req.data = Marshal.AllocHGlobal(new IntPtr(req.data_len));
       try {
-        var rc = LibC.FreeBsd.SendIORequest(fd.Value, IOCTL.CD_IO_C_READ_SUB_CHANNEL, ref req);
+        var rc = FreeBsd.SendIORequest(fd.Value, IOCTL.CD_IO_C_READ_SUB_CHANNEL, ref req);
         data = (rc == 0) ? Marshal.PtrToStructure<T>(req.data) : default;
         return rc;
       }
@@ -154,7 +154,7 @@ internal static partial class LibC {
     public static void ReadTOC(UnixFileDescriptor fd, out byte first, out byte last, out MMC.TrackDescriptor[] tracks) {
       { // Read the TOC header
         var req = new TOCHeaderRequest();
-        if (LibC.FreeBsd.SendIORequest(fd.Value, IOCTL.CD_IO_READ_TOC_HEADER, ref req) != 0) {
+        if (FreeBsd.SendIORequest(fd.Value, IOCTL.CD_IO_READ_TOC_HEADER, ref req) != 0) {
           throw new IOException("Failed to retrieve table of contents.", new UnixException());
         }
         first = req.starting_track;
@@ -170,7 +170,7 @@ internal static partial class LibC {
         };
         req.data = Marshal.AllocHGlobal(new IntPtr(req.data_len));
         try {
-          if (LibC.FreeBsd.SendIORequest(fd.Value, IOCTL.CD_IO_READ_TOC_ENTRIES, ref req) != 0) {
+          if (FreeBsd.SendIORequest(fd.Value, IOCTL.CD_IO_READ_TOC_ENTRIES, ref req) != 0) {
             throw new IOException("Failed to retrieve TOC entries.", new UnixException());
           }
           tracks = new MMC.TrackDescriptor[trackCount];

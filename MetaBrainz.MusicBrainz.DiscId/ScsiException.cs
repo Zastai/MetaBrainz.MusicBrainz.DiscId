@@ -45,9 +45,13 @@ public class ScsiException : ExternalException {
   /// This is of the form &quot;A / B&quot;, where A is the description of the sense key and B is the description of the additional
   /// sense code.
   /// </summary>
-  public override string Message
-    => string.Concat(SPC.SenseKeyDescription(this.SenseKey), " / ",
-                     SPC.AdditionalSenseDescription(this.AdditionalSenseCode, this.AdditionalSenseCodeQualifier));
+  public override string Message {
+    get {
+      var senseKey = SPC.SenseKeyDescription(this.SenseKey);
+      var additionalSense = SPC.AdditionalSenseDescription(this.AdditionalSenseCode, this.AdditionalSenseCodeQualifier);
+      return $"{senseKey} / {additionalSense}";
+    }
+  }
 
   /// <summary>The SCSI &quot;sense key&quot; value.</summary>
   public byte SenseKey { get; }
