@@ -1,6 +1,6 @@
 # MetaBrainz.MusicBrainz.DiscId [![Build Status][CI-S]][CI-L] [![NuGet Version][NuGet-S]][NuGet-L]
 
-This is a .NET implementation of [libdiscid][libdiscid].
+This is a .NET implementation of [libdiscid].
 
 The main point of divergence at this point is that fewer platforms are
 supported (see below), and that this library supports retrieval of
@@ -68,7 +68,7 @@ where sources, switches and listeners can be configured.
       <source name="MetaBrainz.MusicBrainz.DiscId" switchName="MetaBrainz.MusicBrainz.DiscId">
         <listeners>
           <add name="console" />
-          <add name="lb-log" type="System.Diagnostics.TextWriterTraceListener" initializeData="lb.log" />
+          <add name="discid-log" type="System.Diagnostics.TextWriterTraceListener" initializeData="discid.log" />
         </listeners>
       </source>
     </sources>
