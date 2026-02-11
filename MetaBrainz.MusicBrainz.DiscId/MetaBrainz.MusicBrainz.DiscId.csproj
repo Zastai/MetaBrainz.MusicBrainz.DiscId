@@ -20,7 +20,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" IncludeAssets="compile" PrivateAssets="all" />
+    <!-- Zastai.Build.ApiReference currently includes all internal attributes; explicitly exclude them here. -->
+    <ApiReferenceExcludeAttribute Include="JetBrains.Annotations.PublicAPIAttribute" />
   </ItemGroup>
 
 </Project>
